@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -17,14 +18,110 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="MQMapView">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Vxg-rI-H1p">
+                                <subviews>
+                                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bgp-uc-gve">
+                                        <subviews>
+                                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wjG-ni-RlG">
+                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="qmQ-Vq-dvY">
+                                                    <frame key="frameInset"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="My Location" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="jlg-5m-h2o">
+                                                            <nil key="textColor"/>
+                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                                            <textInputTraits key="textInputTraits" returnKeyType="route"/>
+                                                            <connections>
+                                                                <action selector="fromTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="gOh-dR-vdb"/>
+                                                            </connections>
+                                                        </textField>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstItem="jlg-5m-h2o" firstAttribute="centerX" secondItem="qmQ-Vq-dvY" secondAttribute="centerX" id="9Th-dS-D5g"/>
+                                                        <constraint firstItem="jlg-5m-h2o" firstAttribute="centerY" secondItem="qmQ-Vq-dvY" secondAttribute="centerY" id="Ds9-Iy-TxE"/>
+                                                        <constraint firstItem="jlg-5m-h2o" firstAttribute="top" secondItem="qmQ-Vq-dvY" secondAttribute="top" constant="4" id="Xoa-j9-ZgF"/>
+                                                        <constraint firstAttribute="bottom" secondItem="jlg-5m-h2o" secondAttribute="bottom" constant="4" id="ZD0-Ug-HfZ"/>
+                                                        <constraint firstItem="jlg-5m-h2o" firstAttribute="leading" secondItem="qmQ-Vq-dvY" secondAttribute="leading" constant="4" id="bch-4B-9Jy"/>
+                                                        <constraint firstAttribute="trailing" secondItem="jlg-5m-h2o" secondAttribute="trailing" constant="4" id="iyK-a9-0EZ"/>
+                                                    </constraints>
+                                                </view>
+                                                <blurEffect style="light"/>
+                                            </visualEffectView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <constraints>
+                                            <constraint firstItem="wjG-ni-RlG" firstAttribute="centerY" secondItem="Bgp-uc-gve" secondAttribute="centerY" id="UGs-hg-FSU"/>
+                                            <constraint firstItem="wjG-ni-RlG" firstAttribute="centerX" secondItem="Bgp-uc-gve" secondAttribute="centerX" id="hxz-gh-Ari"/>
+                                            <constraint firstItem="wjG-ni-RlG" firstAttribute="height" secondItem="Bgp-uc-gve" secondAttribute="height" id="od3-0z-GA9"/>
+                                            <constraint firstItem="wjG-ni-RlG" firstAttribute="width" secondItem="Bgp-uc-gve" secondAttribute="width" id="poa-qR-hBz"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="8"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FYk-7K-Ba8">
+                                        <subviews>
+                                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pj6-cm-Tqi">
+                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="DRx-eM-TnE">
+                                                    <frame key="frameInset"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="NMJ-bA-mSF">
+                                                            <nil key="textColor"/>
+                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                                            <textInputTraits key="textInputTraits" returnKeyType="route"/>
+                                                            <connections>
+                                                                <action selector="toTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="8qm-hG-xuO"/>
+                                                            </connections>
+                                                        </textField>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstItem="NMJ-bA-mSF" firstAttribute="centerY" secondItem="DRx-eM-TnE" secondAttribute="centerY" id="OJg-TG-Jnx"/>
+                                                        <constraint firstItem="NMJ-bA-mSF" firstAttribute="leading" secondItem="DRx-eM-TnE" secondAttribute="leading" constant="4" id="OO1-ON-jDi"/>
+                                                        <constraint firstItem="NMJ-bA-mSF" firstAttribute="top" secondItem="DRx-eM-TnE" secondAttribute="top" constant="4" id="PKj-dW-sbz"/>
+                                                        <constraint firstAttribute="trailing" secondItem="NMJ-bA-mSF" secondAttribute="trailing" constant="4" id="V43-NW-v5a"/>
+                                                        <constraint firstItem="NMJ-bA-mSF" firstAttribute="centerX" secondItem="DRx-eM-TnE" secondAttribute="centerX" id="V5L-8v-qip"/>
+                                                        <constraint firstAttribute="bottom" secondItem="NMJ-bA-mSF" secondAttribute="bottom" constant="4" id="WkF-Qb-rEH"/>
+                                                    </constraints>
+                                                </view>
+                                                <blurEffect style="light"/>
+                                            </visualEffectView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <constraints>
+                                            <constraint firstItem="pj6-cm-Tqi" firstAttribute="width" secondItem="FYk-7K-Ba8" secondAttribute="width" id="4Z7-in-umF"/>
+                                            <constraint firstItem="pj6-cm-Tqi" firstAttribute="centerX" secondItem="FYk-7K-Ba8" secondAttribute="centerX" id="ef2-g9-fw0"/>
+                                            <constraint firstItem="pj6-cm-Tqi" firstAttribute="height" secondItem="FYk-7K-Ba8" secondAttribute="height" id="f2W-7M-sDO"/>
+                                            <constraint firstItem="pj6-cm-Tqi" firstAttribute="centerY" secondItem="FYk-7K-Ba8" secondAttribute="centerY" id="sod-HX-H9o"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="8"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="Vxg-rI-H1p" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="L5M-pr-6tr"/>
+                            <constraint firstItem="Vxg-rI-H1p" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.8" id="bur-wj-4wz"/>
+                            <constraint firstItem="Vxg-rI-H1p" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" symbolic="YES" id="ii6-kW-IwU"/>
+                        </constraints>
                     </view>
                     <connections>
+                        <outlet property="fromTextField" destination="jlg-5m-h2o" id="TOq-zv-Zx3"/>
                         <outlet property="mapView" destination="8bC-Xf-vdC" id="x3T-1v-Chm"/>
+                        <outlet property="toTextField" destination="NMJ-bA-mSF" id="SxW-jL-P84"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="107.49625187406298"/>
         </scene>
     </scenes>
 </document>
