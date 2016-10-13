@@ -113,6 +113,7 @@
 		E2E5BAE51DAACF8300B3DC44 = {
 			isa = PBXGroup;
 			children = (
+				E2E5BAF81DAACF9600B3DC44 /* crime.json */,
 				E2E5BAF01DAACF8300B3DC44 /* CrimeDataProcessing */,
 				E2E5BAEF1DAACF8300B3DC44 /* Products */,
 				E2CAEE6B1DAF18D100D7390B /* SQLite.xcodeproj */,
@@ -131,7 +132,6 @@
 			isa = PBXGroup;
 			children = (
 				E2E5BAF11DAACF8300B3DC44 /* main.swift */,
-				E2E5BAF81DAACF9600B3DC44 /* crime.json */,
 			);
 			path = CrimeDataProcessing;
 			sourceTree = "<group>";
