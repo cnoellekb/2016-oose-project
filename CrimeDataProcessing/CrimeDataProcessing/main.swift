@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SQLite
 
 struct Crime: CustomStringConvertible {
     let date: Date
@@ -21,6 +22,23 @@ struct Crime: CustomStringConvertible {
 }
 
 do {
+    let db = try Connection("server.db")
+    let crimes = Table("crimes")
+    let dateCol = Expression<Int>("date")
+    let addressCol = Expression<String>("address")
+    let latitudeCol = Expression<Double>("latitude")
+    let longitudeCol = Expression<Double>("longitude")
+    let linkIdCol = Expression<Int>("linkId")
+    let typeCol = Expression<String>("type")
+    try db.run(crimes.create(ifNotExists: true) { t in
+        t.column(dateCol)
+        t.column(addressCol)
+        t.column(latitudeCol)
+        t.column(longitudeCol)
+        t.column(linkIdCol)
+        t.column(typeCol)
+    } )
+    
     let data = try Data(contentsOf: URL(fileURLWithPath: "crime.json"))
     guard let json = try JSONSerialization.jsonObject(with: data) as? [String: [[Any]]] else { fatalError() }
     
@@ -57,6 +75,8 @@ do {
             }
             guard let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return }
             guard let linkId = json["linkId"] as? Int else { return }
+            
+            _ = try? db.run(crimes.insert(dateCol <- Int(date.timeIntervalSince1970), addressCol <- address, latitudeCol <- latitude, longitudeCol <- longitude, linkIdCol <- linkId, typeCol <- type))
             
             print(Crime(date: date, address: address, location: (latitude, longitude), linkId: linkId, type: type))
         }.resume()

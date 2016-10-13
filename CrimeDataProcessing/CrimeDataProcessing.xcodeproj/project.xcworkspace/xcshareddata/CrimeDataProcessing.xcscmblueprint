@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "4B3F493A834E50B4D52A9BBE5760FED9655FC669",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "3AE8ED2E684071AF4FB151FA51BF266B82FF45BD" : 9223372036854775807,
+    "4B3F493A834E50B4D52A9BBE5760FED9655FC669" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "3FD2E7F1-388D-479A-AE74-C236F30EE812",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "3AE8ED2E684071AF4FB151FA51BF266B82FF45BD" : "2016-group-4\/CrimeDataProcessing\/SQLite\/",
+    "4B3F493A834E50B4D52A9BBE5760FED9655FC669" : "2016-group-4\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "CrimeDataProcessing",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "CrimeDataProcessing\/CrimeDataProcessing.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/stephencelis\/SQLite.swift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "3AE8ED2E684071AF4FB151FA51BF266B82FF45BD"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/jhu-oose\/2016-group-4.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4B3F493A834E50B4D52A9BBE5760FED9655FC669"
+    }
+  ]
+}
