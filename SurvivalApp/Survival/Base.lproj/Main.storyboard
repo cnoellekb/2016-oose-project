@@ -31,7 +31,7 @@
                                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="My Location" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="jlg-5m-h2o">
                                                             <nil key="textColor"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                                            <textInputTraits key="textInputTraits" returnKeyType="route"/>
+                                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="route"/>
                                                             <connections>
                                                                 <action selector="fromTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="gOh-dR-vdb"/>
                                                             </connections>
@@ -72,7 +72,7 @@
                                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="NMJ-bA-mSF">
                                                             <nil key="textColor"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                                            <textInputTraits key="textInputTraits" returnKeyType="route"/>
+                                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="route"/>
                                                             <connections>
                                                                 <action selector="toTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="8qm-hG-xuO"/>
                                                             </connections>

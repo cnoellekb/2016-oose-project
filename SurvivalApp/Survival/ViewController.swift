@@ -9,9 +9,10 @@
 import UIKit
 import Mapbox
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, MGLMapViewDelegate {
     @IBOutlet var mapView: MQMapView! {
         didSet {
+            mapView.delegate = self
             mapView.userTrackingMode = .follow
         }
     }
@@ -35,6 +36,8 @@ class ViewController: UIViewController {
             toTextField.leftViewMode = .always
         }
     }
+    
+    private weak var fastestRoute, safestRoute: MGLPolyline?
     
     @IBAction func fromTextFieldDone() {
         toTextField.becomeFirstResponder()
@@ -60,54 +63,28 @@ class ViewController: UIViewController {
             }
             from = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
         }
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "http"
-        urlComponents.host = "www.mapquestapi.com"
-        urlComponents.path = "/directions/v2/route"
-        urlComponents.queryItems = [
-            URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
-            URLQueryItem(name: "from", value: from),
-            URLQueryItem(name: "to", value: to),
-        ]
-        guard let url = urlComponents.url else { return }
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data,
-                    let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-                    let route = json["route"] as? [String: Any],
-                    let sessionID = route["sessionId"] as? String else {
-                print(error)
-                return
+        mapView.remove([safestRoute, fastestRoute].flatMap { $0 } )
+        Route.calculateRoute(from: from, to: to) {
+            var coordinates = $0
+            let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
+            self.fastestRoute = polyline
+            self.mapView.add(polyline)
+            self.mapView.showAnnotations([polyline], animated: true)
+            if let fromPoint = coordinates.first, let toPoint = coordinates.last {
+                Route.avoidLinkIds(from: fromPoint, to: toPoint) {
+                    Route.calculateRoute(from: from, to: to, mustAvoid: $0.red, tryAvoid: $0.yellow) { var coordinates = $0
+                        let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
+                        self.safestRoute = polyline
+                        self.mapView.add(polyline)
+                    }
+                }
             }
-            var urlComponents = URLComponents()
-            urlComponents.scheme = "http"
-            urlComponents.host = "www.mapquestapi.com"
-            urlComponents.path = "/directions/v2/routeshape"
-            urlComponents.queryItems = [
-                URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
-                URLQueryItem(name: "sessionId", value: sessionID),
-                URLQueryItem(name: "fullShape", value: "\(true)"),
-            ]
-            guard let url = urlComponents.url else { return }
-            URLSession.shared.dataTask(with: url) { data, _, error in
-                guard let data = data,
-                        let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-                        let route = json["route"] as? [String: Any],
-                        let shape = route["shape"] as? [String: Any],
-                        let shapePoints = shape["shapePoints"] as? [Double] else {
-                    print(error)
-                    return
-                }
-                var coordinates = [CLLocationCoordinate2D]()
-                coordinates.reserveCapacity(shapePoints.count / 2)
-                var i = shapePoints.makeIterator()
-                while let lat = i.next(), let lng = i.next() {
-                    coordinates.append(CLLocationCoordinate2D(latitude: lat, longitude: lng))
-                }
-                let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
-                DispatchQueue.main.async {
-                    self.mapView.add(polyline)
-                }
-            }.resume()
-        }.resume()
+        }
+    }
+    
+    func mapView(_ mapView: MGLMapView, strokeColorForShapeAnnotation annotation: MGLShape) -> UIColor {
+        if annotation == fastestRoute { return .red }
+        if annotation == safestRoute { return .green }
+        return .blue
     }
 }
