@@ -8,16 +8,23 @@
 
 import CoreLocation
 
-struct Route {
-    static func calculateRoute(from: String, to: String, mustAvoid: [Int] = [], tryAvoid: [Int] = [], completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
+class Route {
+    var from, to: Location
+    
+    init(from: Location, to: Location) {
+        self.from = from
+        self.to = to
+    }
+    
+    func calculateRoute(mustAvoid: [Int] = [], tryAvoid: [Int] = [], completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "http"
         urlComponents.host = "www.mapquestapi.com"
         urlComponents.path = "/directions/v2/route"
         urlComponents.queryItems = [
             URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
-            URLQueryItem(name: "from", value: from),
-            URLQueryItem(name: "to", value: to),
+            URLQueryItem(name: "from", value: "\(from)"),
+            URLQueryItem(name: "to", value: "\(to)"),
             URLQueryItem(name: "routeType", value: "pedestrian")
         ]
         if !mustAvoid.isEmpty {
@@ -39,7 +46,7 @@ struct Route {
                 print(error)
                 return
             }
-            routeShape(ofSessionID: sessionID, completion: completion)
+            Route.routeShape(ofSessionID: sessionID, completion: completion)
         }.resume()
         
     }
@@ -52,7 +59,7 @@ struct Route {
         urlComponents.queryItems = [
             URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
             URLQueryItem(name: "sessionId", value: id),
-            URLQueryItem(name: "fullShape", value: "\(true)"),
+            URLQueryItem(name: "fullShape", value: "\(true)")
         ]
         guard let url = urlComponents.url else { return }
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -98,5 +105,9 @@ struct Route {
             }
             completion(LinkIds(red: red, yellow: yellow))
         }.resume()
+    }
+    
+    struct LinkIds {
+        let red, yellow: [Int]
     }
 }

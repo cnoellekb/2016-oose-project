@@ -51,9 +51,9 @@ class ViewController: UIViewController, MGLMapViewDelegate {
             present(alert, animated: true)
             return
         }
-        let from: String
+        let from: Location
         if let text = fromTextField.text, !text.isEmpty {
-            from = text
+            from = .name(text)
         } else {
             guard let location = mapView.userLocation?.location else {
                 let alert = UIAlertController(title: "Please enter an origination", message: "Cannot get current location.", preferredStyle: .alert)
@@ -61,10 +61,10 @@ class ViewController: UIViewController, MGLMapViewDelegate {
                 present(alert, animated: true)
                 return
             }
-            from = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
+            from = .coordinate(location.coordinate)
         }
         mapView.remove([safestRoute, fastestRoute].flatMap { $0 } )
-        Route.calculateRoute(from: from, to: to) {
+        Route(from: from, to: .name(to)).calculateRoute {
             var coordinates = $0
             let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
             self.fastestRoute = polyline
@@ -72,7 +72,7 @@ class ViewController: UIViewController, MGLMapViewDelegate {
             self.mapView.showAnnotations([polyline], animated: true)
             if let fromPoint = coordinates.first, let toPoint = coordinates.last {
                 Route.avoidLinkIds(from: fromPoint, to: toPoint) {
-                    Route.calculateRoute(from: from, to: to, mustAvoid: $0.red, tryAvoid: $0.yellow) { var coordinates = $0
+                    Route(from: from, to: .name(to)).calculateRoute(mustAvoid: $0.red, tryAvoid: $0.yellow) { var coordinates = $0
                         let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
                         self.safestRoute = polyline
                         self.mapView.add(polyline)

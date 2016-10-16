@@ -2,15 +2,15 @@ package com.oose2016.group4.server;
 
 public class Coordinate {
 	private double latitude, longitude;
-	
+
 	public double getLatitude() {
 		return latitude;
 	}
-	
+
 	public double getLongitude() {
 		return longitude;
 	}
-	
+
 	public Coordinate(double latitude, double longitude) throws Exception {
 		if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
 			throw new Exception("Not valid coordinate");
@@ -18,7 +18,7 @@ public class Coordinate {
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
-	
+
 	public static void sortAndExpand(Coordinate a, Coordinate b) {
 		if (a.latitude < b.latitude) {
 			a.latitude -= 0.01;

@@ -18,7 +18,7 @@
 		E25887901DA5797400F251C9 /* SurvivalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258878F1DA5797400F251C9 /* SurvivalTests.swift */; };
 		E258879B1DA5797400F251C9 /* SurvivalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258879A1DA5797400F251C9 /* SurvivalUITests.swift */; };
 		E2CAEE881DB00E5300D7390B /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CAEE871DB00E5300D7390B /* Route.swift */; };
-		E2CAEE8A1DB011F400D7390B /* LinkIds.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CAEE891DB011F400D7390B /* LinkIds.swift */; };
+		E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E65EBE1DB2FA9B00F427DF /* Location.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,7 +61,7 @@
 		E258879A1DA5797400F251C9 /* SurvivalUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurvivalUITests.swift; sourceTree = "<group>"; };
 		E258879C1DA5797400F251C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E2CAEE871DB00E5300D7390B /* Route.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
-		E2CAEE891DB011F400D7390B /* LinkIds.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinkIds.swift; sourceTree = "<group>"; };
+		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		FC437D3F012CF7B681A5263E /* Pods-SurvivalTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -144,7 +144,7 @@
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
 				E2CAEE871DB00E5300D7390B /* Route.swift */,
-				E2CAEE891DB011F400D7390B /* LinkIds.swift */,
+				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
 				E258877E1DA5797400F251C9 /* Main.storyboard */,
 				E25887811DA5797400F251C9 /* Assets.xcassets */,
 				E25887831DA5797400F251C9 /* LaunchScreen.storyboard */,
@@ -441,7 +441,7 @@
 			files = (
 				E2CAEE881DB00E5300D7390B /* Route.swift in Sources */,
 				E258877D1DA5797400F251C9 /* ViewController.swift in Sources */,
-				E2CAEE8A1DB011F400D7390B /* LinkIds.swift in Sources */,
+				E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */,
 				E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
