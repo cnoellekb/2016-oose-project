@@ -1,9 +1,9 @@
 2016 Group 4
 ============
 
-Survival App
+Survival Maps App
 ------------
-[Survival App](https://github.com/jhu-oose/2016-group-4/tree/master/SurvivalApp) is a navigation app which avoids dangerous routes.
+[Survival Maps App](https://github.com/jhu-oose/2016-group-4/tree/master/SurvivalApp) is a navigation app which avoids dangerous routes.
 
 Server
 ------
