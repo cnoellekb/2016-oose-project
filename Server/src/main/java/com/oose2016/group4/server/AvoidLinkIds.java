@@ -1,6 +1,9 @@
 package com.oose2016.group4.server;
 
-public class LinkIds {
+/**
+ * LinkIds to avoid
+ */
+public class AvoidLinkIds {
 	public static class LinkId {
 		private int linkId, count;
 
@@ -16,7 +19,7 @@ public class LinkIds {
 	@SuppressWarnings("unused")
 	private int[] red, yellow;
 
-	public LinkIds(int[] red, int[] yellow) {
+	public AvoidLinkIds(int[] red, int[] yellow) {
 		this.red = red;
 		this.yellow = yellow;
 	}

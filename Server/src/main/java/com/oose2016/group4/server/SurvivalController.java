@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Setup the web server and handle all requests & responses.
+ * Setup the web server and handle all requests and responses.
  */
 public class SurvivalController {
 	private static final String API_CONTEXT = "/v1";

@@ -16,7 +16,7 @@ import java.net.HttpURLConnection;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-public class TestDotsServer {
+public class TestServer {
 	// ------------------------------------------------------------------------//
 	// Setup
 	// ------------------------------------------------------------------------//
