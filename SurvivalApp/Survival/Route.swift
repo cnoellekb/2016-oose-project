@@ -48,7 +48,6 @@ class Route {
             }
             Route.routeShape(ofSessionID: sessionID, completion: completion)
         }.resume()
-        
     }
     
     private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {

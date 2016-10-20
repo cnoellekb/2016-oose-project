@@ -31,6 +31,11 @@ class SurvivalUITests: XCTestCase {
     func testExample() {
         // Use recording to get started writing UI tests.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+        let app = XCUIApplication()
+        let myLocationTextField = app.textFields["My Location"]
+        myLocationTextField.tap()
+        myLocationTextField.typeText("college park\r")
+        app.textFields.containing(.staticText, identifier:"To: ").element.typeText("chillum\r")
     }
     
 }
