@@ -45,6 +45,18 @@ public class TestServer {
 		MockitoAnnotations.initMocks(this);
 
 	}
+	
+	
+	@After
+	public void tearDown() {
+		// Stop the server
+		clearDB();
+		Spark.stop();
+	}
+
+	// ------------------------------------------------------------------------//
+	// Tests
+	// ------------------------------------------------------------------------//
 
 	@Test
 	public void testGetLatLong() throws Exception {
@@ -92,9 +104,21 @@ public class TestServer {
 		assertEquals(1.11608, c8.getLongitude(), 0.01);
 	}
 
-	/*
 	@Test
 	public void testFetchLinkIds() throws Exception {
+		SurvivalService s = new SurvivalService(dSource);
+		
+		Coordinate from = new Coordinate(38.987194, -76.945999);
+		Coordinate to = new Coordinate(39.004611, -76.875671);
+		int[] red = s.getAvoidLinkIds(from, to).getRed();
+		int[] yellow = s.getAvoidLinkIds(from, to).getYellow();
+		
+		int[] redTarget = {39503765,39571806,39572844,39664759};
+		int[] yellowTarget = {39303826,39330884,39370877,39484084,39530425,39643466,39643812,39646304,39651557,39659946,39667437};
+		assertTrue(red.equals(redTarget));
+		assertTrue(yellow.equals(yellowTarget));
+		
+		/*
 		String predicate = "count > 2";
 		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
 				+ "latitude >= :fromLat AND latitude <= :toLat AND "
@@ -126,30 +150,17 @@ public class TestServer {
 		SurvivalService s = new SurvivalService(dSource); 
 		Sql2o database = s.getDb(); 
 		
-		s.getAvoidLinkIds(Coordinate from, Coordinate to)
-		s.fetchLinkIds(connection, from, to, "count > 2");
-	} */
-	
-	
-	@After
-	public void tearDown() {
-		// Stop the server
-		clearDB();
-		Spark.stop();
-	}
+		s.getAvoidLinkIds(from, to); */
+		//s.fetchLinkIds(connection, from, to, "count > 2");
+	} 
 
-	// ------------------------------------------------------------------------//
-	// Tests
-	// ------------------------------------------------------------------------//
 	@Test
-	public void test() throws Exception {
-		TestServer t = new TestServer();
-		t.setup();
-		t.testGetLatLong();
-		t.testSortAndExpand();
-		t.tearDown();
+	public void testSetupEndpoints() {
+		SurvivalService s = new SurvivalService(dSource);
+		SurvivalController controller = new SurvivalController(s);
+		
 	}
-
+	
 	// ------------------------------------------------------------------------//
 	// Generic Helper Methods and classes
 	// ------------------------------------------------------------------------//
