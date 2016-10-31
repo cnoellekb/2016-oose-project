@@ -43,7 +43,6 @@ class Route {
                     let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
                     let route = json["route"] as? [String: Any],
                     let sessionID = route["sessionId"] as? String else {
-                print(error)
                 return
             }
             Route.routeShape(ofSessionID: sessionID, completion: completion)
@@ -67,7 +66,6 @@ class Route {
                     let route = json["route"] as? [String: Any],
                     let shape = route["shape"] as? [String: Any],
                     let shapePoints = shape["shapePoints"] as? [Double] else {
-                print(error)
                 return
             }
             var coordinates = [CLLocationCoordinate2D]()
@@ -99,7 +97,6 @@ class Route {
             guard let data = data,
                     let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: [Int]],
                     let red = json["red"], let yellow = json["yellow"] else {
-                print(error)
                 return
             }
             completion(LinkIds(red: red, yellow: yellow))

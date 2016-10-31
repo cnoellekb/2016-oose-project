@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import Survival
 
 class SurvivalTests: XCTestCase {
@@ -21,14 +22,23 @@ class SurvivalTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testAvoidLinkIds() {
+        let semaphore = DispatchSemaphore(value: 0)
+        var linkIds: Route.LinkIds?
+        Route.avoidLinkIds(from: CLLocationCoordinate2D(latitude: 38.987194, longitude: -76.945999), to: CLLocationCoordinate2D(latitude: 39.004611, longitude: -76.875671)) {
+            linkIds = $0
+            semaphore.signal()
+        }
+        semaphore.wait()
+        let red = Set(linkIds!.red)
+        let yellow = Set(linkIds!.yellow)
+        XCTAssertEqual(red, [39503765,39571806,39572844,39664759])
+        XCTAssertEqual(yellow, [39303826,39370877,39484084,39530425,39643466,39643812,39646304,39651557,39659946,39667437])
     }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
-        self.measure {
+        measure {
             // Put the code you want to measure the time of here.
         }
     }
