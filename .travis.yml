@@ -1,6 +1,11 @@
-before_script: cd Server
-language: java
-jdk:
- - oraclejdk8
+language: objective-c
+osx_image: xcode8
+
+branches:
+ only:
+ - master
+
+script: sh build.sh
+
 notifications:
  email: false
