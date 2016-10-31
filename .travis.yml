@@ -1,6 +1,16 @@
-before_script: cd Server
-language: java
-jdk:
- - oraclejdk8
+osx_image: xcode8
+
+branches:
+ only:
+ - master
+
+script:
+ cd Server &&
+ mvn package &&
+ mvn exec:java -Dexec.mainClass="com.oose2016.group4.server.Bootstrap" &
+ cd ../SurvivalApp &&
+ pod install &&
+ xcodebuild test -workspace Survival.xcworkspace -scheme Survival -destination 'platform=iOS Simulator,name=iPhone 7'
+
 notifications:
  email: false
