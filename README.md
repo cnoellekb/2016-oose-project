@@ -1,5 +1,6 @@
 2016 Group 4
 ============
+[![Build Status](https://travis-ci.com/jhu-oose/2016-group-4.svg?token=Tf3c7Gfbp6sM6spBqpry&branch=master)](https://travis-ci.com/jhu-oose/2016-group-4)
 
 Survival Maps App
 ------------
