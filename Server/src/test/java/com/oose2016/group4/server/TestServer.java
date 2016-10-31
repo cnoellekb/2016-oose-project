@@ -126,10 +126,10 @@ public class TestServer {
 		SurvivalService s = new SurvivalService(dSource); 
 		Sql2o database = s.getDb(); 
 		
-		
+		s.getAvoidLinkIds(Coordinate from, Coordinate to)
 		s.fetchLinkIds(connection, from, to, "count > 2");
-	} 
-	*/
+	} */
+	
 	
 	@After
 	public void tearDown() {
