@@ -22,6 +22,9 @@ public class SurvivalService {
 		db = new Sql2o(dataSource);
 	}
 
+	public Sql2o getDb() {
+		return db;
+	}
 	/**
 	 * Get linkIds to avoid
 	 * @param from top left coordinate

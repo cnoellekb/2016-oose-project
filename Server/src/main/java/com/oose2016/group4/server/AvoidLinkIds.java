@@ -14,6 +14,10 @@ public class AvoidLinkIds {
 		public int getCount() {
 			return count;
 		}
+		
+		public void setLinkId(int id) {
+			linkId = id;
+		}
 	}
 
 	@SuppressWarnings("unused")

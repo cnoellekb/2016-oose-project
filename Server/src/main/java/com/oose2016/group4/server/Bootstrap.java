@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Bootstrap {
-	public static final String IP_ADDRESS = "0.0.0.0";
+	public static final String IP_ADDRESS = "10.189.45.247"; //"0.0.0.0";
 	public static final int PORT = 8080;
 
 	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
