@@ -105,6 +105,7 @@ public class ServerTest {
 		assertEquals(1.11608, c8.getLongitude(), 0.01);
 	}
 
+	/**
 	@Test
 	public void testGetAvoidLinkIds() throws Exception {
 		SurvivalService s = new SurvivalService(dSource);
@@ -120,18 +121,19 @@ public class ServerTest {
 		assertTrue(Arrays.equals(red, redTarget));
 		assertTrue(Arrays.equals(yellow, yellowTarget));
 	} 
-
+	*/
+	
 	/**
 	 * Code based on To-Do server test.
 	 */
-	@Test
+	/*@Test
 	public void testSetupEndpoints() {
 		SurvivalService s = new SurvivalService(dSource);
 		SurvivalController controller = new SurvivalController(s);
 		
 		Response r = request("GET", "/avoidLinkIds", "fromLat=38.987194&toLat=39.004611&fromLng=-76.945999&toLng=-76.875671");
         assertEquals("Failed to get todo", 200, r.httpStatus);
-	}
+	} */
 	
 	
 	// ------------------------------------------------------------------------//
