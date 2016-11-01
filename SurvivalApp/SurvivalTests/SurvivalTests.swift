@@ -6,9 +6,9 @@
 //  Copyright © 2016年 Johns Hopkins University. All rights reserved.
 //
 
+@testable import Survival
 import XCTest
 import CoreLocation
-@testable import Survival
 
 class SurvivalTests: XCTestCase {
     
@@ -24,8 +24,8 @@ class SurvivalTests: XCTestCase {
     
     func testAvoidLinkIds() {
         let semaphore = DispatchSemaphore(value: 0)
-        var linkIds: Route.LinkIds?
-        Route.avoidLinkIds(from: CLLocationCoordinate2D(latitude: 38.987194, longitude: -76.945999), to: CLLocationCoordinate2D(latitude: 39.004611, longitude: -76.875671)) {
+        var linkIds: AvoidLinkIds?
+        RoutingState.avoidLinkIds(from: CLLocationCoordinate2D(latitude: 38.987194, longitude: -76.945999), to: CLLocationCoordinate2D(latitude: 39.004611, longitude: -76.875671)) {
             linkIds = $0
             semaphore.signal()
         }

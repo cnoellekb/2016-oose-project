@@ -9,7 +9,7 @@
 import UIKit
 import Mapbox
 
-class ViewController: UIViewController, MGLMapViewDelegate {
+class ViewController: UIViewController, MGLMapViewDelegate, StateDelegate {
     @IBOutlet var mapView: MQMapView! {
         didSet {
             mapView.delegate = self
@@ -37,7 +37,16 @@ class ViewController: UIViewController, MGLMapViewDelegate {
         }
     }
     
-    private weak var fastestRoute, safestRoute: MGLPolyline?
+    private var state: State? {
+        didSet {
+            state?.delegate = self
+        }
+    }
+    
+    func didGenerateAnnotation(annotation: MGLAnnotation) {
+        mapView.addAnnotation(annotation)
+        mapView.showAnnotations(state!.annotations, animated: true)
+    }
     
     @IBAction func fromTextFieldDone() {
         toTextField.becomeFirstResponder()
@@ -63,28 +72,16 @@ class ViewController: UIViewController, MGLMapViewDelegate {
             }
             from = .coordinate(location.coordinate)
         }
-        mapView.remove([safestRoute, fastestRoute].flatMap { $0 } )
-        Route(from: from, to: .name(to)).calculateRoute {
-            var coordinates = $0
-            let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
-            self.fastestRoute = polyline
-            self.mapView.add(polyline)
-            self.mapView.showAnnotations([polyline], animated: true)
-            if let fromPoint = coordinates.first, let toPoint = coordinates.last {
-                Route.avoidLinkIds(from: fromPoint, to: toPoint) {
-                    Route(from: from, to: .name(to)).calculateRoute(mustAvoid: $0.red, tryAvoid: $0.yellow) { var coordinates = $0
-                        let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
-                        self.safestRoute = polyline
-                        self.mapView.add(polyline)
-                    }
-                }
-            }
+        if let annotations = state?.annotations {
+            mapView.removeAnnotations(annotations)
         }
+        state = RoutingState(from: from, to: .name(to))
     }
     
     func mapView(_ mapView: MGLMapView, strokeColorForShapeAnnotation annotation: MGLShape) -> UIColor {
-        if annotation == fastestRoute { return .red }
-        if annotation == safestRoute { return .green }
+        if let state = state, let color = state.strokeColor(for: annotation) {
+            return color
+        }
         return .blue
     }
 }

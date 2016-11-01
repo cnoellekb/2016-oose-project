@@ -10,6 +10,8 @@
 		84399A84F1AF9A5ADCC279AD /* Pods_Survival.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E956EA72BC9A0D70F0617C3 /* Pods_Survival.framework */; };
 		9C06AD4F659946D055E422A6 /* Pods_SurvivalTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CA8498FE850B62B02C2EB33 /* Pods_SurvivalTests.framework */; };
 		AE93C1754B32F6FBB4013606 /* Pods_SurvivalUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67FF6C09EC960422D98257B1 /* Pods_SurvivalUITests.framework */; };
+		E252293C1DC84AA10073BBC8 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293B1DC84AA10073BBC8 /* State.swift */; };
+		E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293D1DC84AC60073BBC8 /* RoutingState.swift */; };
 		E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258877A1DA5797400F251C9 /* AppDelegate.swift */; };
 		E258877D1DA5797400F251C9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258877C1DA5797400F251C9 /* ViewController.swift */; };
 		E25887801DA5797400F251C9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E258877E1DA5797400F251C9 /* Main.storyboard */; };
@@ -47,6 +49,8 @@
 		9A31F2B9525CF5372CF310CA /* Pods-Survival.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Survival.release.xcconfig"; path = "Pods/Target Support Files/Pods-Survival/Pods-Survival.release.xcconfig"; sourceTree = "<group>"; };
 		9CA8498FE850B62B02C2EB33 /* Pods_SurvivalTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SurvivalTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBE6A8D870B85555C7D81520 /* Pods-SurvivalTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests.debug.xcconfig"; sourceTree = "<group>"; };
+		E252293B1DC84AA10073BBC8 /* State.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
+		E252293D1DC84AC60073BBC8 /* RoutingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingState.swift; sourceTree = "<group>"; };
 		E25887771DA5797400F251C9 /* Survival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Survival.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E258877A1DA5797400F251C9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E258877C1DA5797400F251C9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -143,6 +147,8 @@
 			children = (
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
+				E252293B1DC84AA10073BBC8 /* State.swift */,
+				E252293D1DC84AC60073BBC8 /* RoutingState.swift */,
 				E2CAEE871DB00E5300D7390B /* Route.swift */,
 				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
 				E258877E1DA5797400F251C9 /* Main.storyboard */,
@@ -455,9 +461,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */,
 				E2CAEE881DB00E5300D7390B /* Route.swift in Sources */,
 				E258877D1DA5797400F251C9 /* ViewController.swift in Sources */,
 				E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */,
+				E252293C1DC84AA10073BBC8 /* State.swift in Sources */,
 				E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
