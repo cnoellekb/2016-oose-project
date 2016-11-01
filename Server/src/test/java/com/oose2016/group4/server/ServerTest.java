@@ -24,8 +24,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.*;
+import org.testng.annotations.Test;
 
-public class TestServer {
+public class ServerTest {
 	SQLiteDataSource dSource;
 	// ------------------------------------------------------------------------//
 	// Setup - based on To-Do server unit tests.
