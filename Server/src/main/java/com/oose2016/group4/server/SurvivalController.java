@@ -35,6 +35,7 @@ public class SurvivalController {
 				Coordinate from = new Coordinate(fromLat, fromLng);
 				Coordinate to = new Coordinate(toLat, toLng);
 				Coordinate.sortAndExpand(from, to);
+				response.status(200);
 				return survivalService.getAvoidLinkIds(from, to);
 			} catch (Exception e) {
 				logger.info("Invalid request", e);

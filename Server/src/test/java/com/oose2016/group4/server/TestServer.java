@@ -1,6 +1,8 @@
 package com.oose2016.group4.server;
 
 import com.google.gson.Gson;
+//import com.todoapp.Todo;
+//import com.todoapp.TestTodoServer.Response;
 
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -14,13 +16,11 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.HttpURLConnection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.junit.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.*;
@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class TestServer {
 	SQLiteDataSource dSource;
 	// ------------------------------------------------------------------------//
-	// Setup
+	// Setup - based on To-Do server unit tests.
 	// ------------------------------------------------------------------------//
 	@InjectMocks private MockConnection mockConnection;
 	@Mock private Connection connection;
@@ -105,7 +105,7 @@ public class TestServer {
 	}
 
 	@Test
-	public void testFetchLinkIds() throws Exception {
+	public void testGetAvoidLinkIds() throws Exception {
 		SurvivalService s = new SurvivalService(dSource);
 		
 		Coordinate from = new Coordinate(38.987194, -76.945999);
@@ -113,53 +113,25 @@ public class TestServer {
 		int[] red = s.getAvoidLinkIds(from, to).getRed();
 		int[] yellow = s.getAvoidLinkIds(from, to).getYellow();
 		
-		int[] redTarget = {39503765,39571806,39572844,39664759};
-		int[] yellowTarget = {39303826,39330884,39370877,39484084,39530425,39643466,39643812,39646304,39651557,39659946,39667437};
-		assertTrue(red.equals(redTarget));
-		assertTrue(yellow.equals(yellowTarget));
-		
-		/*
-		String predicate = "count > 2";
-		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
-				+ "latitude >= :fromLat AND latitude <= :toLat AND "
-				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate;
-		
-		Coordinate from = new Coordinate(0.5, 0.7);
-		Coordinate to = new Coordinate(0.9, 1.1);
+		int[] redTarget = {39664759};
+		int[] yellowTarget = {39303826, 39484084, 39643466, 39643812, 39651557, 39659946}; 
 
-		//int[] red = {};
-		//int[] yellow = {};
-		//AvoidLinkIds outerObject = new AvoidLinkIds(red, yellow);
-		AvoidLinkIds.LinkId innerObject1 = new AvoidLinkIds.LinkId();
-		innerObject1.setLinkId(1);
-		AvoidLinkIds.LinkId innerObject2 = new AvoidLinkIds.LinkId();
-		innerObject2.setLinkId(2);
-		AvoidLinkIds.LinkId innerObject3 = new AvoidLinkIds.LinkId();
-		innerObject3.setLinkId(3);
-
-		List<AvoidLinkIds.LinkId> list= new LinkedList<>();
-		list.add(innerObject1);
-		list.add(innerObject2);
-		list.add(innerObject3);
-		
-		Mockito.when(connection.createQuery(sql).addParameter("fromLat", from.getLatitude())
-				.addParameter("toLat", to.getLatitude()).addParameter("fromLng", from.getLongitude())
-				.addParameter("toLng", to.getLongitude()).executeAndFetch(AvoidLinkIds.LinkId.class))
-				.thenReturn(list);
-		
-		SurvivalService s = new SurvivalService(dSource); 
-		Sql2o database = s.getDb(); 
-		
-		s.getAvoidLinkIds(from, to); */
-		//s.fetchLinkIds(connection, from, to, "count > 2");
+		assertTrue(Arrays.equals(red, redTarget));
+		assertTrue(Arrays.equals(yellow, yellowTarget));
 	} 
 
+	/**
+	 * Code based on To-Do server test.
+	 */
 	@Test
 	public void testSetupEndpoints() {
 		SurvivalService s = new SurvivalService(dSource);
 		SurvivalController controller = new SurvivalController(s);
 		
+		Response r = request("GET", "/avoidLinkIds", "fromLat=38.987194&toLat=39.004611&fromLng=-76.945999&toLng=-76.875671");
+        assertEquals("Failed to get todo", 200, r.httpStatus);
 	}
+	
 	
 	// ------------------------------------------------------------------------//
 	// Generic Helper Methods and classes
@@ -214,7 +186,7 @@ public class TestServer {
 	// ------------------------------------------------------------------------//
 	private SQLiteDataSource clearDB() {
 		SQLiteDataSource dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:dots.db");
+		dataSource.setUrl("jdbc:sqlite:server.db"); //dots.db
 
 		Sql2o db = new Sql2o(dataSource);
 

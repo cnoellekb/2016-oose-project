@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
+import org.sql2o.Query;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 
@@ -56,9 +57,11 @@ public class SurvivalService {
 		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
 				+ "latitude >= :fromLat AND latitude <= :toLat AND "
 				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate;
-		List<AvoidLinkIds.LinkId> results = conn.createQuery(sql).addParameter("fromLat", from.getLatitude())
+		Query abc = conn.createQuery(sql);
+		abc = abc.addParameter("fromLat", from.getLatitude())
 				.addParameter("toLat", to.getLatitude()).addParameter("fromLng", from.getLongitude())
-				.addParameter("toLng", to.getLongitude()).executeAndFetch(AvoidLinkIds.LinkId.class);
+				.addParameter("toLng", to.getLongitude());
+		List<AvoidLinkIds.LinkId> results =  abc.executeAndFetch(AvoidLinkIds.LinkId.class);
 		int size = results.size();
 		int[] linkIds = new int[size];
 		for (int i = 0; i < size; i++) {
