@@ -19,10 +19,6 @@ import java.net.HttpURLConnection;
 import java.util.Arrays;
 
 import org.junit.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import static org.junit.Assert.*;
 import org.testng.annotations.Test;
 
@@ -31,8 +27,6 @@ public class ServerTest {
 	// ------------------------------------------------------------------------//
 	// Setup - based on To-Do server unit tests.
 	// ------------------------------------------------------------------------//
-	@InjectMocks private MockConnection mockConnection;
-	@Mock private Connection connection;
 
 	
 	@Before
@@ -43,8 +37,6 @@ public class ServerTest {
 		// Start the main server
 		Bootstrap.main(null);
 		Spark.awaitInitialization();
-		MockitoAnnotations.initMocks(this);
-
 	}
 	
 	
