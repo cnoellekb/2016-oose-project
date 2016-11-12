@@ -26,6 +26,9 @@ public class SurvivalController {
 	 * Setup handlers for all request paths.
 	 */
 	private void setupEndpoints() {
+		/**
+		 * Retrieve linkIDs to Avoid
+		 */
 		get(API_CONTEXT + "/avoidLinkIds", "application/json", (request, response) -> {
 			try {
 				double fromLat = Double.parseDouble(request.queryParams("fromLat"));
@@ -43,5 +46,23 @@ public class SurvivalController {
 				return Collections.EMPTY_MAP;
 			}
 		}, new JsonTransformer());
+		
+		/**
+		 * Display Heat Map.
+		 */
+		get(API_CONTEXT + "/heatmap", "application/json", (request, response) -> {
+			try {
+				double lat = Double.parseDouble(request.queryParams("lat"));
+				double lng = Double.parseDouble(request.queryParams("lng"));
+				double zoom = Double.parseDouble(request.queryParams("zoom"));
+				//generate PNG overlay
+				return Collections.EMPTY_MAP;
+			} catch (Exception e) {
+				logger.info("Invalid request", e);
+				response.status(400);
+				return Collections.EMPTY_MAP;
+			}
+		}, new JsonTransformer());
+		
 	}
 }

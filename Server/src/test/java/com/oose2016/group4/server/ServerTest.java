@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 //import com.todoapp.Todo;
 //import com.todoapp.TestTodoServer.Response;
 
+
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 import org.sqlite.SQLiteDataSource;
@@ -17,12 +18,16 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.*;
+
 import static org.junit.Assert.*;
-import org.testng.annotations.Test;
+
+//import org.testng.annotations.Test;
 
 public class ServerTest {
+	
 	SQLiteDataSource dSource;
 	// ------------------------------------------------------------------------//
 	// Setup - based on To-Do server unit tests.
@@ -97,7 +102,6 @@ public class ServerTest {
 		assertEquals(1.11608, c8.getLongitude(), 0.01);
 	}
 
-	/**
 	@Test
 	public void testGetAvoidLinkIds() throws Exception {
 		SurvivalService s = new SurvivalService(dSource);
@@ -113,7 +117,6 @@ public class ServerTest {
 		assertTrue(Arrays.equals(red, redTarget));
 		assertTrue(Arrays.equals(yellow, yellowTarget));
 	} 
-	*/
 	
 	/**
 	 * Code based on To-Do server test.
