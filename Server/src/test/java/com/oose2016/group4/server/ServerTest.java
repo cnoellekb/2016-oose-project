@@ -18,13 +18,12 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.junit.*;
 
 import static org.junit.Assert.*;
 
-//import org.testng.annotations.Test;
+import org.testng.annotations.Test;
 
 public class ServerTest {
 	
