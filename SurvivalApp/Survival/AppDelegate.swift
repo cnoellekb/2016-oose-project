@@ -8,6 +8,14 @@
 
 import UIKit
 
+let server: URLComponents = {
+    var urlComponents = URLComponents()
+    urlComponents.scheme = "http"
+    urlComponents.host = "127.0.0.1"
+    urlComponents.port = 8080
+    return urlComponents
+}()
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 

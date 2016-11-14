@@ -6,20 +6,20 @@
 //  Copyright © 2016年 Johns Hopkins University. All rights reserved.
 //
 
-import Mapbox
+import MapKit
 
 class RoutingState: State {
     weak var delegate: StateDelegate?
     
     private var routes = [Route]()
-    private var routeForPolyline = [MGLPolyline: Route]()
+    private var routeForPolyline = [MKPolyline: Route]()
     
-    var annotations: [MGLAnnotation] {
+    var annotations: [MKAnnotation] {
         return Array(routeForPolyline.keys)
     }
     
-    func strokeColor(for annotation: MGLAnnotation) -> UIColor? {
-        if let polyline = annotation as? MGLPolyline,
+    func strokeColor(for annotation: MKAnnotation) -> UIColor? {
+        if let polyline = annotation as? MKPolyline,
                 let route = routeForPolyline[polyline] {
             return route.color
         }
@@ -27,10 +27,7 @@ class RoutingState: State {
     }
     
     static func avoidLinkIds(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, completion: @escaping (AvoidLinkIds) -> ()) {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "http"
-        urlComponents.host = "127.0.0.1"
-        urlComponents.port = 8080
+        var urlComponents = server
         urlComponents.path = "/v1/avoidLinkIds"
         urlComponents.queryItems = [
             URLQueryItem(name: "fromLat", value: "\(from.latitude)"),
@@ -54,26 +51,26 @@ class RoutingState: State {
         routes.append(route)
         route.calculateRoute {
             var coordinates = $0
-            let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
+            let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
             self.routeForPolyline[polyline] = route
-            self.delegate?.didGenerateAnnotation(annotation: polyline)
+            self.delegate?.didGenerateAnnotation(polyline)
             if let fromPoint = coordinates.first, let toPoint = coordinates.last {
                 RoutingState.avoidLinkIds(from: fromPoint, to: toPoint) {
                     let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
                     self.routes.append(middleRoute)
                     middleRoute.calculateRoute {
                         var coordinates = $0
-                        let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
+                        let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                         self.routeForPolyline[polyline] = middleRoute
-                        self.delegate?.didGenerateAnnotation(annotation: polyline)
+                        self.delegate?.didGenerateAnnotation(polyline)
                     }
                     let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
                     self.routes.append(safestRoute)
                     safestRoute.calculateRoute {
                         var coordinates = $0
-                        let polyline = MGLPolyline(coordinates: &coordinates, count: UInt(coordinates.count))
+                        let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                         self.routeForPolyline[polyline] = safestRoute
-                        self.delegate?.didGenerateAnnotation(annotation: polyline)
+                        self.delegate?.didGenerateAnnotation(polyline)
                     }
                 }
             }

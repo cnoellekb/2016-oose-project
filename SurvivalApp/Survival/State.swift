@@ -6,14 +6,14 @@
 //  Copyright © 2016年 Johns Hopkins University. All rights reserved.
 //
 
-import Mapbox
+import MapKit
 
 protocol StateDelegate: class {
-    func didGenerateAnnotation(annotation: MGLAnnotation)
+    func didGenerateAnnotation(_ annotation: MKAnnotation)
 }
 
 protocol State {
     weak var delegate: StateDelegate? { get set }
-    var annotations: [MGLAnnotation] { get }
-    func strokeColor(for annotation: MGLAnnotation) -> UIColor?
+    var annotations: [MKAnnotation] { get }
+    func strokeColor(for annotation: MKAnnotation) -> UIColor?
 }

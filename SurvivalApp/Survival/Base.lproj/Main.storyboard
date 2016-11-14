@@ -18,10 +18,13 @@
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="MQMapView">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="39t-AG-1vb">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            </mapView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Vxg-rI-H1p">
                                 <rect key="frame" x="37.5" y="28" width="300" height="108"/>
                                 <subviews>
@@ -118,14 +121,18 @@
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="39t-AG-1vb" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="51j-ia-Pdo"/>
+                            <constraint firstItem="39t-AG-1vb" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="Ehd-4g-ozZ"/>
                             <constraint firstItem="Vxg-rI-H1p" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="L5M-pr-6tr"/>
+                            <constraint firstItem="39t-AG-1vb" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Ocw-TL-3Uf"/>
                             <constraint firstItem="Vxg-rI-H1p" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.8" id="bur-wj-4wz"/>
                             <constraint firstItem="Vxg-rI-H1p" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" symbolic="YES" id="ii6-kW-IwU"/>
+                            <constraint firstItem="39t-AG-1vb" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="zaB-vg-j0c"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="fromTextField" destination="jlg-5m-h2o" id="TOq-zv-Zx3"/>
-                        <outlet property="mapView" destination="8bC-Xf-vdC" id="x3T-1v-Chm"/>
+                        <outlet property="mapView" destination="39t-AG-1vb" id="BEY-Dr-Lye"/>
                         <outlet property="toTextField" destination="NMJ-bA-mSF" id="SxW-jL-P84"/>
                     </connections>
                 </viewController>

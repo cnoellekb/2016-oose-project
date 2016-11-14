@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		84399A84F1AF9A5ADCC279AD /* Pods_Survival.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E956EA72BC9A0D70F0617C3 /* Pods_Survival.framework */; };
-		9C06AD4F659946D055E422A6 /* Pods_SurvivalTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CA8498FE850B62B02C2EB33 /* Pods_SurvivalTests.framework */; };
-		AE93C1754B32F6FBB4013606 /* Pods_SurvivalUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67FF6C09EC960422D98257B1 /* Pods_SurvivalUITests.framework */; };
 		E252293C1DC84AA10073BBC8 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293B1DC84AA10073BBC8 /* State.swift */; };
 		E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293D1DC84AC60073BBC8 /* RoutingState.swift */; };
 		E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258877A1DA5797400F251C9 /* AppDelegate.swift */; };
@@ -68,33 +65,6 @@
 		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		FC437D3F012CF7B681A5263E /* Pods-SurvivalTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		E25887741DA5797400F251C9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				84399A84F1AF9A5ADCC279AD /* Pods_Survival.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E25887881DA5797400F251C9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9C06AD4F659946D055E422A6 /* Pods_SurvivalTests.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E25887931DA5797400F251C9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AE93C1754B32F6FBB4013606 /* Pods_SurvivalUITests.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		3D6F55BC877A576DE700D8B8 /* Frameworks */ = {
@@ -184,12 +154,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E258879F1DA5797400F251C9 /* Build configuration list for PBXNativeTarget "Survival" */;
 			buildPhases = (
-				1F54D948E50FC7E82ADFF8CF /* [CP] Check Pods Manifest.lock */,
 				E25887731DA5797400F251C9 /* Sources */,
-				E25887741DA5797400F251C9 /* Frameworks */,
 				E25887751DA5797400F251C9 /* Resources */,
-				05D0B0FF1FF61820A8C28AF2 /* [CP] Embed Pods Frameworks */,
-				EFCE1E905C5AFA9E4F7C4F15 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -204,12 +170,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E25887A21DA5797400F251C9 /* Build configuration list for PBXNativeTarget "SurvivalTests" */;
 			buildPhases = (
-				4BFA77A29158D309EBB2258D /* [CP] Check Pods Manifest.lock */,
 				E25887871DA5797400F251C9 /* Sources */,
-				E25887881DA5797400F251C9 /* Frameworks */,
 				E25887891DA5797400F251C9 /* Resources */,
-				450F38EAA23B6C7231AFE0AC /* [CP] Embed Pods Frameworks */,
-				0B9229314495C03BD0CD3AFC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -225,12 +187,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E25887A51DA5797400F251C9 /* Build configuration list for PBXNativeTarget "SurvivalUITests" */;
 			buildPhases = (
-				6E310D4A28032D672E9B1ACB /* [CP] Check Pods Manifest.lock */,
 				E25887921DA5797400F251C9 /* Sources */,
-				E25887931DA5797400F251C9 /* Frameworks */,
 				E25887941DA5797400F251C9 /* Resources */,
-				224AF640C2DA23F1913CB17E /* [CP] Copy Pods Resources */,
-				F970E664556824578E9DEC67 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -317,144 +275,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		05D0B0FF1FF61820A8C28AF2 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Survival/Pods-Survival-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		0B9229314495C03BD0CD3AFC /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1F54D948E50FC7E82ADFF8CF /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		224AF640C2DA23F1913CB17E /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SurvivalUITests/Pods-SurvivalUITests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		450F38EAA23B6C7231AFE0AC /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4BFA77A29158D309EBB2258D /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		6E310D4A28032D672E9B1ACB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		EFCE1E905C5AFA9E4F7C4F15 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Survival/Pods-Survival-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F970E664556824578E9DEC67 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SurvivalUITests/Pods-SurvivalUITests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E25887731DA5797400F251C9 /* Sources */ = {
@@ -618,7 +438,6 @@
 		};
 		E25887A01DA5797400F251C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9549803693AFB9355EDAD66D /* Pods-Survival.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
@@ -632,7 +451,6 @@
 		};
 		E25887A11DA5797400F251C9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9A31F2B9525CF5372CF310CA /* Pods-Survival.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
@@ -646,7 +464,6 @@
 		};
 		E25887A31DA5797400F251C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BBE6A8D870B85555C7D81520 /* Pods-SurvivalTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
@@ -661,7 +478,6 @@
 		};
 		E25887A41DA5797400F251C9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FC437D3F012CF7B681A5263E /* Pods-SurvivalTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
@@ -676,7 +492,6 @@
 		};
 		E25887A61DA5797400F251C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 44D9F47C83C54F4D6ED52674 /* Pods-SurvivalUITests.debug.xcconfig */;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = SurvivalUITests/Info.plist;
@@ -690,7 +505,6 @@
 		};
 		E25887A71DA5797400F251C9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2328A1003D19DD78286C1EE3 /* Pods-SurvivalUITests.release.xcconfig */;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = SurvivalUITests/Info.plist;
