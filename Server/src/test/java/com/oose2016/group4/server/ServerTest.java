@@ -103,7 +103,6 @@ public class ServerTest {
 
 	@Test
 	public void testGetAvoidLinkIds() throws Exception {
-		Spark.awaitInitialization();
 		SurvivalService s = new SurvivalService(dSource);
 		
 		Coordinate from = new Coordinate(38.987194, -76.945999);
