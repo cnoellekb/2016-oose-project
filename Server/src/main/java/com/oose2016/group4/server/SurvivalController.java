@@ -79,7 +79,9 @@ public class SurvivalController {
 				int toDate = Integer.parseInt(request.queryParams("toDate"));
 				//types: <Comma separated Strings>
 				//get array of crimes (int date, String addr, double lat, double lng, String type
-				return Collections.EMPTY_MAP;
+				CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
+				CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+				return getCrimes(from, to, timeOfDay);
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(404); //unsupported location
