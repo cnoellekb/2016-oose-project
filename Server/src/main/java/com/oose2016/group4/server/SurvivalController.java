@@ -81,7 +81,7 @@ public class SurvivalController {
 				//get array of crimes (int date, String addr, double lat, double lng, String type
 				CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
 				CrimePoint to = new CrimePoint(toDate, toLat, toLng);
-				return getCrimes(from, to, timeOfDay);
+				return survivalService.getCrimes(from, to, timeOfDay);
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(404); //unsupported location

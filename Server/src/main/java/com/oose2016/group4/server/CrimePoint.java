@@ -1,7 +1,5 @@
 package com.oose2016.group4.server;
 
-import java.util.Date;
-
 public class CrimePoint {
 	private int date;
 	private double lat, lng;

@@ -4,31 +4,23 @@ import java.util.Date;
 
 public class Crime {
 	private Date date;
-	private String addr, type;
-	private double lat, lng;
-	
-	public Crime(Date date, String addr, double lat, double lng, String type) {
-		this.date = date;
-		this.addr = addr;
-		this.lat = lat;
-		this.lng = lng;
-		this.type = type;
-	}
+	private String address, type;
+	private double latitude, longitude;
 	
 	public Date getDate() {
 		return date;
 	}
 	
 	public String getAddress() {
-		return addr;
+		return address;
 	}
 	
 	public double getLat() {
-		return lat;
+		return latitude;
 	}
 	
 	public double getLng() {
-		return lng;
+		return longitude;
 	}
 	
 	public String getType() {
