@@ -35,6 +35,7 @@ public class SurvivalController {
 				double fromLng = Double.parseDouble(request.queryParams("fromLng"));
 				double toLat = Double.parseDouble(request.queryParams("toLat"));
 				double toLng = Double.parseDouble(request.queryParams("toLng"));
+				int timeOfDay = Integer.parseInt(request.queryParams("timeOfDay"));
 				Coordinate from = new Coordinate(fromLat, fromLng);
 				Coordinate to = new Coordinate(toLat, toLng);
 				Coordinate.sortAndExpand(from, to);
@@ -54,15 +55,36 @@ public class SurvivalController {
 			try {
 				double lat = Double.parseDouble(request.queryParams("lat"));
 				double lng = Double.parseDouble(request.queryParams("lng"));
-				double zoom = Double.parseDouble(request.queryParams("zoom"));
+				int zoom = Integer.parseInt(request.queryParams("zoom"));
 				//generate PNG overlay
 				return Collections.EMPTY_MAP;
 			} catch (Exception e) {
-				logger.info("Invalid request", e);
-				response.status(400);
+				logger.info("Unsupported location", e);
+				response.status(404);
 				return Collections.EMPTY_MAP;
 			}
 		}, new JsonTransformer());
 		
+		/**
+		 * Get Crime List.
+		 */
+		get(API_CONTEXT + "/crimes", "application/json", (request, response) -> {
+			try {
+				double fromLat = Double.parseDouble(request.queryParams("fromLat"));
+				double fromLng = Double.parseDouble(request.queryParams("fromLng"));
+				double toLat = Double.parseDouble(request.queryParams("toLat"));
+				double toLng = Double.parseDouble(request.queryParams("toLng"));
+				int timeOfDay = Integer.parseInt(request.queryParams("timeOfDay"));
+				int fromDate = Integer.parseInt(request.queryParams("fromDate"));
+				int toDate = Integer.parseInt(request.queryParams("toDate"));
+				//types: <Comma separated Strings>
+				//get array of crimes (int date, String addr, double lat, double lng, String type
+				return Collections.EMPTY_MAP;
+			} catch (Exception e) {
+				logger.info("Invalid request", e);
+				response.status(404); //unsupported location
+				return Collections.EMPTY_MAP;
+			}
+		}, new JsonTransformer());
 	}
 }
