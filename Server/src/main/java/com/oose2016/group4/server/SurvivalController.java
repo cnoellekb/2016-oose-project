@@ -35,7 +35,7 @@ public class SurvivalController {
 				double fromLng = Double.parseDouble(request.queryParams("fromLng"));
 				double toLat = Double.parseDouble(request.queryParams("toLat"));
 				double toLng = Double.parseDouble(request.queryParams("toLng"));
-				int timeOfDay = Integer.parseInt(request.queryParams("timeOfDay"));
+				//int timeOfDay = Integer.parseInt(request.queryParams("timeOfDay"));
 				Coordinate from = new Coordinate(fromLat, fromLng);
 				Coordinate to = new Coordinate(toLat, toLng);
 				Coordinate.sortAndExpand(from, to);
@@ -68,7 +68,7 @@ public class SurvivalController {
 		/**
 		 * Get Crime List.
 		 */
-		get(API_CONTEXT + "/crimes", "application/json", (request, response) -> {
+		/*get(API_CONTEXT + "/crimes", "application/json", (request, response) -> {
 			try {
 				double fromLat = Double.parseDouble(request.queryParams("fromLat"));
 				double fromLng = Double.parseDouble(request.queryParams("fromLng"));
@@ -87,6 +87,7 @@ public class SurvivalController {
 				response.status(404); //unsupported location
 				return Collections.EMPTY_MAP;
 			}
-		}, new JsonTransformer());
+		}, new JsonTransformer()); 
+		*/
 	}
 }
