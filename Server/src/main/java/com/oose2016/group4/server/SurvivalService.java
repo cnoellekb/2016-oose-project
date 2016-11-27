@@ -128,7 +128,7 @@ public class SurvivalService {
 				
 				String dateStr = (String) crime.get("crimedate");
 				LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-				int date = (int) dateLocal.toEpochDay();
+				int date = 86400 * (int) dateLocal.toEpochDay();
 				//String time = (String) crime.get("crimetime");
 				String type = (String) crime.get("description");
 				String inOut = (String) crime.get("inside_outside");
