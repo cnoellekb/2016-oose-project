@@ -55,12 +55,12 @@ public class SurvivalController {
 			try {
 				double lat = Double.parseDouble(request.queryParams("lat"));
 				double lng = Double.parseDouble(request.queryParams("lng"));
-				int zoom = Integer.parseInt(request.queryParams("zoom"));
+				double zoom = Double.parseDouble(request.queryParams("zoom"));
 				//generate PNG overlay
 				return Collections.EMPTY_MAP;
 			} catch (Exception e) {
 				logger.info("Unsupported location", e);
-				response.status(404);
+				response.status(400);
 				return Collections.EMPTY_MAP;
 			}
 		}, new JsonTransformer());
