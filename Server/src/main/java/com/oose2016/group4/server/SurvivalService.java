@@ -1,5 +1,9 @@
 package com.oose2016.group4.server;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -26,6 +30,7 @@ public class SurvivalService {
 	public Sql2o getDb() {
 		return db;
 	}
+	
 	/**
 	 * Get linkIds to avoid
 	 * @param from top left coordinate
@@ -68,5 +73,25 @@ public class SurvivalService {
 			linkIds[i] = results.get(i).getLinkId();
 		}
 		return linkIds;
+	}
+	
+	public void updateDB() {
+		
+		
+		String sql = "CREATE TABLE IF NOT EXISTS crimes "
+			+ "(date INTEGER, address TEXT, latitude REAL, longitude REAL, linkId INTEGER, type TEXT);";
+		
+		
+	}
+	
+	private String getCrimeData() throws IOException {
+		String url = "https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
+		
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		
+		con.setRequestMethod("GET");
+		
+		return "";
 	}
 }

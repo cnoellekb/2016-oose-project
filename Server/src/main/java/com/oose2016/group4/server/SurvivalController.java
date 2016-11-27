@@ -86,5 +86,13 @@ public class SurvivalController {
 				return Collections.EMPTY_MAP;
 			}
 		}, new JsonTransformer());
+		
+		/**
+		 * Do some data preprocessing for database.
+		 */
+		get(API_CONTEXT + "/update/db", "application/json", (request, response) -> {
+			survivalService.updateDB();
+			return Collections.EMPTY_MAP;
+		}, new JsonTransformer());
 	}
 }
