@@ -68,7 +68,7 @@ public class SurvivalController {
 		/**
 		 * Get Crime List.
 		 */
-		/*get(API_CONTEXT + "/crimes", "application/json", (request, response) -> {
+		get(API_CONTEXT + "/crimes", "application/json", (request, response) -> {
 			try {
 				double fromLat = Double.parseDouble(request.queryParams("fromLat"));
 				double fromLng = Double.parseDouble(request.queryParams("fromLng"));
@@ -88,6 +88,5 @@ public class SurvivalController {
 				return Collections.EMPTY_MAP;
 			}
 		}, new JsonTransformer()); 
-		*/
 	}
 }
