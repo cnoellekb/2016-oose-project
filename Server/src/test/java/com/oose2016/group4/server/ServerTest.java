@@ -18,6 +18,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.*;
 
@@ -115,7 +116,27 @@ public class ServerTest {
 
 		assertTrue(Arrays.equals(red, redTarget));
 		assertTrue(Arrays.equals(yellow, yellowTarget));
-	} 
+	}
+	
+	@Test
+	public void testGetCrimes() {
+		SurvivalService s = new SurvivalService(dSource);
+		double fromLng = -76.937;
+		double toLng = -76.932;
+		double fromLat = 38.97;
+		double toLat = 38.99;
+		int fromDate = 1440000000;
+		int toDate = 1443000000;
+		int timeOfDay = 1000;
+		
+		CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
+		CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+		List<Crime> crimes = s.getCrimes(from, to, timeOfDay);
+		
+		crimes.forEach(crime -> assertTrue(crime.getLat() >= fromLat && crime.getLat() <= toLat
+				&& crime.getLng() >= fromLng && crime.getLng() <= toLng
+				&& crime.getDate() >= fromDate && crime.getDate() <= toDate));	
+	}
 	
 	/**
 	 * Code based on To-Do server test.

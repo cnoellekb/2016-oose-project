@@ -3,11 +3,11 @@ package com.oose2016.group4.server;
 import java.util.Date;
 
 public class Crime {
-	private Date date;
+	private int date;
 	private String address, type;
 	private double latitude, longitude;
 	
-	public Date getDate() {
+	public int getDate() {
 		return date;
 	}
 	
