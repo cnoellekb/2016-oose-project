@@ -87,6 +87,14 @@ public class SurvivalController {
 				response.status(404); //unsupported location
 				return Collections.EMPTY_MAP;
 			}
-		}, new JsonTransformer()); 
+		}, new JsonTransformer());
+		
+		/**
+		 * Do some data preprocessing for database.
+		 */
+		get(API_CONTEXT + "/update/db", "application/json", (request, response) -> {
+			survivalService.updateDB();
+			return Collections.EMPTY_MAP;
+		}, new JsonTransformer());
 	}
 }

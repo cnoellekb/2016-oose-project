@@ -1,7 +1,17 @@
 package com.oose2016.group4.server;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -11,6 +21,8 @@ import org.sql2o.Connection;
 import org.sql2o.Query;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
+
+import com.google.gson.Gson;
 
 /**
  * Query the database
@@ -27,6 +39,7 @@ public class SurvivalService {
 	public Sql2o getDb() {
 		return db;
 	}
+	
 	/**
 	 * Get linkIds to avoid
 	 * @param from top left coordinate
@@ -96,5 +109,73 @@ public class SurvivalService {
 			logger.error("Failed to get crimes", e);
 			return null;
 		}	
+	}
+	
+	public void updateDB() {
+		try (Connection conn = db.open()){
+			String sql1 = "CREATE TABLE IF NOT EXISTS crimes "
+					+ "(date INTEGER, linkId INTEGER, address TEXT, latitude REAL, longitude REAL, linkId INTEGER, type TEXT);";
+			conn.createQuery(sql1).executeUpdate();
+			String s = getCrimeData();
+			ArrayList<Object> crimeList = new Gson().fromJson(s, ArrayList.class);
+			for (Object crimeObj: crimeList) { 
+				Map<String, Object> crime = (Map<String,Object>) crimeObj;
+				
+				if (!crime.containsKey("crimedate") || !crime.containsKey("description") 
+						|| !crime.containsKey("inside_outside") || !crime.containsKey("location")
+						|| !crime.containsKey("location_1")) 
+					continue;
+				
+				String dateStr = (String) crime.get("crimedate");
+				LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				int date = (int) dateLocal.toEpochDay();
+				//String time = (String) crime.get("crimetime");
+				String type = (String) crime.get("description");
+				String inOut = (String) crime.get("inside_outside");
+				String address = (String) crime.get("location");
+				Map<String, Object> location_1 = (Map<String, Object>) crime.get("location_1");
+				ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
+				double latitude = a.get(1);
+				double longitude = a.get(0);
+				
+				if (inOut.equals("I")) continue;
+				String sql = "insert into crimes(date, linkId, address, latitude, longitude, type) " +
+						"values (:dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam)";
+				Query query = conn.createQuery(sql);
+				query.addParameter("dateParam", date).addParameter("linkIdParam", 0)
+					.addParameter("addressParam", address).addParameter("latitudeParam", latitude)
+					.addParameter("longitudeParam", longitude).addParameter("typeParam", type)
+					.executeUpdate();
+			}								
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Sql2oException e) {
+			logger.error("Failed to get crimes", e);
+		}
+	}
+	
+	private String getCrimeData() throws IOException {
+		String url = "https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
+		
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		
+		con.setRequestMethod("GET");
+		
+		//int responseCode = con.getResponseCode();
+		//System.out.println("\nSending 'GET' request to URL : " + url);
+		//System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		String response = "";
+
+		while ((inputLine = in.readLine()) != null) {
+			response += inputLine;
+		}
+		in.close();
+		return response;
 	}
 }
