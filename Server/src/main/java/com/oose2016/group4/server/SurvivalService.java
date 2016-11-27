@@ -75,6 +75,33 @@ public class SurvivalService {
 		return linkIds;
 	}
 	
+	/**
+	 * Retrieve all the crimes in the database within a certain time, latitude and longitude 
+	 * range.
+	 * @param from starting crime point
+	 * @param to ending crime point
+	 * @param timeOfDay the time of day
+	 * @return the results of our query to the database
+	 */
+	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay) {
+		try (Connection conn = db.open()) {
+			String sql = "SELECT date, address, latitude, longitude, type FROM crimes WHERE "
+					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
+					+ "longitude >= :fromLng AND longitude <= :toLng AND date <= :toDate;";
+					//+ "time = :timeOfDay"; TODO figure out what to do with this
+			Query query = conn.createQuery(sql);
+			query.addParameter("fromLat", from.getLat()).addParameter("toLat", to.getLat())
+				.addParameter("fromLng", from.getLng()).addParameter("toLng", to.getLng())
+				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate());
+				//.addParameter("timeOfDay", timeOfDay);
+			List<Crime> results = query.executeAndFetch(Crime.class);
+			return results;
+		} catch (Sql2oException e) {
+			logger.error("Failed to get crimes", e);
+			return null;
+		}	
+	}
+	
 	public void updateDB() {
 		
 		
