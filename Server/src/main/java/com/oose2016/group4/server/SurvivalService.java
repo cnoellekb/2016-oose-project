@@ -57,6 +57,9 @@ public class SurvivalService {
 		} catch (Sql2oException e) {
 			logger.error("Failed to fetch linkIds", e);
 			return null;
+		} catch (NullPointerException e) {
+			logger.error("Null pointer, failed to fetch linkIds", e);
+			return null;
 		}
 	}
 
@@ -70,7 +73,7 @@ public class SurvivalService {
 	 * @throws Sql2oException when query fails
 	 */
 	private int[] fetchLinkIds(Connection conn, Coordinate from, Coordinate to, String predicate)
-			throws Sql2oException {
+			throws Sql2oException, NullPointerException {
 		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
 				+ "latitude >= :fromLat AND latitude <= :toLat AND "
 				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate

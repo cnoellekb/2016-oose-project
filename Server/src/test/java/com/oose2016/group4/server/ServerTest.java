@@ -106,16 +106,26 @@ public class ServerTest {
 	public void testGetAvoidLinkIds() throws Exception {
 		SurvivalService s = new SurvivalService(dSource);
 		
-		Coordinate from = new Coordinate(38.987194, -76.945999);
-		Coordinate to = new Coordinate(39.004611, -76.875671);
+		Coordinate from = new Coordinate(30, -100);
+		Coordinate to = new Coordinate(40, -70);
 		int[] red = s.getAvoidLinkIds(from, to).getRed();
 		int[] yellow = s.getAvoidLinkIds(from, to).getYellow();
 		
-		int[] redTarget = {39664759};
-		int[] yellowTarget = {39303826, 39484084, 39643466, 39643812, 39651557, 39659946}; 
+		int[] redTarget = {48299070, 36327827, 28819535, 37416235, 
+				35909734, 1179627, 29907635, 29635202, 48302329, 
+				27356703, 27594660, 49012296, 40948040, 48298941, 
+				47004373, 44009832, 43317606, 27232763, 35893926, 40947872};
+		int[] yellowTarget = {1184010, 1184490, 1187635, 1194826, 
+				1196216, 1197046, 1198468, 1202785, 1213592, 28840608, 
+				36299695, 37180155, 40912890, 44009705, 46469921, 
+				47825278, 52427587, 53198833, 56220229, 56761221}; 
 
 		assertTrue(Arrays.equals(red, redTarget));
 		assertTrue(Arrays.equals(yellow, yellowTarget));
+		
+		Coordinate from1 = null;
+		Coordinate to1 = null;
+		assertEquals(s.getAvoidLinkIds(from1, to1), null);
 	}
 	
 	@Test
@@ -160,6 +170,7 @@ public class ServerTest {
 	// ------------------------------------------------------------------------//
 	// Generic Helper Methods and classes
 	// ------------------------------------------------------------------------//
+	/*
 	private Response request(String method, String path, String json) {
 		try {
 			URL url = new URL("http", "localhost", Bootstrap.PORT, path);
@@ -204,13 +215,13 @@ public class ServerTest {
 			return new Gson().fromJson(content, type);
 		}
 	}
-
+*/
 	// ------------------------------------------------------------------------//
-	// Dots Specific Helper Methods and classes
+	// Survival Maps Specific Helper Methods and classes
 	// ------------------------------------------------------------------------//
 	private SQLiteDataSource clearDB() {
 		SQLiteDataSource dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:server.db"); //dots.db
+		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
 
