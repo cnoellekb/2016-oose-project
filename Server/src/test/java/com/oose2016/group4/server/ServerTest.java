@@ -138,6 +138,12 @@ public class ServerTest {
 				&& crime.getDate() >= fromDate && crime.getDate() <= toDate));	
 	}
 	
+	@Test
+	public void testUpdateDB() {
+		SurvivalService s = new SurvivalService(dSource);
+		s.updateDB();
+	}
+	
 	/**
 	 * Code based on To-Do server test.
 	 */
