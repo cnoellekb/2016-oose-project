@@ -152,6 +152,7 @@ public class ServerTest {
 	public void testUpdateDB() {
 		SurvivalService s = new SurvivalService(dSource);
 		s.updateDB();
+		//exceeded the number of monthly MapQuest transactions 11/27/16
 	}
 	
 	/**
