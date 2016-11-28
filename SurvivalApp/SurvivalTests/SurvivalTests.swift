@@ -25,15 +25,15 @@ class SurvivalTests: XCTestCase {
     func testAvoidLinkIds() {
         let semaphore = DispatchSemaphore(value: 0)
         var linkIds: AvoidLinkIds?
-        RoutingState.avoidLinkIds(from: CLLocationCoordinate2D(latitude: 38.987194, longitude: -76.945999), to: CLLocationCoordinate2D(latitude: 39.004611, longitude: -76.875671)) {
+        RoutingState.avoidLinkIds(from: CLLocationCoordinate2D(latitude: 39.3251732, longitude: -76.6233443), to: CLLocationCoordinate2D(latitude: 39.3254388, longitude: -76.6148042)) {
             linkIds = $0
             semaphore.signal()
         }
         semaphore.wait()
         let red = Set(linkIds!.red)
         let yellow = Set(linkIds!.yellow)
-        XCTAssertEqual(red, [39503765,39571806,39572844,39664759])
-        XCTAssertEqual(yellow, [39303826,39370877,39484084,39530425,39643466,39643812,39646304,39651557,39659946,39667437])
+        XCTAssertEqual(red, [52361440,52361443,55411534,43671584,52357502,52375443,55349147,27911542,52427570,55331729,1191119,52427561,55413761,43384745])
+        XCTAssertEqual(yellow, [27021437,52357539,1179576,52375364,30667799,57803600,52184078,52184076,27021381,52375483,55349141,52374379,57803602,52375387,57803375,55413765,57803542,52375177,57787716,28820051])
     }
     
     func testPerformanceExample() {
