@@ -171,7 +171,7 @@ public class ServerTest {
 	// ------------------------------------------------------------------------//
 	// Generic Helper Methods and classes
 	// ------------------------------------------------------------------------//
-	/*
+	
 	private Response request(String method, String path, String json) {
 		try {
 			URL url = new URL("http", "localhost", Bootstrap.PORT, path);
@@ -216,7 +216,7 @@ public class ServerTest {
 			return new Gson().fromJson(content, type);
 		}
 	}
-*/
+
 	// ------------------------------------------------------------------------//
 	// Survival Maps Specific Helper Methods and classes
 	// ------------------------------------------------------------------------//
