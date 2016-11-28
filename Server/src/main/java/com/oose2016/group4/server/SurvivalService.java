@@ -51,8 +51,8 @@ public class SurvivalService {
 	 */
 	public AvoidLinkIds getAvoidLinkIds(Coordinate from, Coordinate to) {
 		try (Connection conn = db.open()) {
-			int[] red = fetchLinkIds(conn, from, to, "count > 2");
-			int[] yellow = fetchLinkIds(conn, from, to, "count = 2");
+			int[] red = fetchLinkIds(conn, from, to, "count > 50");
+			int[] yellow = fetchLinkIds(conn, from, to, "count > 10 AND count <= 50");
 			return new AvoidLinkIds(red, yellow);
 		} catch (Sql2oException e) {
 			logger.error("Failed to fetch linkIds", e);
@@ -73,7 +73,8 @@ public class SurvivalService {
 			throws Sql2oException {
 		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
 				+ "latitude >= :fromLat AND latitude <= :toLat AND "
-				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate;
+				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate
+				+ " ORDER BY count DESC LIMIT 20";
 		Query abc = conn.createQuery(sql);
 		abc = abc.addParameter("fromLat", from.getLatitude())
 				.addParameter("toLat", to.getLatitude()).addParameter("fromLng", from.getLongitude())
