@@ -37,6 +37,10 @@ public class Bootstrap {
 		ipAddress(IP_ADDRESS);
 		port(PORT);
 
+		// Specify the sub-directory from which to serve static resources (like
+		// html and css)
+		staticFileLocation("/public");
+				
 		// Create the model instance and then configure and start the web
 		// service
 		new SurvivalController(new SurvivalService(dataSource));
