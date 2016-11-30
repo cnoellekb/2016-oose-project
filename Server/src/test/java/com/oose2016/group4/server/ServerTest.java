@@ -174,7 +174,7 @@ public class ServerTest {
 	
 	private Response request(String method, String path, String json) {
 		try {
-			URL url = new URL("http", "localhost", Bootstrap.PORT, path);
+			URL url = new URL("http", "localhost", Bootstrap.getPort(), path);
 			System.out.println(url);
 			HttpURLConnection http = (HttpURLConnection) url.openConnection();
 			http.setRequestMethod(method);

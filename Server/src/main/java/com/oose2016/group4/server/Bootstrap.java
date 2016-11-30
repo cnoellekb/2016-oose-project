@@ -18,9 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Bootstrap {
-	public static final String IP_ADDRESS = "0.0.0.0";
-	public static final int PORT = 8080;
-
 	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	public static void main(String[] args) throws Exception {
@@ -34,8 +31,7 @@ public class Bootstrap {
 		}
 
 		// Specify the IP address and Port at which the server should be run
-		ipAddress(IP_ADDRESS);
-		port(PORT);
+		port(getPort());
 
 		// Specify the sub-directory from which to serve static resources (like
 		// html and css)
@@ -44,6 +40,15 @@ public class Bootstrap {
 		// Create the model instance and then configure and start the web
 		// service
 		new SurvivalController(new SurvivalService(dataSource));
+	}
+
+	public static int getPort() {
+		ProcessBuilder processBuilder = new ProcessBuilder();
+		String port = processBuilder.environment().get("PORT");
+		if (port != null) {
+			return Integer.parseInt(port);
+		}
+		return 8080;
 	}
 
 	/**
