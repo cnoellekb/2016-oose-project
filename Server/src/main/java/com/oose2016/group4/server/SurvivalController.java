@@ -82,7 +82,7 @@ public class SurvivalController {
 				CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
 				CrimePoint to = new CrimePoint(toDate, toLat, toLng);
 				response.status(200);
-				return survivalService.getCrimes(from, to, timeOfDay);
+				return survivalService.getCrimes(from, to, timeOfDay, "crimes");
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(404); //unsupported location

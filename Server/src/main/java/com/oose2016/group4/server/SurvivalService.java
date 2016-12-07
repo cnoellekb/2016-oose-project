@@ -4,13 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -99,16 +96,17 @@ public class SurvivalService {
 	 * @param timeOfDay the time of day
 	 * @return the results of our query to the database
 	 */
-	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay) {
+	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay, String table) {
 		try (Connection conn = db.open()) {
-			String sql = "SELECT date, address, latitude, longitude, type FROM crimes WHERE "
+			String sql = "SELECT date, address, latitude, longitude, type FROM :table WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
 					+ "longitude >= :fromLng AND longitude <= :toLng AND date <= :toDate;";
 					//+ "time = :timeOfDay"; TODO figure out what to do with this
 			Query query = conn.createQuery(sql);
 			query.addParameter("fromLat", from.getLat()).addParameter("toLat", to.getLat())
 				.addParameter("fromLng", from.getLng()).addParameter("toLng", to.getLng())
-				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate());
+				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate())
+				.addParameter("table", table);
 				//.addParameter("timeOfDay", timeOfDay);
 			List<Crime> results = query.executeAndFetch(Crime.class);
 			return results;
