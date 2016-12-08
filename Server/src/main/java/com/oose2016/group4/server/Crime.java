@@ -16,6 +16,15 @@ public class Crime {
 		this.linkid = linkid;
 	}
 	
+	public Crime(int date, double latitude, double longitude) {
+		this.date = date;
+		this.address = "";
+		this.type = "";
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.linkid = 0;
+	}
+	
 	public int getDate() {
 		return date;
 	}

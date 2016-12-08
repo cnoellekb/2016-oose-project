@@ -94,7 +94,7 @@ public class SurvivalService {
 	 * @param timeOfDay the time of day
 	 * @return the results of our query to the database
 	 */
-	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay, String table) {
+	public List<Crime> getCrimes(Crime from, Crime to, int timeOfDay, String table) {
 		try (Connection conn = db.open()) {
 			String sql = "SELECT date, address, latitude, longitude, type FROM :table WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
@@ -106,8 +106,7 @@ public class SurvivalService {
 				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate())
 				.addParameter("table", table);
 				//.addParameter("timeOfDay", timeOfDay);
-			List<Crime> results = query.executeAndFetch(Crime.class);
-			return results;
+			return query.executeAndFetch(Crime.class);
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes", e);
 			return null;

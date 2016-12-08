@@ -188,8 +188,8 @@ public class ServerTest {
 			int toDate = 40;
 			int timeOfDay = 1000;
 			System.out.println("*********************MADE IT TO BEFORE getCrimes");
-			CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
-			CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+			Crime from = new Crime(fromDate, fromLat, fromLng);
+			Crime to = new Crime(toDate, toLat, toLng);
 			List<Crime> crimes = s.getCrimes(from, to, timeOfDay, "TestCrimes");
 			System.out.println("*********************************The list of crimes has length " + crimes.size());
 			crimes.forEach(crime -> {

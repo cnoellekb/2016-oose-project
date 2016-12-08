@@ -79,8 +79,8 @@ public class SurvivalController {
 				int toDate = Integer.parseInt(request.queryParams("toDate"));
 				//types: <Comma separated Strings>
 				//get array of crimes (int date, String addr, double lat, double lng, String type
-				CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
-				CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+				Crime from = new Crime(fromDate, fromLat, fromLng);
+				Crime to = new Crime(toDate, toLat, toLng);
 				response.status(200);
 				return survivalService.getCrimes(from, to, timeOfDay, "crimes");
 			} catch (Exception e) {
