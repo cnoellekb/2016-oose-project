@@ -187,11 +187,11 @@ public class ServerTest {
 			int fromDate = 20;
 			int toDate = 40;
 			int timeOfDay = 1000;
-			System.out.println("*********************MADE IT TO BEFORE getCrimes");
+			
 			Crime from = new Crime(fromDate, fromLat, fromLng);
 			Crime to = new Crime(toDate, toLat, toLng);
 			List<Crime> crimes = s.getCrimes(from, to, timeOfDay, "TestCrimes");
-			System.out.println("*********************************The list of crimes has length " + crimes.size());
+			
 			crimes.forEach(crime -> {
 				System.out.println(crime);
 				assertTrue(crime.getLat() >= fromLat && crime.getLat() <= toLat
@@ -209,68 +209,6 @@ public class ServerTest {
 		//s.updateDB();
 		//exceeded the number of monthly MapQuest transactions 11/27/16
 	}
-	
-	/**
-	 * Code based on To-Do server test.
-	 */
-	/*@Test
-	public void testSetupEndpoints() {
-		SurvivalService s = new SurvivalService(dSource);
-		SurvivalController controller = new SurvivalController(s);
-		
-		Response r = request("GET", "/avoidLinkIds", "fromLat=38.987194&toLat=39.004611&fromLng=-76.945999&toLng=-76.875671");
-        assertEquals("Failed to get todo", 200, r.httpStatus);
-	} */
-	
-	
-	// ------------------------------------------------------------------------//
-	// Generic Helper Methods and classes
-	// ------------------------------------------------------------------------//
-	
-	private Response request(String method, String path, String json) {
-		try {
-			URL url = new URL("http", "localhost", Bootstrap.getPort(), path);
-			System.out.println(url);
-			HttpURLConnection http = (HttpURLConnection) url.openConnection();
-			http.setRequestMethod(method);
-			http.setDoInput(true);
-			if (json != null) {
-				http.setDoOutput(true);
-				http.setRequestProperty("Content-Type", "application/json");
-				OutputStreamWriter output = new OutputStreamWriter(http.getOutputStream());
-				output.write(json);
-				output.flush();
-				output.close();
-			}
-
-			int responseCode = http.getResponseCode();
-			String responseBody;
-			try {
-				responseBody = IOUtils.toString(http.getInputStream());
-			} catch (Exception e) {
-				responseBody = IOUtils.toString(http.getErrorStream());
-			}
-			return new Response(responseCode, responseBody);
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail("Sending request failed: " + e.getMessage());
-			return null;
-		}
-	}
-
-	private static class Response {
-		public String content;
-		public int httpStatus;
-
-		public Response(int httpStatus, String content) {
-			this.content = content;
-			this.httpStatus = httpStatus;
-		}
-
-		public <T> T getContentAsObject(Type type) {
-			return new Gson().fromJson(content, type);
-		}
-	}
 
 	// ------------------------------------------------------------------------//
 	// Survival Maps Specific Helper Methods and classes
@@ -280,12 +218,12 @@ public class ServerTest {
 		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
-/*
+
 		try (Connection conn = db.open()) {
 			String sql = "DROP TABLE IF EXISTS TestCrimes";
 			conn.createQuery(sql).executeUpdate();
 		}
-	*/	
+	
 		return dataSource;
 	}
 }
