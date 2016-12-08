@@ -106,8 +106,8 @@ public class SurvivalService {
 				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate())
 				.addParameter("table", table);
 				//.addParameter("timeOfDay", timeOfDay);
-			List<Crime> results = query.executeAndFetch(Crime.class);
-			return results;
+			return query.executeAndFetch(Crime.class);
+			//return results;
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes", e);
 			return null;
