@@ -5,53 +5,69 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
-import com.google.gson.internal.ObjectConstructor;
+import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
 import org.sql2o.Query;
+import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
 
 import com.google.gson.Gson;
 
-
-
-public class Updater {
+public class databaseUpdater {
     private static String SQL_INITIATE_DATABASE ="CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
             + "type TEXT, PRIMARY KEY (date, linkId, type));";
-    private static String URL_CRIME_SOURCE ="https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
-//    private Sql2o mDB;
-    private Connection mConnection;
-    private String mMapQuestKey;
-    private String mMapQuestEndpoint;
-//    private SurvivalService mService;
 
-    public Updater(Connection conn, String key, String endPoint){
-//        mDB=db;
-//        mConnection = mDB.open();
-//        mService=argService;
+    private Connection mConnection;
+//    private String mRawData;
+
+    private static String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
+    private static String URL_MAPQUEST_ENDPOINT = "http://www.mapquestapi.com/directions/v2/findlinkid";
+    private static String URL_CRIME_SOURCE ="https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
+
+    public databaseUpdater(Connection conn){
         mConnection = conn;
-        mMapQuestKey = key;
-        mMapQuestEndpoint = endPoint;
+//        mRawData = data;
     }
 
+    /**
+     * Execute the initial SQL query to make sure of the table existing before updating tuples into it
+     */
     private void initialUpdate(){
         mConnection.createQuery(SQL_INITIATE_DATABASE).executeUpdate();
     }
 
-    private ArrayList<Object> fetchRawCrimeData() throws IOException {
+    /**
+     * Fetch raw crime data from data.baltimorecity.gov and transform the result into proper form to store.
+     * @return the crime data in an ArrayList
+     * @throws IOException
+     */
+    private ArrayList<Object> preProccessCrimeData() throws IOException {
         String stringResult = makeGetRequest(URL_CRIME_SOURCE);
         return new Gson().fromJson(stringResult, ArrayList.class);
     }
 
+    /**
+     * Main task of the databaseUpdater class
+     * @throws IOException
+     */
     public void update() throws IOException {
         initialUpdate();
-        ArrayList<Object> crimeList = fetchRawCrimeData();
+        ArrayList<Object> crimeList = preProccessCrimeData();
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
 
@@ -95,15 +111,14 @@ public class Updater {
      * @throws IOException if GET request doesn't work
      */
     private int requestLinkId(double lat, double lng) throws IOException {
-        String url = mMapQuestEndpoint + "?key=" + mMapQuestKey + "&lat=" + lat + "&lng=" + lng;
-        String response = makeGetRequest(url);
-        Map<String, Object> resp = new Gson().fromJson(response, Map.class);
+        String url = URL_MAPQUEST_ENDPOINT + "?key=" + MAPQUEST_KEY + "&lat=" + lat + "&lng=" + lng;
+        String responseString = makeGetRequest(url);
+        Map<String, Object> responseMap = new Gson().fromJson(responseString, Map.class);
         // TODO determine the issue here...
-        double linkiddble = (double) resp.get("linkId");
+        double linkiddble = (double) responseMap.get("linkId");
         int linkid = (int) linkiddble;
         return linkid;
     }
-
 
     /**
      * Takes in any url (assumed to include endpoint and params) and makes a
