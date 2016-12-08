@@ -79,7 +79,7 @@ public class Updater {
                     + "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
                     + "and type = :typeParam);";
 
-            Query query = conn.createQuery(sql);
+            Query query = mConnection.createQuery(sql);
             query.addParameter("dateParam", date).addParameter("linkIdParam", linkid)
                     .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
                     .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
