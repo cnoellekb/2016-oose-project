@@ -39,4 +39,14 @@ public class Crime {
 	public double getLinkId() {
 		return linkid;
 	}
+	
+	//@Override
+	public String toString() {
+		return "date: " + date 
+				+ " address: " + address
+				+ " latitude: " + latitude
+				+ " longitutude: " + longitude
+				+ " type: " + type
+				+ " linkId: " + linkid;
+	}
 }

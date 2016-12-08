@@ -171,10 +171,8 @@ public class ServerTest {
 			
 			for (Crime c : crimeList) {
 				String sql = "insert into TestCrimes(date, linkId, address, latitude, longitude, type) "
-						+ "SELECT * FROM (SELECT :dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam) "
-						+ "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
-						+ "and type = :typeParam);";
-				
+						+ "values (:dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam)";
+
 				Query query = conn.createQuery(sql);
 				query.addParameter("dateParam", c.getDate()).addParameter("linkIdParam", c.getLinkId())
 					.addParameter("addressParam", c.getAddress()).addParameter("latitudeParam", c.getLat())
@@ -189,18 +187,20 @@ public class ServerTest {
 			int fromDate = 20;
 			int toDate = 40;
 			int timeOfDay = 1000;
-			
+			System.out.println("*********************MADE IT TO BEFORE getCrimes");
 			CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
 			CrimePoint to = new CrimePoint(toDate, toLat, toLng);
 			List<Crime> crimes = s.getCrimes(from, to, timeOfDay, "TestCrimes");
-			
-			crimes.forEach(crime -> assertTrue(crime.getLat() >= fromLat && crime.getLat() <= toLat
-					&& crime.getLng() >= fromLng && crime.getLng() <= toLng
-					&& crime.getDate() >= fromDate && crime.getDate() <= toDate));
+			System.out.println("*********************************The list of crimes has length " + crimes.size());
+			crimes.forEach(crime -> {
+				System.out.println(crime);
+				assertTrue(crime.getLat() >= fromLat && crime.getLat() <= toLat
+				&& crime.getLng() >= fromLng && crime.getLng() <= toLng
+				&& crime.getDate() >= fromDate && crime.getDate() <= toDate);
+			});
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes in ServerTest", e);
-		}
-			
+		}	
 	}
 	
 	@Test
@@ -280,12 +280,12 @@ public class ServerTest {
 		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
-
+/*
 		try (Connection conn = db.open()) {
 			String sql = "DROP TABLE IF EXISTS TestCrimes";
 			conn.createQuery(sql).executeUpdate();
 		}
-		
+	*/	
 		return dataSource;
 	}
 }

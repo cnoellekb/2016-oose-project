@@ -27,9 +27,7 @@ import com.google.gson.Gson;
  */
 public class SurvivalService {
 	private Sql2o db;
-	private String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
-	private String mapquestEndpoint = "http://www.mapquestapi.com/directions/v2/findlinkid";
-
+	
 	private static Logger logger = LoggerFactory.getLogger(SurvivalService.class);
 
 	public SurvivalService(DataSource dataSource) {
@@ -67,7 +65,7 @@ public class SurvivalService {
 	 * @param to bottom right coordinate
 	 * @param predicate condition
 	 * @return array of linkIds
-	 * @throws Sql2oException when query fails
+	 * @throws Sql2oException when query fails, Null PointerException when linkIds aren't present
 	 */
 	private int[] fetchLinkIds(Connection conn, Coordinate from, Coordinate to, String predicate)
 			throws Sql2oException, NullPointerException {
@@ -126,9 +124,9 @@ public class SurvivalService {
 			String sql1 = "CREATE TABLE IF NOT EXISTS crimes "
 					+ "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
 					+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
-					+ "type TEXT, PRIMARY KEY (date, linkId, type));";
+					+ "type TEXT NOT NULL, PRIMARY KEY (date, linkId, type));";
 			conn.createQuery(sql1).executeUpdate();
-			String s = getCrimeData();
+			String s = CrimeAPIHandler.getCrimeData();
 			ArrayList<Object> crimeList = new Gson().fromJson(s, ArrayList.class);
 			for (Object crimeObj: crimeList) { 
 				Map<String, Object> crime = (Map<String,Object>) crimeObj;
@@ -149,7 +147,7 @@ public class SurvivalService {
 				ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
 				double latitude = a.get(1);
 				double longitude = a.get(0);
-				int linkid = requestLinkId(latitude, longitude);
+				int linkid = MapQuestHandler.requestLinkId(latitude, longitude);
 				
 				if (inOut.equals("I")) continue;
 				
@@ -169,57 +167,5 @@ public class SurvivalService {
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes", e);
 		}
-	}
-	
-	/**
-	 * GETs crime data from Open Baltimore database
-	 * @return The JSON containing a list of crimes
-	 * @throws IOException
-	 */
-	private String getCrimeData() throws IOException {
-		String url = "https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
-		return makeGetRequest(url);
-	}
-	
-	/**
-	 * GETs the linkId associated with a particular crime's coordinates.
-	 * @param lat latitude
-	 * @param lng longitude
-	 * @return the linkId of that crime
-	 * @throws IOException if GET request doesn't work
-	 */
-	private int requestLinkId(double lat, double lng) throws IOException {
-		String url = mapquestEndpoint + "?key=" + MAPQUEST_KEY + "&lat=" + lat + "&lng=" + lng;
-		String response = makeGetRequest(url);
-		Map<String, Object> resp = new Gson().fromJson(response, Map.class);
-		// TODO determine the issue here...
-		double linkiddble = (double) resp.get("linkId");
-		int linkid = (int) linkiddble;
-		return linkid;
-	}
-	
-	/**
-	 * Takes in any url (assumed to include endpoint and params) and makes a 
-	 * GET request.
-	 * @param url compose of endpoint and any potential parameters
-	 * @return the response object as a JSON 
-	 * @throws IOException if GET request doesn't work
-	 */
-	private String makeGetRequest(String url) throws IOException {
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		
-		con.setRequestMethod("GET");
-		
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		String response = "";
-
-		while ((inputLine = in.readLine()) != null) {
-			response += inputLine;
-		}
-		in.close();
-		return response;
 	}
 }
