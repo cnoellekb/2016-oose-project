@@ -207,7 +207,7 @@ public class ServerTest {
 		//MapQuestHandler mq = mock(MapQuestHandler.class);
 		try (Connection conn = s.getDb().open()){
 			PowerMockito.mockStatic(MapQuestHandler.class);
-			PowerMockito.when(MapQuestHandler.requestLinkId(any(), any())).thenReturn(2);
+			PowerMockito.when(MapQuestHandler.requestLinkId(anyDouble(), anyDouble())).thenReturn(2);
 			//MapQuestHandler mq = createMock(MapQuestHandler.class);
 			//expect(mq.requestLinkId(isA(Double.class), isA(Double.class))).andReturn(2);
 			//replay(mq);

@@ -43,7 +43,7 @@ public class databaseUpdater {
     /**
      * Execute the initial SQL query to make sure of the table existing before updating tuples into it
      */
-    private void initialUpdate(){
+    protected void initialUpdate(){
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
     }
 
