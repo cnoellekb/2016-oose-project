@@ -2,9 +2,8 @@
 //  Route.swift
 //  Survival
 //
-//  Created by 张国晔 on 2016/10/13.
-//  Copyright © 2016年 Johns Hopkins University. All rights reserved.
-//
+//  OOSE JHU 2016 Project
+//  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import UIKit
 import CoreLocation
@@ -21,6 +20,9 @@ class Route {
         self.to = to
     }
     
+    /**
+    Builds an http request for the route.
+    */
     fileprivate var routingQuery: URLComponents {
         var query = URLComponents()
         query.scheme = "http"
@@ -35,6 +37,9 @@ class Route {
         return query
     }
     
+    /**
+    Takes a query and queries Mapquest server for route 
+    */
     func calculateRoute(completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         guard let url = routingQuery.url else { return }
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -48,6 +53,9 @@ class Route {
         }.resume()
     }
     
+    /**
+    Queries Mapquest for route shape. 
+    */
     private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "http"
@@ -79,7 +87,9 @@ class Route {
         }.resume()
     }
 }
-
+/**
+Subclass of route - determines safest route, overrides routing query.
+*/
 class SafestRoute: Route {
     private let avoidLinkIds: AvoidLinkIds
     
@@ -107,7 +117,9 @@ class SafestRoute: Route {
         super.init(from: from, to: to)
     }
 }
-
+/**
+Subclass of route - determines middle route, overrides routing query.
+*/
 class MiddleRoute: Route {
     private let avoidLinkIds: AvoidLinkIds
     
