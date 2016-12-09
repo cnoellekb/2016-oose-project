@@ -48,22 +48,6 @@ public class SurvivalController {
 			}
 		}, new JsonTransformer());
 		
-		/**
-		 * Display Heat Map.
-		 */
-		get(API_CONTEXT + "/heatmap", "application/json", (request, response) -> {
-			try {
-				double lat = Double.parseDouble(request.queryParams("lat"));
-				double lng = Double.parseDouble(request.queryParams("lng"));
-				double zoom = Double.parseDouble(request.queryParams("zoom"));
-				//generate PNG overlay
-				return Collections.EMPTY_MAP;
-			} catch (Exception e) {
-				logger.info("Unsupported location", e);
-				response.status(400);
-				return Collections.EMPTY_MAP;
-			}
-		}, new JsonTransformer());
 		
 		/**
 		 * Get Crime List.
