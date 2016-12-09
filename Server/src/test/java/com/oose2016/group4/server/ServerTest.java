@@ -1,9 +1,7 @@
 package com.oose2016.group4.server;
 
-import com.google.gson.Gson;
-//import com.todoapp.Todo;
-//import com.todoapp.TestTodoServer.Response;
 
+import static org.mockito.Mockito.*;
 
 import org.sql2o.Connection;
 import org.sql2o.Query;
@@ -12,13 +10,8 @@ import org.sql2o.Sql2oException;
 import org.sqlite.SQLiteDataSource;
 
 import spark.Spark;
-import spark.utils.IOUtils;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
-import java.net.URL;
-import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,9 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-//import org.testng.annotations.Test;
-
+@RunWith(PowerMockRunner.class)
 public class ServerTest {
 	
 	private final Logger logger = LoggerFactory.getLogger(ServerTest.class);
@@ -134,13 +130,12 @@ public class ServerTest {
 		Coordinate to1 = null;
 		assertEquals(s.getAvoidLinkIds(from1, to1), null);
 	}
-	
+	/*
 	@Test
 	public void testGetCrimes() {
 		SurvivalService s = new SurvivalService(dSource);
-		Sql2o db = s.getDb();
 		
-		try (Connection conn = db.open()){
+		try (Connection conn = s.getDb().open()){
 			String sql1 = "CREATE TABLE IF NOT EXISTS TestCrimes "
 					+ "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
 					+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
@@ -187,11 +182,11 @@ public class ServerTest {
 			int fromDate = 20;
 			int toDate = 40;
 			int timeOfDay = 1000;
-			System.out.println("*********************MADE IT TO BEFORE getCrimes");
-			CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
-			CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+			
+			Crime from = new Crime(fromDate, fromLat, fromLng);
+			Crime to = new Crime(toDate, toLat, toLng);
 			List<Crime> crimes = s.getCrimes(from, to, timeOfDay, "TestCrimes");
-			System.out.println("*********************************The list of crimes has length " + crimes.size());
+			
 			crimes.forEach(crime -> {
 				System.out.println(crime);
 				assertTrue(crime.getLat() >= fromLat && crime.getLat() <= toLat
@@ -201,75 +196,50 @@ public class ServerTest {
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes in ServerTest", e);
 		}	
-	}
+	}*/
 	
 	@Test
+	@PrepareForTest({MapQuestHandler.class, CrimeAPIHandler.class})
 	public void testUpdateDB() {
 		SurvivalService s = new SurvivalService(dSource);
-		//s.updateDB();
-		//exceeded the number of monthly MapQuest transactions 11/27/16
-	}
-	
-	/**
-	 * Code based on To-Do server test.
-	 */
-	/*@Test
-	public void testSetupEndpoints() {
-		SurvivalService s = new SurvivalService(dSource);
-		SurvivalController controller = new SurvivalController(s);
-		
-		Response r = request("GET", "/avoidLinkIds", "fromLat=38.987194&toLat=39.004611&fromLng=-76.945999&toLng=-76.875671");
-        assertEquals("Failed to get todo", 200, r.httpStatus);
-	} */
-	
-	
-	// ------------------------------------------------------------------------//
-	// Generic Helper Methods and classes
-	// ------------------------------------------------------------------------//
-	
-	private Response request(String method, String path, String json) {
-		try {
-			URL url = new URL("http", "localhost", Bootstrap.getPort(), path);
-			System.out.println(url);
-			HttpURLConnection http = (HttpURLConnection) url.openConnection();
-			http.setRequestMethod(method);
-			http.setDoInput(true);
-			if (json != null) {
-				http.setDoOutput(true);
-				http.setRequestProperty("Content-Type", "application/json");
-				OutputStreamWriter output = new OutputStreamWriter(http.getOutputStream());
-				output.write(json);
-				output.flush();
-				output.close();
-			}
-
-			int responseCode = http.getResponseCode();
-			String responseBody;
-			try {
-				responseBody = IOUtils.toString(http.getInputStream());
-			} catch (Exception e) {
-				responseBody = IOUtils.toString(http.getErrorStream());
-			}
-			return new Response(responseCode, responseBody);
+		//MapQuestHandler mq = mock(MapQuestHandler.class);
+		try (Connection conn = s.getDb().open()){
+			PowerMockito.mockStatic(MapQuestHandler.class);
+			PowerMockito.when(MapQuestHandler.requestLinkId(any(), any())).thenReturn(2);
+			String json = "[{\":@computed_region_5kre_ccpb\":\"221\","
+				+ "\":@computed_region_s6p5_2pgr\":\"27301\""
+				+ ",\"crimecode\":\"6D\","
+				+ "\"crimedate\":\"2016-07-24T00:00:00.000\","
+				+ "\"crimetime\":\"18:00:00\","
+				+ "\"description\":\"LARCENY FROM AUTO\","
+				+ "\"district\":\"WESTERN\","
+				+ "\"inside_outside\":\"O\","
+				+ "\"location\":\"1000 MOSHER ST\","
+				+ "\"location_1\":"
+				+ "{\"type\":\"Point\","
+				+ "\"coordinates\":[-76.63514,39.30027]},"
+				+ "\"neighborhood\":\"Sandtown-Winchester\","
+				+ "\"post\":\"743\","
+				+ "\"total_incidents\":\"1\"}]";
+			
+			PowerMockito.mockStatic(CrimeAPIHandler.class);
+			PowerMockito.when(CrimeAPIHandler.getCrimeData()).thenReturn(json);
+			
+			s.updateDB("TestCrimes");
+			
+			String selectSQL = "SELECT * FROM TestCrimes";
+			
+			Query query = conn.createQuery(selectSQL);
+			List<Crime> crimes = query.executeAndFetch(Crime.class);
+			
+			assertTrue(crimes.get(0).getAddress().equals("1000 MOSHER ST"));
+			PowerMockito.verifyStatic();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			fail("Sending request failed: " + e.getMessage());
-			return null;
 		}
-	}
-
-	private static class Response {
-		public String content;
-		public int httpStatus;
-
-		public Response(int httpStatus, String content) {
-			this.content = content;
-			this.httpStatus = httpStatus;
-		}
-
-		public <T> T getContentAsObject(Type type) {
-			return new Gson().fromJson(content, type);
-		}
+		
+		//exceeded the number of monthly MapQuest transactions 11/27/16
 	}
 
 	// ------------------------------------------------------------------------//
@@ -280,12 +250,12 @@ public class ServerTest {
 		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
-/*
+
 		try (Connection conn = db.open()) {
 			String sql = "DROP TABLE IF EXISTS TestCrimes";
 			conn.createQuery(sql).executeUpdate();
 		}
-	*/	
+	
 		return dataSource;
 	}
 }

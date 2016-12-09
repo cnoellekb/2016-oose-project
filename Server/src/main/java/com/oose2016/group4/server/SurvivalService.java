@@ -94,7 +94,7 @@ public class SurvivalService {
 	 * @param timeOfDay the time of day
 	 * @return the results of our query to the database
 	 */
-	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay, String table) {
+	public List<Crime> getCrimes(Crime from, Crime to, int timeOfDay, String table) {
 		try (Connection conn = db.open()) {
 			String sql = "SELECT date, address, latitude, longitude, type FROM :table WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
@@ -107,7 +107,6 @@ public class SurvivalService {
 				.addParameter("table", table);
 				//.addParameter("timeOfDay", timeOfDay);
 			return query.executeAndFetch(Crime.class);
-			//return results;
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes", e);
 			return null;
@@ -119,13 +118,13 @@ public class SurvivalService {
 	 * Only includes data that has all of the fields we need and doesn't have a matching
 	 * compound primary key in the existing data: (date, linkId, type).
 	 */
-	public void updateDB() {
+	public void updateDB(String table) {
 		try (Connection conn = db.open()){
-			String sql1 = "CREATE TABLE IF NOT EXISTS crimes "
+			String sql1 = "CREATE TABLE IF NOT EXISTS :table "
 					+ "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
 					+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
 					+ "type TEXT NOT NULL, PRIMARY KEY (date, linkId, type));";
-			conn.createQuery(sql1).executeUpdate();
+			conn.createQuery(sql1).addParameter("table", table).executeUpdate();
 			String s = CrimeAPIHandler.getCrimeData();
 			ArrayList<Object> crimeList = new Gson().fromJson(s, ArrayList.class);
 			for (Object crimeObj: crimeList) { 

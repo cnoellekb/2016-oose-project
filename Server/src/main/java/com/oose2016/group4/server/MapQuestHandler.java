@@ -9,7 +9,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-public class MapQuestHandler {
+public class MapQuestHandler extends RequestHandler {
 	private static String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
 	private static String mapquestEndpoint = "http://www.mapquestapi.com/directions/v2/findlinkid";
 	
@@ -27,30 +27,5 @@ public class MapQuestHandler {
 		double linkiddble = (double) resp.get("linkId");
 		int linkid = (int) linkiddble;
 		return linkid;
-	}
-	
-	/**
-	 * Takes in any url (assumed to include endpoint and params) and makes a 
-	 * GET request.
-	 * @param url compose of endpoint and any potential parameters
-	 * @return the response object as a JSON 
-	 * @throws IOException if GET request doesn't work
-	 */
-	private static String makeGetRequest(String url) throws IOException {
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		
-		con.setRequestMethod("GET");
-		
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		String response = "";
-
-		while ((inputLine = in.readLine()) != null) {
-			response += inputLine;
-		}
-		in.close();
-		return response;
 	}
 }
