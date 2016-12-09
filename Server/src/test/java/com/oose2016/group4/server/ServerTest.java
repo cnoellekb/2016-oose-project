@@ -1,7 +1,7 @@
 package com.oose2016.group4.server;
 
 
-import static org.easymock.EasyMock.*;
+import static org.mockito.Mockito.*;
 import org.sql2o.Connection;
 import org.sql2o.Query;
 import org.sql2o.Sql2o;
@@ -22,11 +22,14 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
-import org.junit.runner.RunWith;
-
-
 import com.google.gson.Gson;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({MapQuestHandler.class, CrimeAPIHandler.class})
 public class ServerTest {
 	
 	private final Logger logger = LoggerFactory.getLogger(ServerTest.class);
@@ -203,9 +206,11 @@ public class ServerTest {
 		SurvivalService s = new SurvivalService(dSource);
 		//MapQuestHandler mq = mock(MapQuestHandler.class);
 		try (Connection conn = s.getDb().open()){
-			MapQuestHandler mq = createMock(MapQuestHandler.class);
-			expect(mq.requestLinkId(isA(Double.class), isA(Double.class))).andReturn(2);
-			replay(mq);
+			PowerMockito.mockStatic(MapQuestHandler.class);
+			PowerMockito.when(MapQuestHandler.requestLinkId(any(), any())).thenReturn(2);
+			//MapQuestHandler mq = createMock(MapQuestHandler.class);
+			//expect(mq.requestLinkId(isA(Double.class), isA(Double.class))).andReturn(2);
+			//replay(mq);
 			String json = "[{\":@computed_region_5kre_ccpb\":\"221\","
 				+ "\":@computed_region_s6p5_2pgr\":\"27301\""
 				+ ",\"crimecode\":\"6D\","
@@ -222,11 +227,11 @@ public class ServerTest {
 				+ "\"post\":\"743\","
 				+ "\"total_incidents\":\"1\"}]";
 			
-			CrimeAPIHandler c = createMock(CrimeAPIHandler.class);
-			expect(CrimeAPIHandler.preProccessCrimeData()).andReturn(new Gson().fromJson(json, ArrayList.class));
-			//PowerMockito.mockStatic(CrimeAPIHandler.class);
-			//PowerMockito.when(CrimeAPIHandler.preProccessCrimeData())
-			//	.thenReturn(new Gson().fromJson(json, ArrayList.class));
+			//CrimeAPIHandler c = createMock(CrimeAPIHandler.class);
+			//expect(CrimeAPIHandler.preProccessCrimeData()).andReturn(new Gson().fromJson(json, ArrayList.class));
+			PowerMockito.mockStatic(CrimeAPIHandler.class);
+			PowerMockito.when(CrimeAPIHandler.preProccessCrimeData())
+				.thenReturn(new Gson().fromJson(json, ArrayList.class));
 			
 			s.updateDB("TestCrimes");
 			

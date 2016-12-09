@@ -21,7 +21,6 @@ public class MapQuestHandler extends RequestHandler {
 	 * @throws IOException if GET request doesn't work
 	 */
 	protected static int requestLinkId(double lat, double lng) throws IOException {
-		System.out.println("hi");
 		String url = mapquestEndpoint + "?key=" + MAPQUEST_KEY + "&lat=" + lat + "&lng=" + lng;
 		String response = makeGetRequest(url);
 		Map<String, Object> resp = new Gson().fromJson(response, Map.class);
