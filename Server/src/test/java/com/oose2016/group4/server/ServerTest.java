@@ -21,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
+
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -198,14 +200,14 @@ public class ServerTest {
 		}	
 	}*/
 	
-	@Test
 	@PrepareForTest({MapQuestHandler.class, CrimeAPIHandler.class})
+	@Test
 	public void testUpdateDB() {
 		SurvivalService s = new SurvivalService(dSource);
 		//MapQuestHandler mq = mock(MapQuestHandler.class);
 		try (Connection conn = s.getDb().open()){
 			PowerMockito.mockStatic(MapQuestHandler.class);
-			PowerMockito.when(MapQuestHandler.requestLinkId(any(), any())).thenReturn(2);
+			Mockito.when(MapQuestHandler.requestLinkId(any(), any())).thenReturn(2);
 			String json = "[{\":@computed_region_5kre_ccpb\":\"221\","
 				+ "\":@computed_region_s6p5_2pgr\":\"27301\""
 				+ ",\"crimecode\":\"6D\","
