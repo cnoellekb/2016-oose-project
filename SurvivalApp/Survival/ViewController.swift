@@ -17,13 +17,14 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             osmOverlay.canReplaceMapContent = true
             mapView.add(osmOverlay, level: .aboveRoads)
             
-            let overlay = MKTileOverlay(urlTemplate: "http://127.0.0.1:8080/v1/heatmap/{x}-{y}-{z}.png")
-            overlay.maximumZ = 14
-            mapView.add(overlay, level: .aboveLabels)
+            if let url = server.url {
+                let overlay = MKTileOverlay(urlTemplate: "\(url)/v1/heatmap/{x}-{y}-{z}.png")
+                overlay.maximumZ = 12
+                mapView.add(overlay, level: .aboveLabels)
+            }
             
             mapView.mapType = .satellite
             mapView.delegate = self
-            mapView.userTrackingMode = .follow
         }
     }
     @IBOutlet weak var fromTextField: UITextField! {
@@ -53,14 +54,17 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         }
     }
     
-    func didGenerateAnnotation(_ annotation: MKAnnotation) {
-        if let overlay = annotation as? MKOverlay {
-            mapView.add(overlay, level: .aboveRoads)
-            mapView.setVisibleMapRect(mapView.mapRectThatFits(overlay.boundingMapRect), edgePadding: UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5), animated: true)
-        } else {
-            mapView.addAnnotation(annotation)
-            mapView.showAnnotations(state!.annotations, animated: true)
-        }
+    func didGenerateAnnotations(_ annotations: [MKAnnotation]) {
+        guard annotations.count > 0 else { return }
+        mapView.addAnnotations(annotations)
+        mapView.showAnnotations(state!.annotations, animated: true)
+    }
+    
+    func didGenerateOverlays(_ overlays: [MKOverlay]) {
+        guard overlays.count > 0 else { return }
+        mapView.addOverlays(overlays, level: .aboveRoads)
+        let rect = overlays.dropFirst().reduce(overlays[0].boundingMapRect) { MKMapRectUnion($0, $1.boundingMapRect) }
+        mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 150, left: 20, bottom: 20, right: 20), animated: true)
     }
     
     @IBAction func fromTextFieldDone() {
@@ -87,8 +91,11 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             }
             from = .coordinate(location.coordinate)
         }
-        if let annotations = state?.annotations {
+        if let annotations = state?.annotations, !annotations.isEmpty {
             mapView.removeAnnotations(annotations)
+        }
+        if let overlays = state?.overlays, !overlays.isEmpty {
+            mapView.removeOverlays(overlays)
         }
         state = RoutingState(from: from, to: .name(to))
     }
@@ -97,12 +104,20 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         if let polyline = overlay as? MKPolyline {
             let renderer = MKPolylineRenderer(polyline: polyline)
             renderer.strokeColor = state?.strokeColor(for: polyline)?.withAlphaComponent(0.5)
-            renderer.lineWidth = 2
+            renderer.lineWidth = 5
             return renderer
         }
         if let tile = overlay as? MKTileOverlay {
             return MKTileOverlayRenderer(tileOverlay: tile)
         }
         return MKOverlayRenderer(overlay: overlay)
+    }
+    
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        if mapView.camera.altitude < 1265.4 {
+            let camera = mapView.camera
+            let newCamera = MKMapCamera(lookingAtCenter: camera.centerCoordinate, fromDistance: 1265.5, pitch: camera.pitch, heading: camera.heading)
+            mapView.setCamera(newCamera, animated: true)
+        }
     }
 }

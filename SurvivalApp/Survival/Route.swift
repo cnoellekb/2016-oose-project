@@ -24,7 +24,7 @@ class Route {
     fileprivate var routingQuery: URLComponents {
         var query = URLComponents()
         query.scheme = "http"
-        query.host = "www.mapquestapi.com"
+        query.host = "open.mapquestapi.com"
         query.path = "/directions/v2/route"
         query.queryItems = [
             URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
@@ -51,7 +51,7 @@ class Route {
     private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "http"
-        urlComponents.host = "www.mapquestapi.com"
+        urlComponents.host = "open.mapquestapi.com"
         urlComponents.path = "/directions/v2/routeshape"
         urlComponents.queryItems = [
             URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
