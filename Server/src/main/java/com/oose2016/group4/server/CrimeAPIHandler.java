@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 public class CrimeAPIHandler extends RequestHandler {
 	private static String URL_CRIME_SOURCE ="https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
 	
-	  /**
+	/**
      * Fetch raw crime data from data.baltimorecity.gov and transform the result into proper form to store.
      * @return the crime data in an ArrayList
      * @throws IOException
