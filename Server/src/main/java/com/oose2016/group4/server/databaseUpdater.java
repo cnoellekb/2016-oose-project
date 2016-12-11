@@ -44,7 +44,6 @@ public class databaseUpdater {
     }
 
     /**
-<<<<<<< HEAD
      * Fetch raw crime data from data.baltimorecity.gov and transform the result into proper form to store.
      * @return the crime data in an ArrayList
      * @throws IOException
@@ -59,8 +58,6 @@ public class databaseUpdater {
     }
 
     /**
-=======
->>>>>>> origin/fixBackendTesting
      * Main task of the databaseUpdater class
      * @throws IOException
      */
