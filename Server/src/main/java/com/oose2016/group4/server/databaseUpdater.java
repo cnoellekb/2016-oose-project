@@ -23,9 +23,7 @@ public class databaseUpdater {
             + "type TEXT, PRIMARY KEY (date, linkId, type));";
 
     private static String SQL_INITIATE_LINKID_GRID="CREATE TABLE IF NOT EXISTS grids "
-            + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT2010 INTEGER NOT NULL, "
-            + " AADT2011 INTEGER NOT NULL, AADT2012 INTEGER NOT NULL, AADT2013 INTEGER NOT NULL, "
-            + " AADT2014 INTEGER NOT NULL, AADT2015 INTEGER NOT NULL, AADT2016 INTEGER NOT NULL, "
+            + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT INTEGER NOT NULL, "
             + " PRIMARY KEY (x, y));";
 
     private Connection mConnection;
@@ -45,18 +43,24 @@ public class databaseUpdater {
     }
 
     private void updateLinkIdGrid(){
-
+        //TODO implement processing and parsing of the traffics data, and populate the grids table accordingly;
     }
 
     /**
      * Main task of the databaseUpdater class
      * @throws IOException
      */
+    public void update(String table) throws IOException {
+        updateTraffics();
+        updateCrimes();
+    }
 
 
-
-
-
+    /**
+     * The heavy weight of the updateDB operation. Fetches data from crime library, parse each record and process appropriately.
+     * updateTraffics has to be executed after updateCrimes.
+     * @throws IOException
+     */
     private void updateCrimes() throws IOException {
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
 
@@ -115,9 +119,16 @@ public class databaseUpdater {
                 try {
                     linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
+                    /*
+                    Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate the AADT value (the traffic
+                    factor) for this grid. Then we can update the grids table with due accommodation of this crime record
+                     */
+                    int aadt = getGridAADT(x,y);
+
                     String sqlUpdateGrids = "INSERT INTO grids"
-                            + "VALUES(:xParam, :yParam, :linkIdByXYParam, :crimeTypeWeightParam, 0, 0, 0, 0, 0, 0, 0);";
-                    mConnection.createQuery(sqlUpdateGrids).addParameter("xParam", x)
+                            + "VALUES(:xParam, :yParam, :linkIdByXYParam, :crimeTypeWeightParam * 10000 / :aadtParam, :aadtParam);";
+                    mConnection.createQuery(sqlUpdateGrids)
+                            .addParameter("xParam", x)
                             .addParameter("yParam", y)
                             .addParameter("linkIdByXYParam", linkIdByXY)
                             .addParameter("crimeTypeWeightParam", crimeTypeWeight)
@@ -126,7 +137,29 @@ public class databaseUpdater {
                     ioe.printStackTrace();
                 }
             } else {
+                if (linkIdByXY == 0) {
+                    try {
+                        linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
+                        String sql1 = "UPDATE grids SET linkId=:linkIdParam WHERE x=:xParam AND y=:yParam";
+                        mConnection.createQuery(sql1)
+                                .addParameter("linkIdParam", linkIdByXY)
+                                .addParameter("xParam", x)
+                                .addParameter("yParam", y)
+                                .executeUpdate();
+
+
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
+                }
+
+                String sql2 = "UPDATE grids SET alarm=alarm+:crimeTypeWeightParam*10000/AADT WHERE x=:xParam AND y=:yParam";
+                mConnection.createQuery(sql2)
+                        .addParameter("crimeTypeWeightParam", crimeTypeWeight)
+                        .addParameter("xParam", x)
+                        .addParameter("yParam", y)
+                        .executeUpdate();
             }
 
             String sqlUpdateCrimes = "insert into crimes(date, linkId, address, latitude, longitude, type) "
@@ -141,6 +174,10 @@ public class databaseUpdater {
                     .executeUpdate();
 
         }
+
+    }
+
+    private void updateTraffics() throws IOException {
 
     }
 
@@ -169,6 +206,30 @@ public class databaseUpdater {
         }
         return 0;
     }
+
+    private int getGridAADT(int x, int y) {
+        double leftAADT = discoverClosestAADT(x, y, -1, 0, 10);
+        double rightAADT = discoverClosestAADT(x,y, 1, 0, 10);
+        double upAADT = discoverClosestAADT(x, y, 0, 1, 10);
+        double downAADT = discoverClosestAADT(x, y, 0, -1, 10);
+        return (int) (leftAADT + rightAADT + upAADT + downAADT);
+    }
+
+    private double discoverClosestAADT(int x, int y, int xIncrement, int yIncrement, int maxDistanceCounter) {
+        if (maxDistanceCounter ==0 ) {
+            return 0;
+        }
+        String sqlFetchAADT = "SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam";
+        Integer aadt = mConnection.createQuery(sqlFetchAADT)
+                .addParameter("xParam", x)
+                .addParameter("yParam", y)
+                .executeScalar(Integer.class);
+        if (aadt != null) {
+            return aadt;
+        }
+        return 0.8* discoverClosestAADT(x+xIncrement, y+yIncrement, xIncrement, yIncrement, maxDistanceCounter-1);
+    }
+
 
 
 }
