@@ -30,9 +30,6 @@ public class databaseUpdater {
 
     private Connection mConnection;
 
-    private static String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
-    private static String URL_MAPQUEST_ENDPOINT = "http://www.mapquestapi.com/directions/v2/findlinkid";
-    private static String URL_CRIME_SOURCE ="https://data.baltimorecity.gov/resource/4ih5-d5d5.json";
     private static String URL_TRAFFIC_SOURCE="http://data.imap.maryland.gov/datasets/3f4b959826c34480be3e4740e4ee025f_1.geojson";
 
     public databaseUpdater(Connection conn){
@@ -42,11 +39,12 @@ public class databaseUpdater {
     /**
      * Execute the initial SQL query to make sure of the table existing before updating tuples into it
      */
-    private void initialUpdate(){
+    protected void initialUpdate(){
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
     }
 
     /**
+<<<<<<< HEAD
      * Fetch raw crime data from data.baltimorecity.gov and transform the result into proper form to store.
      * @return the crime data in an ArrayList
      * @throws IOException
@@ -61,12 +59,14 @@ public class databaseUpdater {
     }
 
     /**
+=======
+>>>>>>> origin/fixBackendTesting
      * Main task of the databaseUpdater class
      * @throws IOException
      */
-    public void update() throws IOException {
+    public void update(String table) throws IOException {
         initialUpdate();
-        ArrayList<Object> crimeList = preProccessCrimeData();
+        ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
 
@@ -85,11 +85,11 @@ public class databaseUpdater {
             ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
             double latitude = a.get(1);
             double longitude = a.get(0);
-            int linkid = requestLinkId(latitude, longitude);
+            int linkid = MapQuestHandler.requestLinkId(latitude, longitude);
 
             if (inOut.equals("I")) continue;
 
-            String sql = "insert into crimes(date, linkId, address, latitude, longitude, type) "
+            String sql = "insert into :table(date, linkId, address, latitude, longitude, type) "
                     + "SELECT * FROM (SELECT :dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam) "
                     + "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
                     + "and type = :typeParam);";
@@ -98,50 +98,7 @@ public class databaseUpdater {
             query.addParameter("dateParam", date).addParameter("linkIdParam", linkid)
                     .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
                     .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
-                    .executeUpdate();
+                    .addParameter("table", table).executeUpdate();
         }
     }
-
-    /**
-     * GETs the linkId associated with a particular crime's coordinates.
-     * @param lat latitude
-     * @param lng longitude
-     * @return the linkId of that crime
-     * @throws IOException if GET request doesn't work
-     */
-    private int requestLinkId(double lat, double lng) throws IOException {
-        String url = URL_MAPQUEST_ENDPOINT + "?key=" + MAPQUEST_KEY + "&lat=" + lat + "&lng=" + lng;
-        String responseString = makeGetRequest(url);
-        Map<String, Object> responseMap = new Gson().fromJson(responseString, Map.class);
-        // TODO determine the issue here...
-        double linkiddble = (double) responseMap.get("linkId");
-        int linkid = (int) linkiddble;
-        return linkid;
-    }
-
-    /**
-     * Takes in any url (assumed to include endpoint and params) and makes a
-     * GET request.
-     * @param url compose of endpoint and any potential parameters
-     * @return the response object as a JSON
-     * @throws IOException if GET request doesn't work
-     */
-    private String makeGetRequest(String url) throws IOException {
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("GET");
-
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        String response = "";
-
-        while ((inputLine = in.readLine()) != null) {
-            response += inputLine;
-        }
-        in.close();
-        return response;
-    }
-
 }

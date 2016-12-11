@@ -85,16 +85,17 @@ public class SurvivalService {
 	 * @param timeOfDay the time of day
 	 * @return the results of our query to the database
 	 */
-	public List<Crime> getCrimes(CrimePoint from, CrimePoint to, int timeOfDay) {
+	public List<Crime> getCrimes(Crime from, Crime to, int timeOfDay, String table) {
 		try (Connection conn = db.open()) {
-			String sql = "SELECT date, address, latitude, longitude, type FROM crimes WHERE "
+			String sql = "SELECT date, address, latitude, longitude, type FROM :table WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
 					+ "longitude >= :fromLng AND longitude <= :toLng AND date <= :toDate;";
 					//+ "time = :timeOfDay"; TODO figure out what to do with this
 			Query query = conn.createQuery(sql);
 			query.addParameter("fromLat", from.getLat()).addParameter("toLat", to.getLat())
 				.addParameter("fromLng", from.getLng()).addParameter("toLng", to.getLng())
-				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate());
+				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate())
+				.addParameter("table", table);
 				//.addParameter("timeOfDay", timeOfDay);
 			List<Crime> results = query.executeAndFetch(Crime.class);
 			return results;
@@ -109,10 +110,11 @@ public class SurvivalService {
 	 * Only includes data that has all of the fields we need and doesn't have a matching
 	 * compound primary key in the existing data: (date, linkId, type).
 	 */
-	public void updateDB() {
+	public void updateDB(String table) {
 		try (Connection conn = db.open()){
 			databaseUpdater databaseUpdater = new databaseUpdater(conn);
-			databaseUpdater.update();
+			databaseUpdater.initialUpdate();
+			databaseUpdater.update(table);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Sql2oException e) {
