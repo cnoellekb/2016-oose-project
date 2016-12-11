@@ -20,10 +20,10 @@ public class databaseUpdater {
     private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
-            + "type TEXT, alarm REAL NOT NULL, PRIMARY KEY (date, linkId, type));";
+            + "type TEXT, PRIMARY KEY (date, linkId, type));";
 
     private static String SQL_INITIATE_LINKID_GRID="CREATE TABLE IF NOT EXISTS grid "
-            + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, AADT2010 INTEGER NOT NULL, "
+            + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT2010 INTEGER NOT NULL, "
             + " AADT2011 INTEGER NOT NULL, AADT2012 INTEGER NOT NULL, AADT2013 INTEGER NOT NULL, "
             + " AADT2014 INTEGER NOT NULL, AADT2015 INTEGER NOT NULL, AADT2016 INTEGER NOT NULL, "
             + " PRIMARY KEY (x, y));";
@@ -43,16 +43,6 @@ public class databaseUpdater {
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
     }
 
-    /**
-     * Fetch raw crime data from data.baltimorecity.gov and transform the result into proper form to store.
-     * @return the crime data in an ArrayList
-     * @throws IOException
-     */
-    private ArrayList<Object> preProccessCrimeData() throws IOException {
-        String stringResult = makeGetRequest(URL_CRIME_SOURCE);
-        return new Gson().fromJson(stringResult, ArrayList.class);
-    }
-
     private void updateLinkIdGrid(){
 
     }
@@ -62,11 +52,18 @@ public class databaseUpdater {
      * @throws IOException
      */
     public void update(String table) throws IOException {
-        initialUpdate();
+//        initialUpdate();
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
+
+        /*
+        Get the date of the most recent crime record of last updateDB operation. Ditch these records to reduce the workload of this updateDB.
+         */
+        String sqlDate = "SELECT MAX(date) FROM crimes";
+        int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
+
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
-
+            //ditch record if incomplete.
             if (!crime.containsKey("crimedate") || !crime.containsKey("description")
                     || !crime.containsKey("inside_outside") || !crime.containsKey("location")
                     || !crime.containsKey("location_1"))
@@ -75,6 +72,9 @@ public class databaseUpdater {
             String dateStr = (String) crime.get("crimedate");
             LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             int date = 86400 * (int) dateLocal.toEpochDay();
+            //ditch record if has been covered in previous updateDB operations.
+            if(date <= dateLastUpdate) continue;
+
             String type = (String) crime.get("description");
             String inOut = (String) crime.get("inside_outside");
             String address = (String) crime.get("location");
@@ -82,7 +82,13 @@ public class databaseUpdater {
             ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
             double latitude = a.get(1);
             double longitude = a.get(0);
-            int linkid = MapQuestHandler.requestLinkId(latitude, longitude);
+
+            //We only take into consideration crime records that occurs in a relative small area around Homewood. This is enough
+            //to display the essence of the project and necessary to cope with MapQuest's access restrictions on non-commercial users.
+            if (!latitude < 39.353414 || !latitude > 39.282497 || !longitude < -76.549413 || !longitude > -76.673241) continue;
+
+
+//            int linkid = MapQuestHandler.requestLinkId(latitude, longitude);
 
             if (inOut.equals("I")) continue;
 
@@ -96,6 +102,74 @@ public class databaseUpdater {
                     .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
                     .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
                     .addParameter("table", table).executeUpdate();
+        }
+    }
+
+    private void updateCrimes(String table) throws IOException {
+        ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
+
+        /*
+        Get the date of the most recent crime record of last updateDB operation. Ditch these records to reduce the workload of this updateDB.
+         */
+        String sqlDate = "SELECT MAX(date) FROM crimes";
+        int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
+
+        for (Object crimeObj: crimeList) {
+            Map<String, Object> crime = (Map<String,Object>) crimeObj;
+            //ditch record if incomplete.
+            if (!crime.containsKey("crimedate") || !crime.containsKey("description")
+                    || !crime.containsKey("inside_outside") || !crime.containsKey("location")
+                    || !crime.containsKey("location_1"))
+                continue;
+
+            String dateStr = (String) crime.get("crimedate");
+            LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            int date = 86400 * (int) dateLocal.toEpochDay();
+            //ditch record if has been covered in previous updateDB operations.
+            if(date <= dateLastUpdate) continue;
+
+            String type = (String) crime.get("description");
+            String inOut = (String) crime.get("inside_outside");
+            String address = (String) crime.get("location");
+            Map<String, Object> location_1 = (Map<String, Object>) crime.get("location_1");
+            ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
+            double latitude = a.get(1);
+            double longitude = a.get(0);
+
+            //We only take into consideration crime records that occurs in a relative small area around Homewood. This is enough
+            //to display the essence of the project and necessary to cope with MapQuest's access restrictions on non-commercial users.
+            if (! (latitude < 39.353414) || !(latitude > 39.282497) || !(longitude < -76.549413) || !(longitude > -76.673241) )
+                continue;
+
+            if (inOut.equals("I")) continue;
+
+            Grid grid = new Grid(latitude,longitude);
+            int x = grid.getX();
+            int y= grid.getY();
+
+            String sqlFetchLinkId = "SELECT "
+            int linkId =
+
+            String sql = "insert into :table(date, linkId, address, latitude, longitude, type) "
+                    + "SELECT * FROM (SELECT :dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam) "
+                    + "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
+                    + "and type = :typeParam);";
+
+            Query query = mConnection.createQuery(sql);
+            query.addParameter("dateParam", date).addParameter("linkIdParam", linkid)
+                    .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
+                    .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
+                    .addParameter("table", table).executeUpdate();
+        }
+
+    }
+
+    private Coordinate gridLatitudeLongtitude(double lat, double  lng) {
+        try{
+            Coordinate coordinate = new Coordinate(lat, lng);
+            coordinate.gridCordinate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
