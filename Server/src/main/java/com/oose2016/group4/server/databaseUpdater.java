@@ -28,10 +28,7 @@ public class databaseUpdater {
             + " AADT2014 INTEGER NOT NULL, AADT2015 INTEGER NOT NULL, AADT2016 INTEGER NOT NULL, "
             + " PRIMARY KEY (x, y));";
 
-
-
     private Connection mConnection;
-//    private String mRawData;
 
     private static String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
     private static String URL_MAPQUEST_ENDPOINT = "http://www.mapquestapi.com/directions/v2/findlinkid";
@@ -40,7 +37,6 @@ public class databaseUpdater {
 
     public databaseUpdater(Connection conn){
         mConnection = conn;
-//        mRawData = data;
     }
 
     /**
@@ -58,6 +54,10 @@ public class databaseUpdater {
     private ArrayList<Object> preProccessCrimeData() throws IOException {
         String stringResult = makeGetRequest(URL_CRIME_SOURCE);
         return new Gson().fromJson(stringResult, ArrayList.class);
+    }
+
+    private void updateLinkIdGrid(){
+
     }
 
     /**
