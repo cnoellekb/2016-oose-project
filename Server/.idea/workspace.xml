@@ -75,12 +75,12 @@
           <file leaf-file-name="DatabaseUpdater.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/DatabaseUpdater.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="719">
-                  <caret line="316" column="105" lean-forward="false" selection-start-line="316" selection-start-column="105" selection-end-line="316" selection-end-column="105" />
+                <state relative-caret-position="690">
+                  <caret line="227" column="64" lean-forward="true" selection-start-line="227" selection-start-column="64" selection-end-line="227" selection-end-column="64" />
                   <folding>
                     <element signature="imports" expanded="true" />
-                    <element signature="e#1271#1272#0" expanded="true" />
-                    <element signature="e#1305#1306#0" expanded="true" />
+                    <element signature="e#1292#1293#0" expanded="true" />
+                    <element signature="e#1326#1327#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -165,11 +165,11 @@
           </split-first>
           <split-second>
             <leaf>
-              <file leaf-file-name="MapQuestHandler.java" pinned="false" current-in-tab="false">
+              <file leaf-file-name="MapQuestHandler.java" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/MapQuestHandler.java">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="153">
-                      <caret line="16" column="27" lean-forward="true" selection-start-line="16" selection-start-column="27" selection-end-line="16" selection-end-column="27" />
+                    <state relative-caret-position="270">
+                      <caret line="22" column="33" lean-forward="true" selection-start-line="22" selection-start-column="33" selection-end-line="22" selection-end-column="33" />
                       <folding>
                         <element signature="imports" expanded="true" />
                       </folding>
@@ -189,11 +189,11 @@
                   </provider>
                 </entry>
               </file>
-              <file leaf-file-name="Grid.java" pinned="false" current-in-tab="true">
+              <file leaf-file-name="Grid.java" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/Grid.java">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="300">
-                      <caret line="20" column="17" lean-forward="false" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
+                    <state relative-caret-position="198">
+                      <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="29" selection-end-column="5" />
                       <folding />
                     </state>
                   </provider>
@@ -228,8 +228,9 @@
     <findStrings>
       <find>TrafficAPI</find>
       <find>Traffic</find>
-      <find>traffic</find>
       <find>trafficList</find>
+      <find>Param</find>
+      <find>traffic</find>
     </findStrings>
   </component>
   <component name="GradleLocalSettings">
@@ -765,8 +766,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1271#1272#0" expanded="true" />
-            <element signature="e#1305#1306#0" expanded="true" />
+            <element signature="e#1292#1293#0" expanded="true" />
+            <element signature="e#1326#1327#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -859,8 +860,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1271#1272#0" expanded="true" />
-            <element signature="e#1305#1306#0" expanded="true" />
+            <element signature="e#1292#1293#0" expanded="true" />
+            <element signature="e#1326#1327#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -953,8 +954,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1271#1272#0" expanded="true" />
-            <element signature="e#1305#1306#0" expanded="true" />
+            <element signature="e#1292#1293#0" expanded="true" />
+            <element signature="e#1326#1327#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1095,14 +1096,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/MapQuestHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="6" column="20" lean-forward="true" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/RequestHandler.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-57">
@@ -1139,14 +1132,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/Grid.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="17" lean-forward="false" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/SurvivalService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="733">
@@ -1172,14 +1157,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/Grid.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="29" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/MapQuestHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="6" column="20" lean-forward="true" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/DatabaseUpdater.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="719">
-          <caret line="316" column="105" lean-forward="false" selection-start-line="316" selection-start-column="105" selection-end-line="316" selection-end-column="105" />
+        <state relative-caret-position="690">
+          <caret line="227" column="64" lean-forward="true" selection-start-line="227" selection-start-column="64" selection-end-line="227" selection-end-column="64" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1271#1272#0" expanded="true" />
-            <element signature="e#1305#1306#0" expanded="true" />
+            <element signature="e#1292#1293#0" expanded="true" />
+            <element signature="e#1326#1327#0" expanded="true" />
           </folding>
         </state>
       </provider>

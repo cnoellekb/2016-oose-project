@@ -20,7 +20,7 @@ public class DatabaseUpdater {
     private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
-            + "type TEXT, PRIMARY KEY (date, linkId, type));";
+            + "type TEXT, PRIMARY KEY (date, linkId, type, latitude, longitude));";
 
     private static String SQL_INITIATE_LINKID_GRID="CREATE TABLE IF NOT EXISTS grids "
             + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT INTEGER NOT NULL, "
@@ -124,21 +124,29 @@ public class DatabaseUpdater {
              */
             if ( !getLocationRange(latitude, longitude) ) continue;
 
+            //Map the coordinates to grid coordinates;
             Grid grid = new Grid(latitude,longitude);
             int x = grid.getX();
             int y = grid.getY();
 
-            String sqlFetchLinkId = "SELECT :linkIdParam FROM grids WHERE x=:xParam and y=:yParam";
+            String sqlFetchLinkId = "SELECT linkId FROM grids WHERE x= :xParam and y= :yParam ";
             Query queryFetchLinkID = mConnection.createQuery(sqlFetchLinkId);
-            Integer linkIdByXY = queryFetchLinkID.addParameter("xParam", x).addParameter("yParam", y).executeScalar(Integer.class);
+            Integer linkIdByXY = queryFetchLinkID
+                    .addParameter("xParam", x)
+                    .addParameter("yParam", y)
+                    .executeScalar(Integer.class);
 
             if (linkIdByXY == null ) {
+                /*
+                This grid has not been updated either by traffic source or crimes source.
+                 */
                 try {
                     linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
                     /*
-                    Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate the AADT value (the traffic
-                    factor) for this grid. Then we can update the grids table with due accommodation of this crime record
+                    Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate
+                    the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
+                     of this crime record.
                      */
                     int aadt = getGridAADT(x,y);
 
@@ -149,47 +157,81 @@ public class DatabaseUpdater {
                             .addParameter("yParam", y)
                             .addParameter("linkIdByXYParam", linkIdByXY)
                             .addParameter("crimeTypeWeightParam", crimeTypeWeight)
+                            .addParameter("aadtParam", aadt)
                             .executeUpdate();
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
             } else {
+                /*
+                In this situation, the grid has been discovered by at least one traffic update, but may or may not have been
+                discovered by a crimes  update;
+                 */
                 if (linkIdByXY == 0) {
+                    /*
+                    In this situation, the grid also has never been discovered by any crimes update. That is saying, no
+                    crime record has existed on this grid. Until now :(
+                     */
                     try {
                         linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
-                        String sql1 = "UPDATE grids SET linkId=:linkIdParam WHERE x=:xParam AND y=:yParam";
-                        mConnection.createQuery(sql1)
+                        String sqlUpdateCrimeForGrid = "UPDATE grids SET linkId= :linkIdParam WHERE x= :xParam AND y= :yParam";
+                        mConnection.createQuery(sqlUpdateCrimeForGrid)
                                 .addParameter("linkIdParam", linkIdByXY)
                                 .addParameter("xParam", x)
                                 .addParameter("yParam", y)
                                 .executeUpdate();
-
-
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }
                 }
 
-                String sql2 = "UPDATE grids SET alarm=alarm+:crimeTypeWeightParam*10000/AADT WHERE x=:xParam AND y=:yParam";
-                mConnection.createQuery(sql2)
+                /*
+                Either way, since this grid has been discovered already, we have to update it with this crime record's weight.
+                 */
+                String sqlUpdateCrimeWeightForGrid = "UPDATE grids SET alarm=alarm+ :crimeTypeWeightParam * 10000/AADT WHERE x= :xParam AND y= :yParam";
+                mConnection.createQuery(sqlUpdateCrimeWeightForGrid)
                         .addParameter("crimeTypeWeightParam", crimeTypeWeight)
                         .addParameter("xParam", x)
                         .addParameter("yParam", y)
                         .executeUpdate();
             }
 
-            String sqlUpdateCrimes = "insert into crimes(date, linkId, address, latitude, longitude, type) "
-                    + "SELECT * FROM (SELECT :dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam) "
-                    + "WHERE NOT EXISTS (SELECT * FROM crimes WHERE date = :dateParam AND linkId = :linkIdParam "
-                    + "AND type = :typeParam);";
+            /*
+            Store the crime data entry into table crimes for future reference. For example, to keep track of all updated
+            crime records' dates so that next updateCrimes only consider the new records;
+             */
 
-            Query query = mConnection.createQuery(sqlUpdateCrimes);
-            query.addParameter("dateParam", date).addParameter("linkIdParam", linkIdByXY)
-                    .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
-                    .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
-                    .executeUpdate();
+            /*
+            Check if there has been a duplicate record already in the database;
+             */
+            String sqlQueryCrimesPrimaryKey = " SELECT date FROM crimes WHERE "
+                    + " date= :dateParam AND "
+                    + " linkId= :linkIdParam AND "
+                    + " type= :typeParam AND "
+                    + " latitude= :latParam AND "
+                    + " longitude= :lngParam; ";
+            Integer datePrevious = mConnection.createQuery(sqlQueryCrimesPrimaryKey)
+                    .addParameter("dateParam", date)
+                    .addParameter("linkIdParam", linkIdByXY)
+                    .addParameter("typeParam", type)
+                    .addParameter("latParam", latitude)
+                    .addParameter("lngParam", longitude)
+                    .executeScalar(Integer.class);
 
+            if ( datePrevious== null ) {
+                String sqlInsertToCrimes = " INSERT INTO crimes "
+                        + " VALUES( :dateParam, :linkIdParam, :addressParam, :latParam, :lngParam, :typeParam); ";
+
+                mConnection.createQuery(sqlInsertToCrimes)
+                        .addParameter("dateParam", date)
+                        .addParameter("linkIdParam", linkIdByXY)
+                        .addParameter("addressParam", address)
+                        .addParameter("typeParam", type)
+                        .addParameter("latParam", latitude)
+                        .addParameter("lngParam", longitude)
+                        .executeUpdate();
+            }
         }
 
     }
@@ -234,7 +276,7 @@ public class DatabaseUpdater {
                     int y = grid.getY();
 
                     //Check to see if this grid has been updated with traffic data;
-                    String sqlQueryGrid = " SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam;";
+                    String sqlQueryGrid = " SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam;";
                     Integer aadtInGrids = mConnection.createQuery(sqlQueryGrid)
                             .addParameter("xParam", x)
                             .addParameter("yParam", y)
@@ -258,7 +300,7 @@ public class DatabaseUpdater {
                     If this grid has already been updated, with traffic data, add the AADT value for the current grid
                     into the tuple's previous AADT value;
                      */
-                    String sqlUpdateGrid = " UPDATE grids SET AADT=AADT+:aadtParam WHERE x=:xParam AND y=:yParam; ";
+                    String sqlUpdateGrid = " UPDATE grids SET AADT=AADT+ :aadtParam WHERE x= :xParam AND y= :yParam; ";
                     mConnection.createQuery(sqlUpdateGrid)
                             .addParameter("aadtParam", AADT)
                             .addParameter("xParam", x)
@@ -316,7 +358,7 @@ public class DatabaseUpdater {
      * @param longitude
      * @return boolean value denoting whether the coordinate is eligible for the updater's consideration.
      */
-    private boolean getLocationRange(int latitude, int longitude) {
+    private boolean getLocationRange(double latitude, double longitude) {
         return  (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
     }
 
@@ -332,7 +374,7 @@ public class DatabaseUpdater {
         if (maxDistanceCounter ==0 ) {
             return 1;
         }
-        String sqlFetchAADT = "SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam";
+        String sqlFetchAADT = "SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam";
         Integer aadt = mConnection.createQuery(sqlFetchAADT)
                 .addParameter("xParam", x)
                 .addParameter("yParam", y)
