@@ -204,13 +204,11 @@ public class ServerTest {
 	@Test
 	public void testUpdateDB() {
 		SurvivalService s = new SurvivalService(dSource);
-		//MapQuestHandler mq = mock(MapQuestHandler.class);
 		try (Connection conn = s.getDb().open()){
 			PowerMockito.mockStatic(MapQuestHandler.class);
 			PowerMockito.when(MapQuestHandler.requestLinkId(anyDouble(), anyDouble())).thenReturn(2);
-			//MapQuestHandler mq = createMock(MapQuestHandler.class);
-			//expect(mq.requestLinkId(isA(Double.class), isA(Double.class))).andReturn(2);
-			//replay(mq);
+			assertEquals(MapQuestHandler.requestLinkId(3, 5.9), 2);
+
 			String json = "[{\":@computed_region_5kre_ccpb\":\"221\","
 				+ "\":@computed_region_s6p5_2pgr\":\"27301\""
 				+ ",\"crimecode\":\"6D\","
@@ -227,13 +225,11 @@ public class ServerTest {
 				+ "\"post\":\"743\","
 				+ "\"total_incidents\":\"1\"}]";
 			
-			//CrimeAPIHandler c = createMock(CrimeAPIHandler.class);
-			//expect(CrimeAPIHandler.preProccessCrimeData()).andReturn(new Gson().fromJson(json, ArrayList.class));
 			PowerMockito.mockStatic(CrimeAPIHandler.class);
 			PowerMockito.when(CrimeAPIHandler.preProccessCrimeData())
 				.thenReturn(new Gson().fromJson(json, ArrayList.class));
 			
-			s.updateDB("TestCrimes");
+			s.updateDB("TestCrimes", conn);
 			
 			String selectSQL = "SELECT * FROM TestCrimes";
 			
@@ -257,12 +253,12 @@ public class ServerTest {
 		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
-
+/*
 		try (Connection conn = db.open()) {
 			String sql = "DROP TABLE IF EXISTS TestCrimes";
 			conn.createQuery(sql).executeUpdate();
 		}
-	
+	*/
 		return dataSource;
 	}
 }

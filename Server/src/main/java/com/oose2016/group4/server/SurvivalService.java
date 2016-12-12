@@ -113,12 +113,26 @@ public class SurvivalService {
 	public void updateDB(String table) {
 		try (Connection conn = db.open()){
 			databaseUpdater databaseUpdater = new databaseUpdater(conn);
-			databaseUpdater.initialUpdate();
-			databaseUpdater.update(table);
+			databaseUpdater.update(table, conn);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes", e);
+		}
+	}
+	
+	/**
+	 * Creates or updates the server.db database that holds all of the crime data.
+	 * Only includes data that has all of the fields we need and doesn't have a matching
+	 * compound primary key in the existing data: (date, linkId, type).
+	 */
+	public void updateDB(String table, Connection conn) {
+		databaseUpdater databaseUpdater = new databaseUpdater(conn);
+		try {
+			databaseUpdater.update(table, conn);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

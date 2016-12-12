@@ -17,10 +17,10 @@ import org.sql2o.Query;
 import com.google.gson.Gson;
 
 public class databaseUpdater {
-    private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
+    /*private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
-            + "type TEXT, alarm REAL NOT NULL, PRIMARY KEY (date, linkId, type));";
+            + "type TEXT, alarm REAL NOT NULL, PRIMARY KEY (date, linkId, type));"; */
 
     private static String SQL_INITIATE_LINKID_GRID="CREATE TABLE IF NOT EXISTS grid "
             + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, AADT2010 INTEGER NOT NULL, "
@@ -43,16 +43,30 @@ public class databaseUpdater {
     /**
      * Execute the initial SQL query to make sure of the table existing before updating tuples into it
      */
-    protected void initialUpdate(){
-        mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
+    protected void initialUpdate(String table, Connection conn){
+    	System.out.println("init update");
+        /*conn.createQuery("CREATE TABLE IF NOT EXISTS :table "
+                + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
+                + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
+                + "type TEXT NOT NULL, alarm REAL NOT NULL, PRIMARY KEY (date, linkId, type));")
+                .addParameter("table", table).executeUpdate(); */
+
+        String sql1 = "CREATE TABLE IF NOT EXISTS TestCrimes "
+				+ "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
+				+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
+				+ "type TEXT, PRIMARY KEY (date, linkId, type));";
+		conn.createQuery(sql1).executeUpdate();
+		
+        System.out.println("create query");
+
     }
 
     /**
      * Main task of the databaseUpdater class
      * @throws IOException
      */
-    public void update(String table) throws IOException {
-        initialUpdate();
+    public void update(String table, Connection conn) throws IOException {
+        initialUpdate(table, conn);
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
@@ -81,7 +95,7 @@ public class databaseUpdater {
                     + "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
                     + "and type = :typeParam);";
 
-            Query query = mConnection.createQuery(sql);
+            Query query = conn.createQuery(sql);
             query.addParameter("dateParam", date).addParameter("linkIdParam", linkid)
                     .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
                     .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
