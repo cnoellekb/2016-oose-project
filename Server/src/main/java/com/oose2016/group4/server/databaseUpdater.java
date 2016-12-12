@@ -48,6 +48,7 @@ public class DatabaseUpdater {
 
     /**
      * Main task of the DatabaseUpdater class
+     * TODO consider making bot updateTraffics and updateCrimes abstract so that we have an Template Method pattern;
      * @throws IOException
      */
     public void update(String table) throws IOException {
@@ -66,6 +67,9 @@ public class DatabaseUpdater {
         String sqlQueryUpdateCounter = " SELECT updatecount FROM updatelog WHERE sourcename='crime'; ";
         Integer crimeUpdateCount = mConnection.createQuery(sqlQueryUpdateCounter).executeScalar(Integer.class);
 
+        /*
+        Initialize the tuple in updatelog for crimes if it is not there yet.
+         */
         if ( crimeUpdateCount == null ) {
             String sqlInitializeCount = " INSERT INTO updatelog VALUES ( 'crime', 0); ";
             mConnection.createQuery(sqlInitializeCount).executeUpdate();
@@ -80,7 +84,6 @@ public class DatabaseUpdater {
         String sqlDate = "SELECT MAX(date) FROM crimes";
         int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
 
-        //TODO refactor this for loop outside to a method; or even to an abstract method to be implemented by subclasses;
         for (Object crimeEntry: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeEntry;
 
@@ -256,7 +259,8 @@ public class DatabaseUpdater {
      */
     private void updateTraffics() throws IOException {
         /*
-        Make sure the grids table only get updated once.
+        Make sure the grids table only get updated once. If there is a count value for 'traffic' in the log, it means updateTraffic
+        has been executed before. Abort this invocation.
          */
         String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
         Integer trafficUpdateCount = mConnection.createQuery(sqlQueryLog).executeScalar(Integer.class);
@@ -298,7 +302,6 @@ public class DatabaseUpdater {
                     if ( aadtInGrids == null ) {
                         String sqlInsertCoordinate = "INSERT INTO grids "
                                 + " VALUES(:xParam, :yParam, 0, 0, :aadtParam); ";
-                                //TODO figure out whether these update values are consistent with updateCrimes's operation;
 
                         mConnection.createQuery(sqlInsertCoordinate)
                                 .addParameter("xParam", x)
@@ -374,26 +377,49 @@ public class DatabaseUpdater {
         return  (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
     }
 
+    /**
+     * For grids that has not been discovered by traffic updates before but is currently being discovered by crime update;
+     * this algorithm calculates the approximate AADT value for the grid, based on the AADT values around this new grid.
+     * @param x x index of the to be discovered grid
+     * @param y y index of the to be discovered grid
+     * @return The AADT value for the grid.
+     */
     private int getGridAADT(int x, int y) {
         double leftAADT = discoverClosestAADT(x, y, -1, 0, 10);
         double rightAADT = discoverClosestAADT(x,y, 1, 0, 10);
         double upAADT = discoverClosestAADT(x, y, 0, 1, 10);
         double downAADT = discoverClosestAADT(x, y, 0, -1, 10);
+        //sum up the influences of the closest grids which has its own AADT values from all four directions.
         return (int) (leftAADT + rightAADT + upAADT + downAADT);
     }
 
+    /**
+     * Helper method for getGridAADT. Recursive in nature;
+     * @param x grid x index
+     * @param y grid y index
+     * @param xIncrement Gave xIncrement a separate argument to increase method's reusablity
+     * @param yIncrement Gave yIncrement a separate argument to increase method's reusablity
+     * @param maxDistanceCounter A counter to to prevent the algorithm from going too far thus affecting performance
+     * @return
+     */
     private double discoverClosestAADT(int x, int y, int xIncrement, int yIncrement, int maxDistanceCounter) {
+        //If reached max distance of the exploration, return lowest value for AADT;
         if (maxDistanceCounter ==0 ) {
             return 1;
         }
+
         String sqlFetchAADT = "SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam";
         Integer aadt = mConnection.createQuery(sqlFetchAADT)
                 .addParameter("xParam", x)
                 .addParameter("yParam", y)
                 .executeScalar(Integer.class);
+
+        //If this (x,y) grid has AADT value, return;
         if (aadt != null) {
             return aadt;
         }
+
+        //Look further if otherwise. Gave the result of next iteration a coefficient of 0.8 to indicate distance's influence on AADT values.
         return 0.8* discoverClosestAADT(x+xIncrement, y+yIncrement, xIncrement, yIncrement, maxDistanceCounter-1);
     }
 
