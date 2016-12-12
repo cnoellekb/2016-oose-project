@@ -63,7 +63,13 @@ public class DatabaseUpdater {
      */
     private void updateCrimes() throws IOException {
 
-        //TODO factor into operations into table log;
+        String sqlQueryUpdateCounter = " SELECT updatecount FROM updatelog WHERE sourcename='crime'; ";
+        Integer crimeUpdateCount = mConnection.createQuery(sqlQueryUpdateCounter).executeScalar(Integer.class);
+
+        if ( crimeUpdateCount == null ) {
+            String sqlInitializeCount = " INSERT INTO updatelog VALUES ( 'crime', 0); ";
+            mConnection.createQuery(sqlInitializeCount).executeUpdate();
+        }
 
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
 
@@ -203,7 +209,8 @@ public class DatabaseUpdater {
              */
 
             /*
-            Check if there has been a duplicate record already in the database;
+            Check if there has been a duplicate record already in the database, and if not, insert this crime entry to the
+            crimes table;
              */
             String sqlQueryCrimesPrimaryKey = " SELECT date FROM crimes WHERE "
                     + " date= :dateParam AND "
@@ -219,7 +226,7 @@ public class DatabaseUpdater {
                     .addParameter("lngParam", longitude)
                     .executeScalar(Integer.class);
 
-            if ( datePrevious== null ) {
+            if ( datePrevious == null ) {
                 String sqlInsertToCrimes = " INSERT INTO crimes "
                         + " VALUES( :dateParam, :linkIdParam, :addressParam, :latParam, :lngParam, :typeParam); ";
 
@@ -234,6 +241,11 @@ public class DatabaseUpdater {
             }
         }
 
+        /*
+        Update log.
+         */
+        String sqlUpdateCounter = " UPDATE updatelog SET updatecount= updatecount+1 WHERE sourcename='crime'; ";
+        mConnection.createQuery(sqlUpdateCounter).executeUpdate();
     }
 
     /**

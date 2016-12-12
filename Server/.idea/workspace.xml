@@ -75,8 +75,8 @@
           <file leaf-file-name="DatabaseUpdater.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/DatabaseUpdater.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="690">
-                  <caret line="227" column="64" lean-forward="true" selection-start-line="227" selection-start-column="64" selection-end-line="227" selection-end-column="64" />
+                <state relative-caret-position="705">
+                  <caret line="244" column="19" lean-forward="true" selection-start-line="244" selection-start-column="19" selection-end-line="244" selection-end-column="19" />
                   <folding>
                     <element signature="imports" expanded="true" />
                     <element signature="e#1292#1293#0" expanded="true" />
@@ -1175,8 +1175,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/oose2016/group4/server/DatabaseUpdater.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="227" column="64" lean-forward="true" selection-start-line="227" selection-start-column="64" selection-end-line="227" selection-end-column="64" />
+        <state relative-caret-position="705">
+          <caret line="244" column="19" lean-forward="true" selection-start-line="244" selection-start-column="19" selection-end-line="244" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#1292#1293#0" expanded="true" />
