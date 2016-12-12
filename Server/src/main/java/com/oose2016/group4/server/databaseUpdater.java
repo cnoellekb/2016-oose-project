@@ -114,10 +114,15 @@ public class DatabaseUpdater {
             double latitude = a.get(1);
             double longitude = a.get(0);
 
-            //We only take into consideration crime records that occurs in a relative small area around Homewood. This is enough
-            //to display the essence of the project and necessary to cope with MapQuest's access restrictions on non-commercial users.
-            if (! (latitude < 39.353414) || !(latitude > 39.282497) || !(longitude < -76.549413) || !(longitude > -76.673241) )
-                continue;
+            /*
+            We only take into consideration crime records that occurs in a relative small area around Homewood. This is enough
+            to display the essence of the project and necessary to cope with MapQuest's access restrictions on non-commercial users.
+             */
+
+            /*
+            If the coordinate of this crime data entry does not satisfy our location range restriction, ditch the record;
+             */
+            if ( !getLocationRange(latitude, longitude) ) continue;
 
             Grid grid = new Grid(latitude,longitude);
             int x = grid.getX();
@@ -302,6 +307,17 @@ public class DatabaseUpdater {
             return 25;
         }
         return 0;
+    }
+
+    /**
+     * A method that examine the coordinate's eligibility for update.
+     * TODO Maybe this method can be refactored as abstract, which is implemented by sunclasses, among which there is TestUpdater which does what is done here, and also RealUpdater which defines less intentionally restrictive ranges.
+     * @param latitude
+     * @param longitude
+     * @return boolean value denoting whether the coordinate is eligible for the updater's consideration.
+     */
+    private boolean getLocationRange(int latitude, int longitude) {
+        return  (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
     }
 
     private int getGridAADT(int x, int y) {
