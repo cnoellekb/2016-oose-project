@@ -17,6 +17,11 @@ import com.google.gson.Gson;
 public class TrafficAPIHandler extends RequestHandler {
     private static String URL_TRAFFIC_SOURCE="http://data.imap.maryland.gov/datasets/3f4b959826c34480be3e4740e4ee025f_1.geojson";
 
+    /**
+     * Fetch data from the traffics source library to update to database.
+     * @return an ArrayList that can be further processed by DatabaseUpdater's updateTraffic() method;
+     * @throws IOException
+     */
     protected static ArrayList<Object> preProcessTrafficData() throws IOException {
         String stringResponse = makeGetRequest(URL_TRAFFIC_SOURCE);
         Map<String, Object> mapResponse = new Gson().fromJson(stringResponse, Map.class);

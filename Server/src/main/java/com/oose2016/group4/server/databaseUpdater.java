@@ -68,18 +68,21 @@ public class DatabaseUpdater {
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
 
         /*
-        Get the date of the most recent crime record of last updateDB operation. Ditch these records to reduce the workload of this updateDB.
+        Get the date of the most recent crime record of last updateDB operation.
+        Ditch those records that has already been previously updated into the database to reduce the workload of this updateDB.
          */
         String sqlDate = "SELECT MAX(date) FROM crimes";
         int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
 
-        //TODO refactor this for loop outside to a method;
-        for (Object crimeObj: crimeList) {
-            Map<String, Object> crime = (Map<String,Object>) crimeObj;
+        //TODO refactor this for loop outside to a method; or even to an abstract method to be implemented by subclasses;
+        for (Object crimeEntry: crimeList) {
+            Map<String, Object> crime = (Map<String,Object>) crimeEntry;
 
             //ditch record if incomplete.
-            if (!crime.containsKey("crimedate") || !crime.containsKey("description")
-                    || !crime.containsKey("inside_outside") || !crime.containsKey("location")
+            if (!crime.containsKey("crimedate")
+                    || !crime.containsKey("description")
+                    || !crime.containsKey("inside_outside")
+                    || !crime.containsKey("location")
                     || !crime.containsKey("location_1"))
                 continue;
 
@@ -93,8 +96,11 @@ public class DatabaseUpdater {
             String type = (String) crime.get("description");
 
             //ditch records of irrelevant types;
-            if (type.toUpperCase().contains("AUTO") || type.toUpperCase().contains("ARSON") ||
-                    type.toUpperCase().contains("BURGLARY") || type.toUpperCase().contains("RESIDENCE")) continue;
+            String typeAllCaps = type.toUpperCase();
+            if (typeAllCaps.contains("AUTO")
+                    || typeAllCaps.contains("ARSON")
+                    || typeAllCaps.contains("BURGLARY")
+                    || typeAllCaps.contains("RESIDENCE")) continue;
 
             int crimeTypeWeight = getCrimeTypeWeight(type);
 
@@ -183,6 +189,12 @@ public class DatabaseUpdater {
 
     }
 
+    /**
+     * Method to update all traffic records from source into the Grids table. This method is ensured to be run only once
+     * in the application's lifetime because according to our observation on the source, the source library is not likely
+     * to be updated in the foreseeable future.
+     * @throws IOException
+     */
     private void updateTraffics() throws IOException {
         /*
         Make sure the grids table only get updated once.
@@ -190,14 +202,19 @@ public class DatabaseUpdater {
         String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
         Integer trafficUpdateCount = mConnection.createQuery(sqlQueryLog).executeScalar(Integer.class);
 
+        /*
+        If the grids table has never been updated with the traffics source library, we pull the traffics data from the source.
+         */
         if (trafficUpdateCount == null) {
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
-            for (Object trafficObj : trafficList ){
+            for (Object trafficObj : trafficList ) {
                 Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
 
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
                 int AADT = (int) trafficEntryProperties.get("AADT_2014");
-
+                /*
+                The above AADT value is shared by a list of coordinates, as fetched below;
+                 */
                 Map<String, Object> trafficEntryGeometry = (Map<String, Object>) trafficEntry.get("geometry");
                 ArrayList<Object> trafficCoordinatesList = (ArrayList<Object>) trafficEntryGeometry.get("coordinates");
 
@@ -206,16 +223,19 @@ public class DatabaseUpdater {
                     double latitude = coordinateSingleList.get(1);
                     double longitude = coordinateSingleList.get(0);
 
+                    //Get the grid coordinate of this geo-coordinate;
                     Grid grid = new Grid (latitude, longitude);
                     int x = grid.getX();
                     int y = grid.getY();
 
-                    String sqlQueryCoordinate = " SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam;";
-                    Integer aadtInGrids = mConnection.createQuery(sqlQueryCoordinate)
+                    //Check to see if this grid has been updated with traffic data;
+                    String sqlQueryGrid = " SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam;";
+                    Integer aadtInGrids = mConnection.createQuery(sqlQueryGrid)
                             .addParameter("xParam", x)
                             .addParameter("yParam", y)
                             .executeScalar(Integer.class);
 
+                    //If this grid has never been updated with traffic data, insert a new tuple for this grid;
                     if ( aadtInGrids == null ) {
                         String sqlInsertCoordinate = "INSERT INTO grids "
                                 + " VALUES(:xParam, :yParam, 0, 0, :aadtParam); ";
@@ -229,8 +249,12 @@ public class DatabaseUpdater {
                         continue;
                     }
 
-                    String sqlUpdateCoordinate = " UPDATE grids SET AADT=AADT+:aadtParam WHERE x=:xParam AND y=:yParam; ";
-                    mConnection.createQuery(sqlUpdateCoordinate)
+                    /*
+                    If this grid has already been updated, with traffic data, add the AADT value for the current grid
+                    into the tuple's previous AADT value;
+                     */
+                    String sqlUpdateGrid = " UPDATE grids SET AADT=AADT+:aadtParam WHERE x=:xParam AND y=:yParam; ";
+                    mConnection.createQuery(sqlUpdateGrid)
                             .addParameter("aadtParam", AADT)
                             .addParameter("xParam", x)
                             .addParameter("yParam", y)
@@ -238,11 +262,20 @@ public class DatabaseUpdater {
                 }
             }
 
+            /*
+            Leave record in the log so that the update for traffic data never get performed again.
+             */
             String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
             mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
         }
     }
 
+    /**
+     * Based on the type (of a crime entry) as described by the passed in String, we return a corresponding value that
+     * is appropriate for the particular crime type;
+     * @param type The crime type.
+     * @return The weight value for this type of crime.
+     */
     private int getCrimeTypeWeight(String type) {
         String typeAllCap = type.toUpperCase();
         if (typeAllCap.contains("ASSAULT")) {
@@ -265,6 +298,8 @@ public class DatabaseUpdater {
             return 20;
         } else if (typeAllCap.contains("THEFT")) {
             return 7;
+        } else if (typeAllCap.contains("HOMICIDE")) {
+            return 25;
         }
         return 0;
     }
