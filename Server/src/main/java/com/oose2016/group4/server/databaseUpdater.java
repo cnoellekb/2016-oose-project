@@ -28,7 +28,7 @@ public class DatabaseUpdater {
 
     private static String SQL_INITIATE_UPDATE_LOG=
             "CREATE TABLE IF NOT EXISTS updatelog "
-            +"(tablename TEXT NOT NULL, update_count INTEGER NOT NULL, PRIMARY KEY (tablename));";
+            +"(sourcename TEXT NOT NULL, updatecount INTEGER NOT NULL, PRIMARY KEY (sourcename));";
 
     private Connection mConnection;
 
@@ -62,6 +62,9 @@ public class DatabaseUpdater {
      * @throws IOException
      */
     private void updateCrimes() throws IOException {
+
+        //TODO factor into operations into table log;
+
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
 
         /*
@@ -70,6 +73,7 @@ public class DatabaseUpdater {
         String sqlDate = "SELECT MAX(date) FROM crimes";
         int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
 
+        //TODO refactor this for loop outside to a method;
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
 
@@ -109,10 +113,9 @@ public class DatabaseUpdater {
             if (! (latitude < 39.353414) || !(latitude > 39.282497) || !(longitude < -76.549413) || !(longitude > -76.673241) )
                 continue;
 
-
             Grid grid = new Grid(latitude,longitude);
             int x = grid.getX();
-            int y= grid.getY();
+            int y = grid.getY();
 
             String sqlFetchLinkId = "SELECT :linkIdParam FROM grids WHERE x=:xParam and y=:yParam";
             Query queryFetchLinkID = mConnection.createQuery(sqlFetchLinkId);
@@ -181,7 +184,63 @@ public class DatabaseUpdater {
     }
 
     private void updateTraffics() throws IOException {
+        /*
+        Make sure the grids table only get updated once.
+         */
+        String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
+        Integer trafficUpdateCount = mConnection.createQuery(sqlQueryLog).executeScalar(Integer.class);
 
+        if (trafficUpdateCount == null) {
+            ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
+            for (Object trafficObj : trafficList ){
+                Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
+
+                Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
+                int AADT = (int) trafficEntryProperties.get("AADT_2014");
+
+                Map<String, Object> trafficEntryGeometry = (Map<String, Object>) trafficEntry.get("geometry");
+                ArrayList<Object> trafficCoordinatesList = (ArrayList<Object>) trafficEntryGeometry.get("coordinates");
+
+                for (Object coordinate : trafficCoordinatesList) {
+                    ArrayList<Double> coordinateSingleList = (ArrayList<Double>) coordinate;
+                    double latitude = coordinateSingleList.get(1);
+                    double longitude = coordinateSingleList.get(0);
+
+                    Grid grid = new Grid (latitude, longitude);
+                    int x = grid.getX();
+                    int y = grid.getY();
+
+                    String sqlQueryCoordinate = " SELECT AADT FROM grids WHERE x=:xParam AND y=:yParam;";
+                    Integer aadtInGrids = mConnection.createQuery(sqlQueryCoordinate)
+                            .addParameter("xParam", x)
+                            .addParameter("yParam", y)
+                            .executeScalar(Integer.class);
+
+                    if ( aadtInGrids == null ) {
+                        String sqlInsertCoordinate = "INSERT INTO grids "
+                                + " VALUES(:xParam, :yParam, 0, 0, :aadtParam); ";
+                                //TODO figure out whether these update values are consistent with updateCrimes's operation;
+
+                        mConnection.createQuery(sqlInsertCoordinate)
+                                .addParameter("xParam", x)
+                                .addParameter("yParam", y)
+                                .addParameter("aadtParam", AADT)
+                                .executeUpdate();
+                        continue;
+                    }
+
+                    String sqlUpdateCoordinate = " UPDATE grids SET AADT=AADT+:aadtParam WHERE x=:xParam AND y=:yParam; ";
+                    mConnection.createQuery(sqlUpdateCoordinate)
+                            .addParameter("aadtParam", AADT)
+                            .addParameter("xParam", x)
+                            .addParameter("yParam", y)
+                            .executeUpdate();
+                }
+            }
+
+            String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
+            mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
+        }
     }
 
     private int getCrimeTypeWeight(String type) {
