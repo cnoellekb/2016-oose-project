@@ -23,7 +23,7 @@ class Route {
     
     fileprivate var routingQuery: URLComponents {
         var query = URLComponents()
-        query.scheme = "http"
+        query.scheme = "https"
         query.host = "open.mapquestapi.com"
         query.path = "/directions/v2/route"
         query.queryItems = [
@@ -50,7 +50,7 @@ class Route {
     
     private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         var urlComponents = URLComponents()
-        urlComponents.scheme = "http"
+        urlComponents.scheme = "https"
         urlComponents.host = "open.mapquestapi.com"
         urlComponents.path = "/directions/v2/routeshape"
         urlComponents.queryItems = [

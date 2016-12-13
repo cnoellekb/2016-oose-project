@@ -11,6 +11,7 @@ import MapKit
 protocol StateDelegate: class {
     func didGenerateAnnotations(_ annotations: [MKAnnotation])
     func didGenerateOverlays(_ overlays: [MKOverlay])
+    func reportError(title: String, message: String?)
 }
 
 protocol State {

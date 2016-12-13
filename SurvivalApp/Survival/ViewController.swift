@@ -49,6 +49,14 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
     }
     
     private var state: State? {
+        willSet {
+            if let annotations = state?.annotations, !annotations.isEmpty {
+                mapView.removeAnnotations(annotations)
+            }
+            if let overlays = state?.overlays, !overlays.isEmpty {
+                mapView.removeOverlays(overlays)
+            }
+        }
         didSet {
             state?.delegate = self
         }
@@ -56,8 +64,7 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
     
     func didGenerateAnnotations(_ annotations: [MKAnnotation]) {
         guard annotations.count > 0 else { return }
-        mapView.addAnnotations(annotations)
-        mapView.showAnnotations(state!.annotations, animated: true)
+        mapView.showAnnotations(annotations, animated: true)
     }
     
     func didGenerateOverlays(_ overlays: [MKOverlay]) {
@@ -67,8 +74,20 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 150, left: 20, bottom: 20, right: 20), animated: true)
     }
     
+    func reportError(title: String, message: String?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
     @IBAction func fromTextFieldDone() {
-        toTextField.becomeFirstResponder()
+        if let text = fromTextField.text, !text.isEmpty {
+            let topLeft = mapView.convert(.zero, toCoordinateFrom: nil)
+            let bottomRight = mapView.convert(CGPoint(x: mapView.frame.width, y: mapView.frame.height), toCoordinateFrom: nil)
+            state = SearchingState(name: text, topLeft: topLeft, bottomRight: bottomRight)
+        } else {
+            toTextField.becomeFirstResponder()
+        }
     }
     
     @IBAction func toTextFieldDone() {
@@ -90,12 +109,6 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
                 return
             }
             from = .coordinate(location.coordinate)
-        }
-        if let annotations = state?.annotations, !annotations.isEmpty {
-            mapView.removeAnnotations(annotations)
-        }
-        if let overlays = state?.overlays, !overlays.isEmpty {
-            mapView.removeOverlays(overlays)
         }
         state = RoutingState(from: from, to: .name(to))
     }

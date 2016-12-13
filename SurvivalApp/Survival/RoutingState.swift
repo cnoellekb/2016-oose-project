@@ -56,7 +56,7 @@ class RoutingState: State {
             var coordinates = $0
             let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
             self.routeForPolyline[polyline] = route
-            self.delegate?.didGenerateAnnotations([polyline])
+            self.delegate?.didGenerateOverlays([polyline])
             if let fromPoint = coordinates.first, let toPoint = coordinates.last {
                 RoutingState.avoidLinkIds(from: fromPoint, to: toPoint) {
                     let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
@@ -65,7 +65,7 @@ class RoutingState: State {
                         var coordinates = $0
                         let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                         self.routeForPolyline[polyline] = middleRoute
-                        self.delegate?.didGenerateAnnotations([polyline])
+                        self.delegate?.didGenerateOverlays([polyline])
                     }
                     let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
                     self.routes.append(safestRoute)
@@ -73,7 +73,7 @@ class RoutingState: State {
                         var coordinates = $0
                         let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                         self.routeForPolyline[polyline] = safestRoute
-                        self.delegate?.didGenerateAnnotations([polyline])
+                        self.delegate?.didGenerateOverlays([polyline])
                     }
                 }
             }
