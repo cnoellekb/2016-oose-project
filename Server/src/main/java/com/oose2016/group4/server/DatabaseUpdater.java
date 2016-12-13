@@ -16,7 +16,7 @@ import org.sql2o.Query;
 
 import com.google.gson.Gson;
 
-public class databaseUpdater {
+public class DatabaseUpdater {
     /*private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
@@ -35,7 +35,7 @@ public class databaseUpdater {
 
     private static String URL_TRAFFIC_SOURCE="http://data.imap.maryland.gov/datasets/3f4b959826c34480be3e4740e4ee025f_1.geojson";
 
-    public databaseUpdater(Connection conn){
+    public DatabaseUpdater(Connection conn){
         mConnection = conn;
 //        mRawData = data;
     }

@@ -112,7 +112,7 @@ public class SurvivalService {
 	 */
 	public void updateDB(String table) {
 		try (Connection conn = db.open()){
-			databaseUpdater databaseUpdater = new databaseUpdater(conn);
+			DatabaseUpdater databaseUpdater = new DatabaseUpdater(conn);
 			databaseUpdater.update(table, conn);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -127,7 +127,7 @@ public class SurvivalService {
 	 * compound primary key in the existing data: (date, linkId, type).
 	 */
 	public void updateDB(String table, Connection conn) {
-		databaseUpdater databaseUpdater = new databaseUpdater(conn);
+		DatabaseUpdater databaseUpdater = new DatabaseUpdater(conn);
 		try {
 			databaseUpdater.update(table, conn);
 		} catch (IOException e) {
