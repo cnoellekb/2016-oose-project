@@ -2,9 +2,8 @@
 //  SurvivalUITests.swift
 //  SurvivalUITests
 //
-//  Created by 张国晔 on 2016/10/5.
-//  Copyright © 2016年 Johns Hopkins University. All rights reserved.
-//
+//  OOSE JHU 2016 Project
+//  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import XCTest
 
@@ -31,11 +30,10 @@ class SurvivalUITests: XCTestCase {
     func testExample() {
         // Use recording to get started writing UI tests.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+        
         let app = XCUIApplication()
-        let myLocationTextField = app.textFields["My Location"]
-        myLocationTextField.tap()
-        myLocationTextField.typeText("college park\r")
-        app.textFields.containing(.staticText, identifier:"To: ").element.typeText("chillum\r")
+        app.textFields["My Location"].tap()
+        app.typeText("johns hopkins university\r")
     }
     
 }

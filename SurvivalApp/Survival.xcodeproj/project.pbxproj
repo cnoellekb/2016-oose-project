@@ -16,6 +16,7 @@
 		E25887851DA5797400F251C9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E25887831DA5797400F251C9 /* LaunchScreen.storyboard */; };
 		E25887901DA5797400F251C9 /* SurvivalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258878F1DA5797400F251C9 /* SurvivalTests.swift */; };
 		E258879B1DA5797400F251C9 /* SurvivalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258879A1DA5797400F251C9 /* SurvivalUITests.swift */; };
+		E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E273DA2C1DD96971008AFDBD /* SearchingState.swift */; };
 		E2CAEE881DB00E5300D7390B /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CAEE871DB00E5300D7390B /* Route.swift */; };
 		E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E65EBE1DB2FA9B00F427DF /* Location.swift */; };
 /* End PBXBuildFile section */
@@ -38,14 +39,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2328A1003D19DD78286C1EE3 /* Pods-SurvivalUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalUITests/Pods-SurvivalUITests.release.xcconfig"; sourceTree = "<group>"; };
-		44D9F47C83C54F4D6ED52674 /* Pods-SurvivalUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalUITests/Pods-SurvivalUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		5E956EA72BC9A0D70F0617C3 /* Pods_Survival.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Survival.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		67FF6C09EC960422D98257B1 /* Pods_SurvivalUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SurvivalUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9549803693AFB9355EDAD66D /* Pods-Survival.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Survival.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Survival/Pods-Survival.debug.xcconfig"; sourceTree = "<group>"; };
-		9A31F2B9525CF5372CF310CA /* Pods-Survival.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Survival.release.xcconfig"; path = "Pods/Target Support Files/Pods-Survival/Pods-Survival.release.xcconfig"; sourceTree = "<group>"; };
-		9CA8498FE850B62B02C2EB33 /* Pods_SurvivalTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SurvivalTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BBE6A8D870B85555C7D81520 /* Pods-SurvivalTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E252293B1DC84AA10073BBC8 /* State.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		E252293D1DC84AC60073BBC8 /* RoutingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingState.swift; sourceTree = "<group>"; };
 		E25887771DA5797400F251C9 /* Survival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Survival.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,35 +54,36 @@
 		E25887961DA5797400F251C9 /* SurvivalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SurvivalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E258879A1DA5797400F251C9 /* SurvivalUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurvivalUITests.swift; sourceTree = "<group>"; };
 		E258879C1DA5797400F251C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E273DA2C1DD96971008AFDBD /* SearchingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchingState.swift; sourceTree = "<group>"; };
 		E2CAEE871DB00E5300D7390B /* Route.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
-		FC437D3F012CF7B681A5263E /* Pods-SurvivalTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SurvivalTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SurvivalTests/Pods-SurvivalTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		1DFEAA52332897E9D5E71FD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E5AE39D82CEDC3C999CF9F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		93E3C9DBBA80CE633B16A0E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
-		3D6F55BC877A576DE700D8B8 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				5E956EA72BC9A0D70F0617C3 /* Pods_Survival.framework */,
-				9CA8498FE850B62B02C2EB33 /* Pods_SurvivalTests.framework */,
-				67FF6C09EC960422D98257B1 /* Pods_SurvivalUITests.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		5B064A78E7B6ADEC482C1865 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				9549803693AFB9355EDAD66D /* Pods-Survival.debug.xcconfig */,
-				9A31F2B9525CF5372CF310CA /* Pods-Survival.release.xcconfig */,
-				BBE6A8D870B85555C7D81520 /* Pods-SurvivalTests.debug.xcconfig */,
-				FC437D3F012CF7B681A5263E /* Pods-SurvivalTests.release.xcconfig */,
-				44D9F47C83C54F4D6ED52674 /* Pods-SurvivalUITests.debug.xcconfig */,
-				2328A1003D19DD78286C1EE3 /* Pods-SurvivalUITests.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		E258876E1DA5797300F251C9 = {
 			isa = PBXGroup;
 			children = (
@@ -97,8 +91,6 @@
 				E258878E1DA5797400F251C9 /* SurvivalTests */,
 				E25887991DA5797400F251C9 /* SurvivalUITests */,
 				E25887781DA5797400F251C9 /* Products */,
-				5B064A78E7B6ADEC482C1865 /* Pods */,
-				3D6F55BC877A576DE700D8B8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,9 +110,10 @@
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
 				E252293B1DC84AA10073BBC8 /* State.swift */,
+				E273DA2C1DD96971008AFDBD /* SearchingState.swift */,
 				E252293D1DC84AC60073BBC8 /* RoutingState.swift */,
-				E2CAEE871DB00E5300D7390B /* Route.swift */,
 				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
+				E2CAEE871DB00E5300D7390B /* Route.swift */,
 				E258877E1DA5797400F251C9 /* Main.storyboard */,
 				E25887811DA5797400F251C9 /* Assets.xcassets */,
 				E25887831DA5797400F251C9 /* LaunchScreen.storyboard */,
@@ -156,6 +149,7 @@
 			buildPhases = (
 				E25887731DA5797400F251C9 /* Sources */,
 				E25887751DA5797400F251C9 /* Resources */,
+				1DFEAA52332897E9D5E71FD4 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -172,6 +166,7 @@
 			buildPhases = (
 				E25887871DA5797400F251C9 /* Sources */,
 				E25887891DA5797400F251C9 /* Resources */,
+				8E5AE39D82CEDC3C999CF9F5 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -189,6 +184,7 @@
 			buildPhases = (
 				E25887921DA5797400F251C9 /* Sources */,
 				E25887941DA5797400F251C9 /* Resources */,
+				93E3C9DBBA80CE633B16A0E4 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -282,6 +278,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */,
+				E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */,
 				E2CAEE881DB00E5300D7390B /* Route.swift in Sources */,
 				E258877D1DA5797400F251C9 /* ViewController.swift in Sources */,
 				E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */,

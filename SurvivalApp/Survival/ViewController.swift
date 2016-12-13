@@ -8,8 +8,11 @@
 import UIKit
 import MapKit
 
-///Generates UI and visual for users
+/// Main view controller with a map view
 class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
+    // MARK: - UI
+    
+    /// Main map view
     @IBOutlet var mapView: MKMapView! {
         didSet {
             let osmOverlay = MKTileOverlay(urlTemplate: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png")
@@ -17,15 +20,17 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             osmOverlay.canReplaceMapContent = true
             mapView.add(osmOverlay, level: .aboveRoads)
             
-            let overlay = MKTileOverlay(urlTemplate: "http://127.0.0.1:8080/v1/heatmap/{x}-{y}-{z}.png")
-            overlay.maximumZ = 14
-            mapView.add(overlay, level: .aboveLabels)
+            if let url = server.url {
+                let overlay = MKTileOverlay(urlTemplate: "\(url)/v1/heatmap/{x}-{y}-{z}.png")
+                overlay.maximumZ = 12
+                mapView.add(overlay, level: .aboveLabels)
+            }
             
             mapView.mapType = .satellite
             mapView.delegate = self
-            mapView.userTrackingMode = .follow
         }
     }
+    /// Text field for origination
     @IBOutlet weak var fromTextField: UITextField! {
         didSet {
             let fromLabel = UILabel()
@@ -36,6 +41,7 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             fromTextField.leftViewMode = .always
         }
     }
+    /// Text field for destination
     @IBOutlet weak var toTextField: UITextField! {
         didSet {
             let toLabel = UILabel()
@@ -47,62 +53,190 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         }
     }
     
+    // MARK: - State
+    
+    /// Current state of operation
     private var state: State? {
+        willSet {
+            if let annotations = state?.annotations, !annotations.isEmpty {
+                mapView.removeAnnotations(annotations)
+            }
+            if let overlays = state?.overlays, !overlays.isEmpty {
+                mapView.removeOverlays(overlays)
+            }
+        }
         didSet {
             state?.delegate = self
         }
     }
     
-    func didGenerateAnnotation(_ annotation: MKAnnotation) {
-        if let overlay = annotation as? MKOverlay {
-            mapView.add(overlay, level: .aboveRoads)
-            mapView.setVisibleMapRect(mapView.mapRectThatFits(overlay.boundingMapRect), edgePadding: UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5), animated: true)
-        } else {
-            mapView.addAnnotation(annotation)
-            mapView.showAnnotations(state!.annotations, animated: true)
-        }
+    /// Origination
+    private var from: Location?
+    /// Destination
+    private var to: Location?
+    
+    /// Start a name search
+    ///
+    /// - Parameters:
+    ///   - name: location name
+    ///   - type: origination or destination
+    private func search(for name: String, type: SearchingState.SearchType) {
+        let topLeft = mapView.convert(.zero, toCoordinateFrom: nil)
+        let bottomRight = mapView.convert(CGPoint(x: mapView.frame.width, y: mapView.frame.height), toCoordinateFrom: nil)
+        state = SearchingState(name: name, topLeft: topLeft, bottomRight: bottomRight, type: type)
     }
     
-    @IBAction func fromTextFieldDone() {
-        toTextField.becomeFirstResponder()
-    }
-    
-    @IBAction func toTextFieldDone() {
-        toTextField.resignFirstResponder()
-        guard let to = toTextField.text, !to.isEmpty else {
-            let alert = UIAlertController(title: "Please enter a destination", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+    /// Start routing
+    private func route() {
+        guard let from = from?.coordinate ?? mapView.userLocation.location?.coordinate, let to = to?.coordinate else {
+            reportError(title: "Please enter an origination", message: "Cannot get current location.")
             return
         }
-        let from: Location
-        if let text = fromTextField.text, !text.isEmpty {
-            from = .name(text)
-        } else {
-            guard let location = mapView.userLocation.location else {
-                let alert = UIAlertController(title: "Please enter an origination", message: "Cannot get current location.", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default))
-                present(alert, animated: true)
-                return
-            }
-            from = .coordinate(location.coordinate)
-        }
-        if let annotations = state?.annotations {
-            mapView.removeAnnotations(annotations)
-        }
-        state = RoutingState(from: from, to: .name(to))
+        state = RoutingState(from: from, to: to)
     }
     
+    // MARK: - StateDelegate
+    
+    /// Display annotations generated by current state
+    ///
+    /// - Parameter annotations: array of annotations
+    func didGenerateAnnotations(_ annotations: [MKAnnotation]) {
+        guard annotations.count > 0 else { return }
+        mapView.showAnnotations(annotations, animated: true)
+    }
+    
+    /// Display overlays generated by current state
+    ///
+    /// - Parameter overlays: array of overlays
+    func didGenerateOverlays(_ overlays: [MKOverlay]) {
+        guard overlays.count > 0 else { return }
+        mapView.addOverlays(overlays, level: .aboveRoads)
+        let rect = overlays.dropFirst().reduce(overlays[0].boundingMapRect) { MKMapRectUnion($0, $1.boundingMapRect) }
+        mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 150, left: 20, bottom: 20, right: 20), animated: true)
+    }
+    
+    /// Display an error from current state
+    ///
+    /// - Parameters:
+    ///   - title: error title
+    ///   - message: error message
+    func reportError(title: String, message: String?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    // MARK: - Text field target-actions
+    
+    /// Origination completed
+    @IBAction func fromTextFieldDone() {
+        if let text = fromTextField.text, !text.isEmpty, text != from?.title {
+            search(for: text, type: .from)
+            fromTextField.resignFirstResponder()
+        } else {
+            toTextField.becomeFirstResponder()
+        }
+    }
+    
+    /// Origination text field loses focus
+    @IBAction func fromTextFieldEnd() {
+        if !(state is SearchingState) {
+            if fromTextField.text?.isEmpty == true {
+                from = nil
+            } else {
+                fromTextField.text = from?.title
+            }
+        }
+    }
+    
+    /// Destination completed
+    @IBAction func toTextFieldDone() {
+        if let text = toTextField.text, !text.isEmpty {
+            if text != to?.title {
+                search(for: text, type: .to)
+            } else {
+                route()
+            }
+        }
+        toTextField.resignFirstResponder()
+    }
+    
+    /// Destination text field loses focus
+    @IBAction func toTextFieldEnd() {
+        if !(state is SearchingState) {
+            toTextField.text = to?.title
+        }
+    }
+    
+    // MARK: - MKMapViewDelegate
+    
+    /// Renderer for overlay
+    ///
+    /// - Parameters:
+    ///   - mapView: source map view
+    ///   - overlay: overlay to display
+    /// - Returns: renderer
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         if let polyline = overlay as? MKPolyline {
             let renderer = MKPolylineRenderer(polyline: polyline)
             renderer.strokeColor = state?.strokeColor(for: polyline)?.withAlphaComponent(0.5)
-            renderer.lineWidth = 2
+            renderer.lineWidth = 5
             return renderer
         }
         if let tile = overlay as? MKTileOverlay {
             return MKTileOverlayRenderer(tileOverlay: tile)
         }
         return MKOverlayRenderer(overlay: overlay)
+    }
+    
+    /// View for annotation
+    ///
+    /// - Parameters:
+    ///   - mapView: source map view
+    ///   - annotation: annotation to display
+    /// - Returns: annotation view
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if let location = annotation as? Location {
+            let pin = mapView.dequeueReusableAnnotationView(withIdentifier: "Pin") as? MKPinAnnotationView ?? MKPinAnnotationView(annotation: location, reuseIdentifier: "Pin")
+            pin.animatesDrop = true
+            pin.canShowCallout = true
+            pin.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
+            return pin
+        }
+        return nil
+    }
+    
+    /// Select location
+    ///
+    /// - Parameters:
+    ///   - mapView: source map view
+    ///   - view: annotation tapped
+    ///   - control: control tapped
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        guard let search = state as? SearchingState, let location = view.annotation as? Location else {
+            return
+        }
+        state = nil
+        if search.searchType == .to {
+            to = location
+            toTextField.text = location.title
+            route()
+        } else {
+            from = location
+            fromTextField.text = location.title
+        }
+    }
+    
+    /// Maintain minimal zoom level
+    ///
+    /// - Parameters:
+    ///   - mapView: source map view
+    ///   - animated: if change is animated
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        if mapView.camera.altitude < 1265.4 {
+            let camera = mapView.camera
+            let newCamera = MKMapCamera(lookingAtCenter: camera.centerCoordinate, fromDistance: 1265.5, pitch: camera.pitch, heading: camera.heading)
+            mapView.setCamera(newCamera, animated: animated)
+        }
     }
 }

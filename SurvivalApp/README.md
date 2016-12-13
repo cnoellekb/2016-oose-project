@@ -1,8 +1,10 @@
 Survival App
 ============
 
-Basic routing of fastest and safest is implemented.
+* Heat map
+* Name searching
+* Routing of fastest, middle, and safest
 
-![Screenshot](Screenshot.png)
-
-Please use locations near College Park to test with the embedded dataset.
+![Heat map](Screenshot-heatmap.png)
+![Searching](Screenshot-searching.png)
+![Routing](Screenshot-routing.png)
