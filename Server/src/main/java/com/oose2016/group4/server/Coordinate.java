@@ -1,5 +1,6 @@
 package com.oose2016.group4.server;
 
+
 /**
  * Coordinate in latitude and longitude
  */
@@ -22,6 +23,21 @@ public class Coordinate {
 		this.longitude = longitude;
 	}
 
+//	protected Grid toGrid(){
+//		double latitudeDegree = latitude * Math.PI / 180;
+//		double dx = (longitude + 180) / 360 * 262144;
+//		double dy = (1 - (Math.log(Math.tan(latitudeDegree) + 1 / Math.cos(latitudeDegree)) / Math.PI)) / 2 * 262144;
+//		return new Grid((int)dx, (int)dy);
+//}
+
+//	protected int getGridLatitude(){
+//		gridCordinate();
+//		return (int) getLatitude();
+//	}
+//
+//	protected int getGridLongitude(){
+//		gridCordinate();
+//	}
 	/**
 	 * Sort coordinates and expand a bit
 	 * @param a set to top left coordinate
