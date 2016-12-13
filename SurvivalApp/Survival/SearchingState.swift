@@ -10,12 +10,21 @@ import MapKit
 
 class SearchingState: State {
     var delegate: StateDelegate?
-    var annotations = [MKAnnotation]()
+    var annotations: [MKAnnotation] {
+        return locations
+    }
     var overlays: [MKOverlay] {
         return []
     }
     
-    init(name: String, topLeft: CLLocationCoordinate2D, bottomRight: CLLocationCoordinate2D) {
+    enum SearchType {
+        case from, to
+    }
+    var searchType: SearchType
+    
+    private var locations = [Location]()
+    
+    private func search(for name: String, topLeft: CLLocationCoordinate2D?, bottomRight: CLLocationCoordinate2D?, completion: @escaping ([Location]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "nominatim.openstreetmap.org"
@@ -24,10 +33,12 @@ class SearchingState: State {
             URLQueryItem(name: "format", value: "json"),
             URLQueryItem(name: "q", value: name),
             URLQueryItem(name: "countrycodes", value: "US"),
-            URLQueryItem(name: "viewbox", value: "\(topLeft.longitude),\(topLeft.latitude),\(bottomRight.longitude),\(bottomRight.latitude)"),
-            URLQueryItem(name: "bounded", value: "\(1)"),
             URLQueryItem(name: "limit", value: "\(10)")
         ]
+        if let topLeft = topLeft, let bottomRight = bottomRight {
+            urlComponents.queryItems?.append(URLQueryItem(name: "viewbox", value: "\(topLeft.longitude),\(topLeft.latitude),\(bottomRight.longitude),\(bottomRight.latitude)"))
+            urlComponents.queryItems?.append(URLQueryItem(name: "bounded", value: "\(1)"))
+        }
         guard let url = urlComponents.url else { return }
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data,
@@ -38,24 +49,41 @@ class SearchingState: State {
                 return
             }
             let numberFormatter = NumberFormatter()
-            self.annotations = json.flatMap {
-                guard let latitudeString = $0["lat"] as? String,
+            let locations: [Location] = json.flatMap {
+                guard let name = $0["display_name"] as? String,
+                        let latitudeString = $0["lat"] as? String,
                         let latitude = numberFormatter.number(from: latitudeString)?.doubleValue,
                         let longitudeString = $0["lon"] as? String,
                         let longitude = numberFormatter.number(from: longitudeString)?.doubleValue else {
                     return nil
                 }
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-                return annotation
+                let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                return Location(name: name, coordinate: coordinate)
             }
-            DispatchQueue.main.async {
-                if self.annotations.isEmpty {
-                    self.delegate?.reportError(title: "No result", message: nil)
-                } else {
-                    self.delegate?.didGenerateAnnotations(self.annotations)
+            completion(locations)
+        }.resume()
+    }
+    
+    init(name: String, topLeft: CLLocationCoordinate2D, bottomRight: CLLocationCoordinate2D, type: SearchType) {
+        searchType = type
+        search(for: name, topLeft: topLeft, bottomRight: bottomRight) { result in
+            if result.isEmpty {
+                self.search(for: name, topLeft: nil, bottomRight: nil) { result in
+                    DispatchQueue.main.async {
+                        if result.isEmpty {
+                            self.delegate?.reportError(title: "No result", message: nil)
+                        } else {
+                            self.locations = result
+                            self.delegate?.didGenerateAnnotations(self.locations)
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.locations = result
+                    self.delegate?.didGenerateAnnotations(self.locations)
                 }
             }
-        }.resume()
+        }
     }
 }

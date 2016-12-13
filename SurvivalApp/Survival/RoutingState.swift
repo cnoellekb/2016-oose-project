@@ -49,7 +49,7 @@ class RoutingState: State {
         }.resume()
     }
     
-    init(from: Location, to: Location) {
+    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
         let route = Route(from: from, to: to)
         routes.append(route)
         route.calculateRoute {
@@ -57,25 +57,23 @@ class RoutingState: State {
             let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
             self.routeForPolyline[polyline] = route
             self.delegate?.didGenerateOverlays([polyline])
-            if let fromPoint = coordinates.first, let toPoint = coordinates.last {
-                RoutingState.avoidLinkIds(from: fromPoint, to: toPoint) {
-                    let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
-                    self.routes.append(middleRoute)
-                    middleRoute.calculateRoute {
-                        var coordinates = $0
-                        let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
-                        self.routeForPolyline[polyline] = middleRoute
-                        self.delegate?.didGenerateOverlays([polyline])
-                    }
-                    let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
-                    self.routes.append(safestRoute)
-                    safestRoute.calculateRoute {
-                        var coordinates = $0
-                        let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
-                        self.routeForPolyline[polyline] = safestRoute
-                        self.delegate?.didGenerateOverlays([polyline])
-                    }
-                }
+        }
+        RoutingState.avoidLinkIds(from: from, to: to) {
+            let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
+            self.routes.append(middleRoute)
+            middleRoute.calculateRoute {
+                var coordinates = $0
+                let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
+                self.routeForPolyline[polyline] = middleRoute
+                self.delegate?.didGenerateOverlays([polyline])
+            }
+            let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
+            self.routes.append(safestRoute)
+            safestRoute.calculateRoute {
+                var coordinates = $0
+                let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
+                self.routeForPolyline[polyline] = safestRoute
+                self.delegate?.didGenerateOverlays([polyline])
             }
         }
     }

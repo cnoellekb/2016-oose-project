@@ -6,18 +6,20 @@
 //  Copyright © 2016年 Johns Hopkins University. All rights reserved.
 //
 
-import CoreLocation
+import MapKit
 
-enum Location: CustomStringConvertible {
-    case name(String)
-    case coordinate(CLLocationCoordinate2D)
+class Location: NSObject, MKAnnotation {
+    let title: String?
+    let subtitle: String?
+    let coordinate: CLLocationCoordinate2D
     
-    var description: String {
-        switch self {
-        case .name(let name):
-            return name
-        case .coordinate(let coordinate):
-            return "\(coordinate.latitude),\(coordinate.longitude)"
+    init(name: String, coordinate: CLLocationCoordinate2D) {
+        if let index = name.characters.index(of: ",") {
+            title = name[name.startIndex ..< index]
+        } else {
+            title = name
         }
+        subtitle = name
+        self.coordinate = coordinate
     }
 }

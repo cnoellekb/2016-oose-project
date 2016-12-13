@@ -62,6 +62,22 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         }
     }
     
+    private var from, to: Location?
+    
+    private func search(for name: String, type: SearchingState.SearchType) {
+        let topLeft = mapView.convert(.zero, toCoordinateFrom: nil)
+        let bottomRight = mapView.convert(CGPoint(x: mapView.frame.width, y: mapView.frame.height), toCoordinateFrom: nil)
+        state = SearchingState(name: name, topLeft: topLeft, bottomRight: bottomRight, type: type)
+    }
+    
+    private func route() {
+        guard let from = from?.coordinate ?? mapView.userLocation.location?.coordinate, let to = to?.coordinate else {
+            reportError(title: "Please enter an origination", message: "Cannot get current location.")
+            return
+        }
+        state = RoutingState(from: from, to: to)
+    }
+    
     func didGenerateAnnotations(_ annotations: [MKAnnotation]) {
         guard annotations.count > 0 else { return }
         mapView.showAnnotations(annotations, animated: true)
@@ -81,36 +97,39 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
     }
     
     @IBAction func fromTextFieldDone() {
-        if let text = fromTextField.text, !text.isEmpty {
-            let topLeft = mapView.convert(.zero, toCoordinateFrom: nil)
-            let bottomRight = mapView.convert(CGPoint(x: mapView.frame.width, y: mapView.frame.height), toCoordinateFrom: nil)
-            state = SearchingState(name: text, topLeft: topLeft, bottomRight: bottomRight)
+        if let text = fromTextField.text, !text.isEmpty, text != from?.title {
+            search(for: text, type: .from)
+            fromTextField.resignFirstResponder()
         } else {
             toTextField.becomeFirstResponder()
         }
     }
     
-    @IBAction func toTextFieldDone() {
-        toTextField.resignFirstResponder()
-        guard let to = toTextField.text, !to.isEmpty else {
-            let alert = UIAlertController(title: "Please enter a destination", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-            return
-        }
-        let from: Location
-        if let text = fromTextField.text, !text.isEmpty {
-            from = .name(text)
-        } else {
-            guard let location = mapView.userLocation.location else {
-                let alert = UIAlertController(title: "Please enter an origination", message: "Cannot get current location.", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default))
-                present(alert, animated: true)
-                return
+    @IBAction func fromTextFieldEnd() {
+        if !(state is SearchingState) {
+            if fromTextField.text?.isEmpty == true {
+                from = nil
+            } else {
+                fromTextField.text = from?.title
             }
-            from = .coordinate(location.coordinate)
         }
-        state = RoutingState(from: from, to: .name(to))
+    }
+    
+    @IBAction func toTextFieldDone() {
+        if let text = toTextField.text, !text.isEmpty {
+            if text != to?.title {
+                search(for: text, type: .to)
+            } else {
+                route()
+            }
+        }
+        toTextField.resignFirstResponder()
+    }
+    
+    @IBAction func toTextFieldEnd() {
+        if !(state is SearchingState) {
+            toTextField.text = to?.title
+        }
     }
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -124,6 +143,32 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             return MKTileOverlayRenderer(tileOverlay: tile)
         }
         return MKOverlayRenderer(overlay: overlay)
+    }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if let location = annotation as? Location {
+            let pin = mapView.dequeueReusableAnnotationView(withIdentifier: "Pin") as? MKPinAnnotationView ?? MKPinAnnotationView(annotation: location, reuseIdentifier: "Pin")
+            pin.animatesDrop = true
+            pin.canShowCallout = true
+            pin.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
+            return pin
+        }
+        return nil
+    }
+    
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        guard let search = state as? SearchingState, let location = view.annotation as? Location else {
+            return
+        }
+        state = nil
+        if search.searchType == .to {
+            to = location
+            toTextField.text = location.title
+            route()
+        } else {
+            from = location
+            fromTextField.text = location.title
+        }
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {

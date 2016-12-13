@@ -44,9 +44,10 @@
                                                             </constraints>
                                                             <nil key="textColor"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" returnKeyType="route"/>
+                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" returnKeyType="search"/>
                                                             <connections>
                                                                 <action selector="fromTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="gOh-dR-vdb"/>
+                                                                <action selector="fromTextFieldEnd" destination="BYZ-38-t0r" eventType="editingDidEnd" id="3GF-uL-wac"/>
                                                             </connections>
                                                         </textField>
                                                     </subviews>
@@ -91,9 +92,10 @@
                                                             </constraints>
                                                             <nil key="textColor"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" returnKeyType="route"/>
+                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" returnKeyType="search"/>
                                                             <connections>
                                                                 <action selector="toTextFieldDone" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="8qm-hG-xuO"/>
+                                                                <action selector="toTextFieldEnd" destination="BYZ-38-t0r" eventType="editingDidEnd" id="UK1-VN-7uX"/>
                                                             </connections>
                                                         </textField>
                                                     </subviews>

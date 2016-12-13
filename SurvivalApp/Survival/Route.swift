@@ -10,13 +10,13 @@ import UIKit
 import CoreLocation
 
 class Route {
-    private let from, to: Location
+    private let from, to: CLLocationCoordinate2D
     
     var color: UIColor {
         return .red
     }
     
-    init(from: Location, to: Location) {
+    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
         self.from = from
         self.to = to
     }
@@ -28,8 +28,8 @@ class Route {
         query.path = "/directions/v2/route"
         query.queryItems = [
             URLQueryItem(name: "key", value: Bundle.main.object(forInfoDictionaryKey: "MQApplicationKey") as? String),
-            URLQueryItem(name: "from", value: "\(from)"),
-            URLQueryItem(name: "to", value: "\(to)"),
+            URLQueryItem(name: "from", value: "\(from.tuple)"),
+            URLQueryItem(name: "to", value: "\(to.tuple)"),
             URLQueryItem(name: "routeType", value: "pedestrian")
         ]
         return query
@@ -102,7 +102,7 @@ class SafestRoute: Route {
         return query
     }
     
-    init(from: Location, to: Location, avoidLinkIds: AvoidLinkIds) {
+    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, avoidLinkIds: AvoidLinkIds) {
         self.avoidLinkIds = avoidLinkIds
         super.init(from: from, to: to)
     }
@@ -125,7 +125,7 @@ class MiddleRoute: Route {
         return query
     }
     
-    init(from: Location, to: Location, avoidLinkIds: AvoidLinkIds) {
+    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, avoidLinkIds: AvoidLinkIds) {
         self.avoidLinkIds = avoidLinkIds
         super.init(from: from, to: to)
     }
@@ -133,4 +133,10 @@ class MiddleRoute: Route {
 
 struct AvoidLinkIds {
     let red, yellow: [Int]
+}
+
+extension CLLocationCoordinate2D {
+    var tuple: String {
+        return "\(latitude),\(longitude)"
+    }
 }
