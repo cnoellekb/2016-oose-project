@@ -51,10 +51,11 @@ public class databaseUpdater {
                 + "type TEXT NOT NULL, alarm REAL NOT NULL, PRIMARY KEY (date, linkId, type));")
                 .addParameter("table", table).executeUpdate(); */
 
+    	//add alarm REAL NOT NULL column
         String sql1 = "CREATE TABLE IF NOT EXISTS TestCrimes "
 				+ "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
 				+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
-				+ "type TEXT, PRIMARY KEY (date, linkId, type));";
+				+ "type TEXT NOT NULL, PRIMARY KEY (date, linkId, type));";
 		conn.createQuery(sql1).executeUpdate();
 		
         System.out.println("create query");
@@ -66,7 +67,8 @@ public class databaseUpdater {
      * @throws IOException
      */
     public void update(String table, Connection conn) throws IOException {
-        initialUpdate(table, conn);
+    	mConnection = conn;
+        initialUpdate(table, mConnection);
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
         for (Object crimeObj: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeObj;
@@ -86,20 +88,20 @@ public class databaseUpdater {
             ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
             double latitude = a.get(1);
             double longitude = a.get(0);
-            int linkid = MapQuestHandler.requestLinkId(latitude, longitude);
-
+            int linkId = MapQuestHandler.requestLinkId(latitude, longitude);
             if (inOut.equals("I")) continue;
 
-            String sql = "insert into :table(date, linkId, address, latitude, longitude, type) "
+            String sql = "INSERT into TestCrimes (date, linkId, address, latitude, longitude, type) "
                     + "SELECT * FROM (SELECT :dateParam, :linkIdParam, :addressParam, :latitudeParam, :longitudeParam, :typeParam) "
-                    + "where not exists (select * from crimes where date = :dateParam and linkId = :linkIdParam "
+                    + "where not exists (select * from :table where date = :dateParam and linkId = :linkIdParam "
                     + "and type = :typeParam);";
-
-            Query query = conn.createQuery(sql);
-            query.addParameter("dateParam", date).addParameter("linkIdParam", linkid)
+            System.out.println(sql);
+            Query query = mConnection.createQuery(sql);
+            System.out.println("hi2");
+            query.addParameter("dateParam", date).addParameter("linkIdParam", linkId)
                     .addParameter("addressParam", address).addParameter("latitudeParam", latitude)
                     .addParameter("longitudeParam", longitude).addParameter("typeParam", type)
-                    .addParameter("table", table).executeUpdate();
+                    .executeUpdate();
         }
     }
 }
