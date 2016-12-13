@@ -2,9 +2,8 @@
 //  AppDelegate.swift
 //  Survival
 //
-//  Created by 张国晔 on 2016/10/5.
-//  Copyright © 2016年 Johns Hopkins University. All rights reserved.
-//
+//  OOSE JHU 2016 Project
+//  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import UIKit
 

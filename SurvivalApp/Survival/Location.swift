@@ -2,12 +2,12 @@
 //  Location.swift
 //  Survival
 //
-//  Created by 张国晔 on 2016/10/15.
-//  Copyright © 2016年 Johns Hopkins University. All rights reserved.
-//
+//  OOSE JHU 2016 Project
+//  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import MapKit
 
+///Stores coordinate information about location
 class Location: NSObject, MKAnnotation {
     let title: String?
     let subtitle: String?
