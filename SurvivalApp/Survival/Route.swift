@@ -8,21 +8,29 @@
 import UIKit
 import CoreLocation
 
+/// Describes a route
 class Route {
-    private let from, to: CLLocationCoordinate2D
+    /// Origination
+    private let from: CLLocationCoordinate2D
+    /// Destination
+    private let to: CLLocationCoordinate2D
     
+    /// Stroke color for overlay
     var color: UIColor {
         return .red
     }
     
+    /// Initializes a route
+    ///
+    /// - Parameters:
+    ///   - from: origination
+    ///   - to: destination
     init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
         self.from = from
         self.to = to
     }
     
-    /**
-    Builds an http request for the route.
-    */
+    /// Builds an HTTP request for the route
     fileprivate var routingQuery: URLComponents {
         var query = URLComponents()
         query.scheme = "https"
@@ -37,9 +45,9 @@ class Route {
         return query
     }
     
-    /**
-    Takes a query and queries Mapquest server for route 
-    */
+    /// Queries MapQuest server for the route
+    ///
+    /// - Parameter completion: called when request is completed
     func calculateRoute(completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         guard let url = routingQuery.url else { return }
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -53,9 +61,11 @@ class Route {
         }.resume()
     }
     
-    /**
-    Queries Mapquest for route shape. 
-    */
+    /// Queries Mapquest for route shape
+    ///
+    /// - Parameters:
+    ///   - id: session ID
+    ///   - completion: called when request is completed
     private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
@@ -87,16 +97,51 @@ class Route {
         }.resume()
     }
 }
-/**
-Subclass of route - determines safest route, overrides routing query.
-*/
-class SafestRoute: Route {
+
+/// Subclass of route for middle route
+class MiddleRoute: Route {
+    /// LinkIds to avoid
     private let avoidLinkIds: AvoidLinkIds
     
+    /// Stroke color for overlay
+    override var color: UIColor {
+        return .yellow
+    }
+    
+    /// Calls super and add constraints for middle route
+    fileprivate override var routingQuery: URLComponents {
+        var query = super.routingQuery
+        if !avoidLinkIds.red.isEmpty {
+            let linkIds = avoidLinkIds.red.map(String.init).joined(separator: ",")
+            let queryItem = URLQueryItem(name: "tryAvoidLinkIds", value: linkIds)
+            query.queryItems?.append(queryItem)
+        }
+        return query
+    }
+    
+    /// Initializes a middle route
+    ///
+    /// - Parameters:
+    ///   - from: origination
+    ///   - to: destination
+    ///   - avoidLinkIds: linkIds to avoid
+    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, avoidLinkIds: AvoidLinkIds) {
+        self.avoidLinkIds = avoidLinkIds
+        super.init(from: from, to: to)
+    }
+}
+
+/// Subclass of route for safest route
+class SafestRoute: Route {
+    /// LinkIds to avoid
+    private let avoidLinkIds: AvoidLinkIds
+    
+    /// Stroke color for overlay
     override var color: UIColor {
         return .green
     }
     
+    /// Calls super and add constraints for safest route
     fileprivate override var routingQuery: URLComponents {
         var query = super.routingQuery
         if !avoidLinkIds.red.isEmpty {
@@ -112,42 +157,28 @@ class SafestRoute: Route {
         return query
     }
     
-    init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, avoidLinkIds: AvoidLinkIds) {
-        self.avoidLinkIds = avoidLinkIds
-        super.init(from: from, to: to)
-    }
-}
-/**
-Subclass of route - determines middle route, overrides routing query.
-*/
-class MiddleRoute: Route {
-    private let avoidLinkIds: AvoidLinkIds
-    
-    override var color: UIColor {
-        return .yellow
-    }
-    
-    fileprivate override var routingQuery: URLComponents {
-        var query = super.routingQuery
-        if !avoidLinkIds.red.isEmpty {
-            let linkIds = avoidLinkIds.red.map(String.init).joined(separator: ",")
-            let queryItem = URLQueryItem(name: "tryAvoidLinkIds", value: linkIds)
-            query.queryItems?.append(queryItem)
-        }
-        return query
-    }
-    
+    /// Initializes a safest route
+    ///
+    /// - Parameters:
+    ///   - from: origination
+    ///   - to: destination
+    ///   - avoidLinkIds: linkIds to avoid
     init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, avoidLinkIds: AvoidLinkIds) {
         self.avoidLinkIds = avoidLinkIds
         super.init(from: from, to: to)
     }
 }
 
+/// Holds linkIds to avoid
 struct AvoidLinkIds {
-    let red, yellow: [Int]
+    /// Worst linkIds
+    let red: [Int]
+    /// Bad linkIds
+    let yellow: [Int]
 }
 
 extension CLLocationCoordinate2D {
+    /// Converts coordinate to string for queries
     var tuple: String {
         return "\(latitude),\(longitude)"
     }

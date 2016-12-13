@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// Address of our own server
 let server: URLComponents = {
     var urlComponents = URLComponents()
     urlComponents.scheme = "http"

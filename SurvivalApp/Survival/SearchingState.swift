@@ -2,28 +2,40 @@
 //  SearchingState.swift
 //  Survival
 //
-//  Created by 张国晔 on 2016/11/13.
-//  Copyright © 2016年 Johns Hopkins University. All rights reserved.
-//
+//  OOSE JHU 2016 Project
+//  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import MapKit
 
+/// State of searching
 class SearchingState: State {
+    /// Event delegate
     var delegate: StateDelegate?
+    /// All annotations generated here
     var annotations: [MKAnnotation] {
         return locations
     }
-    var overlays: [MKOverlay] {
-        return []
-    }
     
+    /// Type of search
+    ///
+    /// - from: origination search
+    /// - to: destination search
     enum SearchType {
         case from, to
     }
+    /// Type of search
     var searchType: SearchType
     
+    /// Results of search
     private var locations = [Location]()
     
+    /// Search for location by name
+    ///
+    /// - Parameters:
+    ///   - name: location name
+    ///   - topLeft: top left of search bounding box (nil for global search)
+    ///   - bottomRight: bottom right of search bounding box (nil for global search)
+    ///   - completion: called when request is completed
     private func search(for name: String, topLeft: CLLocationCoordinate2D?, bottomRight: CLLocationCoordinate2D?, completion: @escaping ([Location]) -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
@@ -50,7 +62,7 @@ class SearchingState: State {
             }
             let numberFormatter = NumberFormatter()
             let locations: [Location] = json.flatMap {
-                guard let name = $0["display_name"] as? String,
+                guard let address = $0["display_name"] as? String,
                         let latitudeString = $0["lat"] as? String,
                         let latitude = numberFormatter.number(from: latitudeString)?.doubleValue,
                         let longitudeString = $0["lon"] as? String,
@@ -58,12 +70,19 @@ class SearchingState: State {
                     return nil
                 }
                 let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-                return Location(name: name, coordinate: coordinate)
+                return Location(address: address, coordinate: coordinate)
             }
             completion(locations)
         }.resume()
     }
     
+    /// Initializes searching state and starts a name search. First search within a bounding box, if it fails, start a global search.
+    ///
+    /// - Parameters:
+    ///   - name: location name
+    ///   - topLeft: top left of search bounding box
+    ///   - bottomRight: bottom right of search bounding box
+    ///   - type: origination or destination
     init(name: String, topLeft: CLLocationCoordinate2D, bottomRight: CLLocationCoordinate2D, type: SearchType) {
         searchType = type
         search(for: name, topLeft: topLeft, bottomRight: bottomRight) { result in

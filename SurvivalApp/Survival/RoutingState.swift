@@ -7,40 +7,39 @@
 
 import MapKit
 
+/// State of routing
 class RoutingState: State {
+    /// Event delegate
     weak var delegate: StateDelegate?
     
-    ///Array of routes
+    /// Array of routes
     private var routes = [Route]()
-    /// HashMap from Polyline to Route (stroke color to route)
+    /// Dictionary from MKPolyline to Route
     private var routeForPolyline = [MKPolyline: Route]()
-  
-    /// Remove current annotations
-    /**
-    Annotation = superclass of overlay, overlay is annotation
     
-    When 'overlay is stated' we refer to annotation
-    */  
-    var annotations: [MKAnnotation] {
-        return []
-    }
+    /// All overlays generated here
     var overlays: [MKOverlay] {
         return Array(routeForPolyline.keys)
     }
     
-    func strokeColor(for annotation: MKAnnotation) -> UIColor? {
-        if let polyline = annotation as? MKPolyline,
+    /// Stroke color for overlay
+    ///
+    /// - Parameter overlay: overlay to display
+    /// - Returns: color
+    func strokeColor(for overlay: MKOverlay) -> UIColor? {
+        if let polyline = overlay as? MKPolyline,
                 let route = routeForPolyline[polyline] {
             return route.color
         }
         return nil
     }
-
-    /* This retrieves the avoidLink IDs, upon completion 
     
-    Will retrieve & download result and call completion closure 
-        
-    */    
+    /// Retrieve linkIds to avoid
+    ///
+    /// - Parameters:
+    ///   - from: origination
+    ///   - to: destination
+    ///   - completion: called when request is completed
     static func avoidLinkIds(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D, completion: @escaping (AvoidLinkIds) -> ()) {
         var urlComponents = server
         urlComponents.path = "/v1/avoidLinkIds"
@@ -60,11 +59,12 @@ class RoutingState: State {
             completion(AvoidLinkIds(red: red, yellow: yellow))
         }.resume()
     }
-
-    /**
-    Inititializes routing state and starts to query for the routes -- 3 types of routes (safest,
-    middle, fastest)
-    */
+    
+    /// Initializes routing state and starts to query for routes
+    ///
+    /// - Parameters:
+    ///   - from: origination
+    ///   - to: destination
     init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
         let route = Route(from: from, to: to)
         routes.append(route)
