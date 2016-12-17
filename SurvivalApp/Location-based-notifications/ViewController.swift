@@ -72,6 +72,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             
             //Region to be defined here
             
+            // Region data
+            let title = "Location"
+            let coordinate = CLLocationCoordinate2DMake(90.0000, 0.0000)           
+            let regionRadius = 300.0
+            
             // Setup region
             let region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: coordinate.latitude,
                                                                          longitude: coordinate.longitude), radius: regionRadius, identifier: title)
