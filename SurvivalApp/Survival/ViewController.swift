@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 /// Main view controller with a map view
-class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
+class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, StateDelegate {
     // MARK: - UI
     
     /// Main map view
@@ -51,6 +51,38 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             toTextField.leftView = toLabel
             toTextField.leftViewMode = .always
         }
+    }
+    
+    // MARK: - Location
+    
+    private let locationManager = CLLocationManager()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        locationManager.delegate = self
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse:
+            locationManager.requestLocation()
+        default:
+            break
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
+            locationManager.requestLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     }
     
     // MARK: - State

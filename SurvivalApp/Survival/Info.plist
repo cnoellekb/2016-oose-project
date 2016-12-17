@@ -27,7 +27,7 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSLocationAlwaysUsageDescription</key>
+	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Survival uses your location to navigate.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
