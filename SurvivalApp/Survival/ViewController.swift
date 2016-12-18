@@ -53,6 +53,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
     }
     @IBOutlet weak var bottomContainer: UIView!
+    @IBOutlet weak var bottomHightConstraint: NSLayoutConstraint!
     @IBOutlet weak var showBottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var hideBottomConstraint: NSLayoutConstraint!
     
@@ -155,7 +156,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        state?.prepare(for: segue)
+        state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
     }
     
     // MARK: - StateDelegate

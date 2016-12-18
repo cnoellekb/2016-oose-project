@@ -33,7 +33,7 @@ class SearchTableViewController: UITableViewController {
     }
     
     func select(row: Int) {
-        tableView.selectRow(at: IndexPath(row: row, section: 0), animated: true, scrollPosition: .none)
+        tableView.selectRow(at: IndexPath(row: row, section: 0), animated: true, scrollPosition: .middle)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

@@ -108,10 +108,9 @@ class SearchingState: State, SearchTableViewControllerDelegate {
     
     private func handle(result: [Location]) {
         locations = result
+        searchTableViewController?.update()
         delegate?.didGenerate(annotations: locations)
         delegate?.select(annotation: locations[0])
-        searchTableViewController?.update()
-        searchTableViewController?.select(row: 0)
     }
     
     weak var searchTableViewController: SearchTableViewController?
@@ -120,8 +119,9 @@ class SearchingState: State, SearchTableViewControllerDelegate {
         return "Search"
     }
     
-    func prepare(for segue: UIStoryboardSegue) {
+    func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
         if let dst = segue.destination as? SearchTableViewController {
+            bottomHeight.constant = dst.preferredContentSize.height
             searchTableViewController = dst
             dst.delegate = self
         }

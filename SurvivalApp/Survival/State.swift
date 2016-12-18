@@ -42,7 +42,7 @@ protocol State {
     func strokeColor(for overlay: MKOverlay) -> UIColor?
     func didSelect(annotation: MKAnnotation)
     var bottomSegue: String? { get }
-    func prepare(for segue: UIStoryboardSegue)
+    func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint)
 }
 
 extension State {
@@ -64,6 +64,6 @@ extension State {
     var bottomSegue: String? {
         return nil
     }
-    func prepare(for segue: UIStoryboardSegue) {
+    func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
     }
 }

@@ -156,6 +156,7 @@
                     </view>
                     <connections>
                         <outlet property="bottomContainer" destination="sge-9B-Rk0" id="8bX-zK-PV6"/>
+                        <outlet property="bottomHightConstraint" destination="trX-re-gPd" id="izn-X3-9ub"/>
                         <outlet property="fromTextField" destination="jlg-5m-h2o" id="TOq-zv-Zx3"/>
                         <outlet property="hideBottomConstraint" destination="T5h-yG-xHW" id="Thr-8c-GqR"/>
                         <outlet property="mapView" destination="39t-AG-1vb" id="BEY-Dr-Lye"/>
@@ -255,6 +256,7 @@
                             <outlet property="delegate" destination="dDR-3Y-Tip" id="xY5-3I-0xV"/>
                         </connections>
                     </tableView>
+                    <value key="contentSizeForViewInPopover" type="size" width="375" height="250"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eDp-ki-21k" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
