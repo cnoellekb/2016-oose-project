@@ -18,6 +18,9 @@
 		E258879B1DA5797400F251C9 /* SurvivalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258879A1DA5797400F251C9 /* SurvivalUITests.swift */; };
 		E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E273DA2C1DD96971008AFDBD /* SearchingState.swift */; };
 		E2CAEE881DB00E5300D7390B /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CAEE871DB00E5300D7390B /* Route.swift */; };
+		E2CBE4681E05F88600AB42CD /* BottomSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4671E05F88600AB42CD /* BottomSegue.swift */; };
+		E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */; };
+		E2CBE46C1E05FB0F00AB42CD /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */; };
 		E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E65EBE1DB2FA9B00F427DF /* Location.swift */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +59,9 @@
 		E258879C1DA5797400F251C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E273DA2C1DD96971008AFDBD /* SearchingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchingState.swift; sourceTree = "<group>"; };
 		E2CAEE871DB00E5300D7390B /* Route.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		E2CBE4671E05F88600AB42CD /* BottomSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSegue.swift; sourceTree = "<group>"; };
+		E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
+		E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResultTableViewCell.swift; sourceTree = "<group>"; };
 		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -109,8 +115,11 @@
 			children = (
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
+				E2CBE4671E05F88600AB42CD /* BottomSegue.swift */,
 				E252293B1DC84AA10073BBC8 /* State.swift */,
 				E273DA2C1DD96971008AFDBD /* SearchingState.swift */,
+				E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */,
+				E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */,
 				E252293D1DC84AC60073BBC8 /* RoutingState.swift */,
 				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
 				E2CAEE871DB00E5300D7390B /* Route.swift */,
@@ -210,6 +219,11 @@
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = 5Z4L8A2TF8;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 0;
+							};
+						};
 					};
 					E258878A1DA5797400F251C9 = {
 						CreatedOnToolsVersion = 8.0;
@@ -278,9 +292,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */,
+				E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */,
 				E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */,
+				E2CBE4681E05F88600AB42CD /* BottomSegue.swift in Sources */,
 				E2CAEE881DB00E5300D7390B /* Route.swift in Sources */,
 				E258877D1DA5797400F251C9 /* ViewController.swift in Sources */,
+				E2CBE46C1E05FB0F00AB42CD /* SearchResultTableViewCell.swift in Sources */,
 				E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */,
 				E252293C1DC84AA10073BBC8 /* State.swift in Sources */,
 				E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */,
