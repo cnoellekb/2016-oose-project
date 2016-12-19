@@ -26,4 +26,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     }
 
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        //Restart tasks that were paused or didn't start while application was inactive, and optionally refresh user interface. 
+    }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        //Called before the application terminates - saves data as needed. 
+    }
+
+
 }
