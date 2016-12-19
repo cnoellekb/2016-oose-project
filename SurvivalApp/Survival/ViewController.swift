@@ -306,10 +306,10 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         guard let search = state as? SearchingState, let location = view.annotation as? Location else {
             return
         }
-        set(location: location, for: search.searchType)
+        choose(location: location, for: search.searchType)
     }
     
-    func set(location: Location, for type: SearchingState.SearchType) {
+    func choose(location: Location, for type: SearchingState.SearchType) {
         state = nil
         if type == .to {
             to = location

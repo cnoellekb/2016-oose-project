@@ -111,4 +111,12 @@ class RoutingState: State, RoutingViewControllerDelegate {
             dst.delegate = self
         }
     }
+    
+    func choose(route: Route) {
+        delegate?.choose(route: route)
+    }
+    
+    func reportError(title: String, message: String?) {
+        delegate?.reportError(title: title, message: message)
+    }
 }

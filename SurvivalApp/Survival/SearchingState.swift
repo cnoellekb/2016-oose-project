@@ -135,7 +135,7 @@ class SearchingState: State, SearchTableViewControllerDelegate {
     }
     
     func didTapSetButton(at index: Int) {
-        delegate?.set(location: locations[index], for: searchType)
+        delegate?.choose(location: locations[index], for: searchType)
     }
     
     func didSelect(annotation: MKAnnotation) {

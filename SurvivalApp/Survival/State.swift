@@ -18,7 +18,8 @@ protocol StateDelegate: class {
     ///
     /// - Parameter overlays: newly generated overlays
     func didGenerate(overlay: MKOverlay)
-    func set(location: Location, for type: SearchingState.SearchType)
+    func choose(location: Location, for type: SearchingState.SearchType)
+    func choose(route: Route)
     /// Called when state is reporting an error
     ///
     /// - Parameters:

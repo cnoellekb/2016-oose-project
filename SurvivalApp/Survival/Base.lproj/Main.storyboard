@@ -317,7 +317,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" red="0.20716272290000001" green="0.47301200030000001" blue="0.96087658409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstItem="HlQ-KO-hjw" firstAttribute="centerY" secondItem="Lga-l3-BIZ" secondAttribute="centerY" id="8ky-gr-IHt"/>
                                     <constraint firstItem="HlQ-KO-hjw" firstAttribute="height" secondItem="Lga-l3-BIZ" secondAttribute="height" id="9dU-hX-HV4"/>
@@ -387,6 +387,7 @@
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="375" height="128"/>
                     <connections>
+                        <outlet property="buttonView" destination="Lga-l3-BIZ" id="f5L-OH-qDN"/>
                         <outlet property="distanceLabel" destination="C84-3M-dWZ" id="7TB-ZR-CkN"/>
                         <outlet property="slider" destination="rUK-18-mUF" id="Cpq-48-SsY"/>
                         <outlet property="timeLabel" destination="LnQ-Bu-wqr" id="qvK-qW-caS"/>

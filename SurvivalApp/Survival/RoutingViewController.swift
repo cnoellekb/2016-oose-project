@@ -9,6 +9,8 @@ import UIKit
 
 protocol RoutingViewControllerDelegate: class {
     var routes: [Route?] { get }
+    func choose(route: Route)
+    func reportError(title: String, message: String?)
 }
 
 class RoutingViewController: UIViewController {
@@ -16,6 +18,7 @@ class RoutingViewController: UIViewController {
     
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
+    @IBOutlet weak var buttonView: UIView!
     @IBOutlet weak var slider: UISlider!
     
     private enum RouteType: Int {
@@ -23,7 +26,13 @@ class RoutingViewController: UIViewController {
     }
     private var routeType: RouteType? {
         didSet {
-            updateLabels()
+            if let type = routeType, delegate?.routes[type.rawValue] == nil {
+                buttonView.backgroundColor = #colorLiteral(red: 0.7233663201, green: 0.7233663201, blue: 0.7233663201, alpha: 1)
+                routeType = nil
+            } else {
+                buttonView.backgroundColor = #colorLiteral(red: 0.007406264544, green: 0.4804522395, blue: 0.99433285, alpha: 1)
+                updateLabels()
+            }
         }
     }
     
@@ -65,11 +74,12 @@ class RoutingViewController: UIViewController {
     }
     
     func update() {
-        if routeType == nil, delegate?.routes[0] != nil {
-            routeType = .safest
-        }
+        routeType = .safest
     }
     
     @IBAction func start() {
+        if let type = routeType, let route = delegate?.routes[type.rawValue] {
+            delegate?.choose(route: route)
+        }
     }
 }
