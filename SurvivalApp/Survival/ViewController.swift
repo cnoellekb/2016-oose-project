@@ -250,20 +250,56 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         state = NavigatingState(route: route, topViewController: topViewController)
         #if DEMO
             mapView.showsUserLocation = false
+            moveSimulatedUserLocation(along: route)
             mapView.addAnnotation(simulatedUserLocation)
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                let oldCoordinate = self.simulatedUserLocation.coordinate
-                let newCoordinate = CLLocationCoordinate2D(latitude: oldCoordinate.latitude + 0.1, longitude: oldCoordinate.longitude + 0.1)
-                self.simulatedUserLocation.coordinate = newCoordinate
-            }
         #else
             mapView.setUserTrackingMode(.follow, animated: true)
         #endif
     }
     
+    #if DEMO
+    private var timer: Timer?
+    
+    private func moveSimulatedUserLocation(along route: Route) {
+        guard let start = route.shape.first else { return }
+        simulatedUserLocation.coordinate = start
+        var index = 0
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) {
+            if index >= route.shape.count - 1 {
+                $0.invalidate()
+                return
+            }
+            var now = self.simulatedUserLocation.coordinate
+            var move = 10.0
+            repeat {
+                let end = route.shape[index + 1]
+                let distance = MKMetersBetweenMapPoints(MKMapPointForCoordinate(now), MKMapPointForCoordinate(end))
+                if (distance <= move) {
+                    move -= distance
+                    now = end
+                    index += 1
+                    if index == route.shape.count - 1 {
+                        break
+                    }
+                } else {
+                    let k = move / distance
+                    let latitude = (end.latitude - now.latitude) * k + now.latitude
+                    let longitude = (end.longitude - now.longitude) * k + now.longitude
+                    now = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                    move = 0
+                }
+            } while move > 0
+            self.simulatedUserLocation.coordinate = now
+            self.mapView.setCenter(now, animated: true)
+            self.state?.update(location: now)
+        }
+    }
+    #endif
+    
     func stopNavigation() {
         state = nil
         #if DEMO
+            timer?.invalidate()
             mapView.removeAnnotation(simulatedUserLocation)
             mapView.showsUserLocation = true
         #endif
@@ -381,6 +417,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     #if !DEMO
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        state?.update(location: userLocation.coordinate)
     }
     #endif
 }

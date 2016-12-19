@@ -12,9 +12,12 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
     weak var delegate: StateDelegate? {
         didSet {
             let polyline = MKPolyline(coordinates: route.shape, count: route.shape.count)
+            overlays = [polyline]
             delegate?.didGenerate(overlay: polyline)
         }
     }
+    
+    var overlays = [MKOverlay]()
     
     var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
