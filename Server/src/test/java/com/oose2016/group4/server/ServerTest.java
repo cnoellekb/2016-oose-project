@@ -246,7 +246,16 @@ public class ServerTest {
 		//exceeded the number of monthly MapQuest transactions 11/27/16
 	}
 	*/
-
+	/*
+	public void testSafetyRating() {
+		SurvivalService s = new SurvivalService(dSource);
+		try (Connection conn = s.getDb().open()){
+			int lat = ;
+			int lng = ;
+			s.getSafetyRating(lat, lng);
+		}
+	}
+	*/
 	// ------------------------------------------------------------------------//
 	// Survival Maps Specific Helper Methods and classes
 	// ------------------------------------------------------------------------//

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import org.sql2o.Connection;
 import org.sql2o.Query;
@@ -43,7 +44,6 @@ public class DatabaseUpdater {
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_LINKID_GRID).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_UPDATE_LOG).executeUpdate();
-
     }
 
     /**
@@ -52,8 +52,9 @@ public class DatabaseUpdater {
      * @throws IOException
      */
     public void update(String table) throws IOException {
-        updateTraffics();
+        //updateTraffics();
         updateCrimes();
+        System.out.println("finished update crimes");
     }
 
 
@@ -79,10 +80,12 @@ public class DatabaseUpdater {
 
         /*
         Get the date of the most recent crime record of last updateDB operation.
-        Ditch those records that has already been previously updated into the database to reduce the workload of this updateDB.
+        Ditch those records that have already been previously updated into the database to reduce the workload of this updateDB.
          */
         String sqlDate = "SELECT MAX(date) FROM crimes";
-        int dateLastUpdate = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
+        Object dateLastUpdateObj = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
+        int dateLastUpdate = 0;
+        if (dateLastUpdateObj != null) dateLastUpdate = (Integer) dateLastUpdateObj;
 
         for (Object crimeEntry: crimeList) {
             Map<String, Object> crime = (Map<String,Object>) crimeEntry;
@@ -94,14 +97,13 @@ public class DatabaseUpdater {
                     || !crime.containsKey("location")
                     || !crime.containsKey("location_1"))
                 continue;
-
+            
             String dateStr = (String) crime.get("crimedate");
             LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             int date = 86400 * (int) dateLocal.toEpochDay();
 
             //ditch record if has been covered in previous updateDB operations.
             if(date <= dateLastUpdate) continue;
-
             String type = (String) crime.get("description");
 
             //ditch records of irrelevant types;
@@ -110,16 +112,17 @@ public class DatabaseUpdater {
                     || typeAllCaps.contains("ARSON")
                     || typeAllCaps.contains("BURGLARY")
                     || typeAllCaps.contains("RESIDENCE")) continue;
-
+            
             int crimeTypeWeight = getCrimeTypeWeight(type);
 
             String inOut = (String) crime.get("inside_outside");
-
+            
             if (inOut.toUpperCase().startsWith("I")) continue;
 
             String address = (String) crime.get("location");
             Map<String, Object> location_1 = (Map<String, Object>) crime.get("location_1");
             ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
+            
             double latitude = a.get(1);
             double longitude = a.get(0);
 
@@ -144,8 +147,9 @@ public class DatabaseUpdater {
                     .addParameter("xParam", x)
                     .addParameter("yParam", y)
                     .executeScalar(Integer.class);
+            
 
-            if (linkIdByXY == null ) {
+            if (linkIdByXY == null || linkIdByXY == 0) {
                 /*
                 This grid has not been updated either by traffic source or crimes source.
                  */
@@ -157,10 +161,16 @@ public class DatabaseUpdater {
                     the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
                      of this crime record.
                      */
-                    int aadt = getGridAADT(x,y);
+                    int aadt = getGridAADT(x,y); 
+                    if (aadt == 0) aadt = 1;
 
-                    String sqlUpdateGrids = "INSERT INTO grids"
-                            + "VALUES(:xParam, :yParam, :linkIdByXYParam, :crimeTypeWeightParam * 10000 / :aadtParam, :aadtParam);";
+                    String sqlUpdateGrids = "INSERT OR REPLACE INTO grids (x, y, linkId, alarm, AADT)"
+                            + "VALUES(:xParam, :yParam, "
+                            + "(SELECT CASE WHEN exists(SELECT 1 FROM grids WHERE x = :xParam AND y = :yParam) "
+                            + "THEN :linkIdByXYParam  ELSE :linkIdByXYParam  END), "
+                            + "(SELECT CASE WHEN exists(SELECT 1 FROM grids WHERE x = :xParam AND y = :yParam) "
+                            + "THEN :crimeTypeWeightParam * 10000 / :aadtParam ELSE :crimeTypeWeightParam * 10000 / :aadtParam END), "
+                            + ":aadtParam);";
                     mConnection.createQuery(sqlUpdateGrids)
                             .addParameter("xParam", x)
                             .addParameter("yParam", y)
@@ -270,17 +280,22 @@ public class DatabaseUpdater {
          */
         if (trafficUpdateCount == null) {
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
+
+            int count = 0;
             for (Object trafficObj : trafficList ) {
                 Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
-
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
-                int AADT = (int) trafficEntryProperties.get("AADT_2014");
+  
+                Double d = (Double)trafficEntryProperties.get("AADT_2014");                
+                double AADT_dbl = (double)d;
+                int AADT = (int) AADT_dbl;
+                
                 /*
                 The above AADT value is shared by a list of coordinates, as fetched below;
                  */
                 Map<String, Object> trafficEntryGeometry = (Map<String, Object>) trafficEntry.get("geometry");
-                ArrayList<Object> trafficCoordinatesList = (ArrayList<Object>) trafficEntryGeometry.get("coordinates");
 
+                ArrayList<Object> trafficCoordinatesList = (ArrayList<Object>) trafficEntryGeometry.get("coordinates");
                 for (Object coordinate : trafficCoordinatesList) {
                     ArrayList<Double> coordinateSingleList = (ArrayList<Double>) coordinate;
                     double latitude = coordinateSingleList.get(1);
@@ -290,38 +305,19 @@ public class DatabaseUpdater {
                     Grid grid = new Grid (latitude, longitude);
                     int x = grid.getX();
                     int y = grid.getY();
-
-                    //Check to see if this grid has been updated with traffic data;
-                    String sqlQueryGrid = " SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam;";
-                    Integer aadtInGrids = mConnection.createQuery(sqlQueryGrid)
+                   
+                	String sqlInsertCoordinate = "INSERT OR REPLACE INTO grids (x, y, linkId, alarm, AADT) "
+                            + " VALUES(:xParam, :yParam, 0, 0, "
+                			+ "(SELECT CASE WHEN exists(SELECT 1 FROM grids WHERE x = :xParam AND y = :yParam) "
+                            + "THEN :aadtParam ELSE :aadtParam END))";
+                    mConnection.createQuery(sqlInsertCoordinate)
                             .addParameter("xParam", x)
                             .addParameter("yParam", y)
-                            .executeScalar(Integer.class);
-
-                    //If this grid has never been updated with traffic data, insert a new tuple for this grid;
-                    if ( aadtInGrids == null ) {
-                        String sqlInsertCoordinate = "INSERT INTO grids "
-                                + " VALUES(:xParam, :yParam, 0, 0, :aadtParam); ";
-
-                        mConnection.createQuery(sqlInsertCoordinate)
-                                .addParameter("xParam", x)
-                                .addParameter("yParam", y)
-                                .addParameter("aadtParam", AADT)
-                                .executeUpdate();
-                        continue;
-                    }
-
-                    /*
-                    If this grid has already been updated, with traffic data, add the AADT value for the current grid
-                    into the tuple's previous AADT value;
-                     */
-                    String sqlUpdateGrid = " UPDATE grids SET AADT=AADT+ :aadtParam WHERE x= :xParam AND y= :yParam; ";
-                    mConnection.createQuery(sqlUpdateGrid)
                             .addParameter("aadtParam", AADT)
-                            .addParameter("xParam", x)
-                            .addParameter("yParam", y)
                             .executeUpdate();
                 }
+                count++;
+                if (count == 10) break;
             }
 
             /*

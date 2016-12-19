@@ -123,10 +123,13 @@ public class SurvivalService {
 		}
 	}
 	
-	public String getSafetyRating(double x, double y) {
+	public String getSafetyRating(double lat, double lng) {
 		try (Connection conn = db.open()) {
+			Grid grid = new Grid(lat, lng);
+			int x = grid.getX();
+			int y = grid.getY();
 			String sql = "SELECT SUM(alarm) FROM grids WHERE "
-					+ "x <= :x + 0.0001 AND x >= :x - 0.0001 AND y <= :y + 0.0001 AND y >= :y - 0.0001;";
+					+ "x <= :x + 1 AND x >= :x - 1 AND y <= :y + 1 AND y >= :y - 1;";
 			Query query = conn.createQuery(sql);
 			query.addParameter("x", x).addParameter("y", y);
 			double result = query.executeScalar(Double.class);
@@ -140,7 +143,7 @@ public class SurvivalService {
 			}
 			
 		} catch (Sql2oException e) {
-			logger.error("Failed to get crimes", e);
+			logger.error("Failed to get sum", e);
 			return null;
 		}	
 	}
