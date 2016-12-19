@@ -48,22 +48,6 @@ public class SurvivalController {
 			}
 		}, new JsonTransformer());
 		
-		/**
-		 * Display Heat Map.
-		 */
-		get(API_CONTEXT + "/heatmap", "application/json", (request, response) -> {
-			try {
-				double lat = Double.parseDouble(request.queryParams("lat"));
-				double lng = Double.parseDouble(request.queryParams("lng"));
-				double zoom = Double.parseDouble(request.queryParams("zoom"));
-				//generate PNG overlay
-				return Collections.EMPTY_MAP;
-			} catch (Exception e) {
-				logger.info("Unsupported location", e);
-				response.status(400);
-				return Collections.EMPTY_MAP;
-			}
-		}, new JsonTransformer());
 		
 		/**
 		 * Get Crime List.
@@ -79,10 +63,10 @@ public class SurvivalController {
 				int toDate = Integer.parseInt(request.queryParams("toDate"));
 				//types: <Comma separated Strings>
 				//get array of crimes (int date, String addr, double lat, double lng, String type
-				CrimePoint from = new CrimePoint(fromDate, fromLat, fromLng);
-				CrimePoint to = new CrimePoint(toDate, toLat, toLng);
+				Crime from = new Crime(fromDate, fromLat, fromLng);
+				Crime to = new Crime(toDate, toLat, toLng);
 				response.status(200);
-				return survivalService.getCrimes(from, to, timeOfDay);
+				return survivalService.getCrimes(from, to, timeOfDay, "crimes");
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(404); //unsupported location
@@ -94,7 +78,7 @@ public class SurvivalController {
 		 * Do some data preprocessing for database.
 		 */
 		get(API_CONTEXT + "/update/db", "application/json", (request, response) -> {
-			survivalService.updateDB();
+			survivalService.updateDB("crimes");
 			return Collections.EMPTY_MAP;
 		}, new JsonTransformer());
 	}
