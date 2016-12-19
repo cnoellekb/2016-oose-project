@@ -7,7 +7,13 @@
 
 import UIKit
 
+protocol RoutingViewControllerDelegate: class {
+    var routes: [Route?] { get }
+}
+
 class RoutingViewController: UIViewController {
+    weak var delegate: RoutingViewControllerDelegate?
+    
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
     @IBOutlet weak var slider: UISlider!
@@ -15,7 +21,11 @@ class RoutingViewController: UIViewController {
     private enum RouteType: Int {
         case safest, middle, fastest
     }
-    private var routeType = RouteType.middle
+    private var routeType: RouteType? {
+        didSet {
+            updateLabels()
+        }
+    }
     
     @IBAction func sliderValueChange(_ sender: UISlider) {
         sender.value.round(.toNearestOrAwayFromZero)
@@ -32,6 +42,32 @@ class RoutingViewController: UIViewController {
         let newValue = ((pointTapped.x - positionOfSlider.x) * CGFloat(slider.maximumValue) / widthOfSlider)
         slider.value = Float(newValue)
         sliderValueChange(slider)
+    }
+    
+    private let dateComponentsFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .short
+        return formatter
+    }()
+    
+    private func updateLabels() {
+        guard let index = routeType?.rawValue,
+                let route = delegate?.routes[index],
+                let time = route.result["time"] as? Double,
+                let distance = route.result["distance"] as? Double else {
+            timeLabel.text = "N/A"
+            distanceLabel.text = "(N/A)"
+            return
+        }
+        timeLabel.text = dateComponentsFormatter.string(from: time)
+        distanceLabel.text = String(format: "(%.1f mi)", distance)
+    }
+    
+    func update() {
+        if routeType == nil, delegate?.routes[0] != nil {
+            routeType = .safest
+        }
     }
     
     @IBAction func start() {

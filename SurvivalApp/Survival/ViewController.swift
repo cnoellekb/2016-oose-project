@@ -159,7 +159,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             reportError(title: "Please enter an origination", message: "Cannot get current location.")
             return
         }
-        state = RoutingState(from: from, to: to)
+        if let routingState = RoutingState(from: from, to: to) {
+            state = routingState
+        } else {
+            reportError(title: "Are you seriously going to walk this far?", message: nil)
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

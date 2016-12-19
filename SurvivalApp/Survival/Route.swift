@@ -59,7 +59,7 @@ class Route {
                     let sessionID = route["sessionId"] as? String else {
                 return
             }
-            result = route
+            self.result = route
             Route.routeShape(ofSessionID: sessionID, completion: completion)
         }.resume()
     }
