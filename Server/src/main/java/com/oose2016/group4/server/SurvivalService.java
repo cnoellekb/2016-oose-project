@@ -121,6 +121,7 @@ public class SurvivalService {
 			logger.error("Failed to get crimes", e);
 		}
 	}
+
 	
 	public String getSafetyRating(double lat, double lng, String table) {
 		try (Connection conn = db.open()) {
@@ -146,6 +147,19 @@ public class SurvivalService {
 			logger.error("Failed to get sum", e);
 			return null;
 		}	
+	}
+
+
+	public void testUpdate(){
+		try (Connection conn = db.open()) {
+			DatabaseUpdater dbUpdater= new DatabaseUpdater(conn);
+			dbUpdater.initialUpdate();
+			dbUpdater.test();
+		} catch (IOException ioe ) {
+			ioe.printStackTrace();
+		} catch (Sql2oException sqle) {
+			logger.error("Fail", sqle);
+		}
 	}
 
 }
