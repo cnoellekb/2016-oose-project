@@ -17,7 +17,7 @@ protocol StateDelegate: class {
     /// Called when state has generated overlays
     ///
     /// - Parameter overlays: newly generated overlays
-    func didGenerate(overlays: [MKOverlay])
+    func didGenerate(overlay: MKOverlay)
     func set(location: Location, for type: SearchingState.SearchType)
     /// Called when state is reporting an error
     ///
@@ -35,6 +35,8 @@ protocol State {
     var annotations: [MKAnnotation] { get }
     /// All overlays for this state
     var overlays: [MKOverlay] { get }
+    var topViewController: UIViewController? { get }
+    var bottomViewController: UIViewController? { get }
     /// Stroke color for overlay
     ///
     /// - Parameter overlay: overlay to display
@@ -51,6 +53,12 @@ extension State {
     }
     var overlays: [MKOverlay] {
         return []
+    }
+    var topViewController: UIViewController? {
+        return nil
+    }
+    var bottomViewController: UIViewController? {
+        return nil
     }
     /// Default implementation of stroke color
     ///

@@ -21,6 +21,7 @@
 		E2CBE4681E05F88600AB42CD /* BottomSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4671E05F88600AB42CD /* BottomSegue.swift */; };
 		E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */; };
 		E2CBE46C1E05FB0F00AB42CD /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */; };
+		E2CBE46E1E07207700AB42CD /* RoutingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */; };
 		E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E65EBE1DB2FA9B00F427DF /* Location.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,7 @@
 		E2CBE4671E05F88600AB42CD /* BottomSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSegue.swift; sourceTree = "<group>"; };
 		E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
 		E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResultTableViewCell.swift; sourceTree = "<group>"; };
+		E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingViewController.swift; sourceTree = "<group>"; };
 		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,6 +123,7 @@
 				E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */,
 				E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */,
 				E252293D1DC84AC60073BBC8 /* RoutingState.swift */,
+				E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */,
 				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
 				E2CAEE871DB00E5300D7390B /* Route.swift */,
 				E258877E1DA5797400F251C9 /* Main.storyboard */,
@@ -291,6 +294,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2CBE46E1E07207700AB42CD /* RoutingViewController.swift in Sources */,
 				E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */,
 				E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */,
 				E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */,

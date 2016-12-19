@@ -13,7 +13,7 @@ class RoutingState: State {
     weak var delegate: StateDelegate?
     
     /// Array of routes
-    private var routes = [Route]()
+    private var routes = [Route?](repeating: nil, count: 3)
     /// Dictionary from MKPolyline to Route
     private var routeForPolyline = [MKPolyline: Route]()
     
@@ -66,31 +66,52 @@ class RoutingState: State {
     ///   - from: origination
     ///   - to: destination
     init(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
+        let distance = MKMetersBetweenMapPoints(MKMapPointForCoordinate(from), MKMapPointForCoordinate(to))
+        if distance > 100000 {
+            delegate?.reportError(title: "Are you seriously going to walk this far?", message: nil)
+            return
+        }
         let route = Route(from: from, to: to)
-        routes.append(route)
+        routes[2] = route
         route.calculateRoute {
             var coordinates = $0
             let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
             self.routeForPolyline[polyline] = route
-            self.delegate?.didGenerate(overlays: [polyline])
+            self.delegate?.didGenerate(overlay: polyline)
         }
         RoutingState.avoidLinkIds(from: from, to: to) {
             let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
-            self.routes.append(middleRoute)
+            self.routes[1] = middleRoute
             middleRoute.calculateRoute {
                 var coordinates = $0
                 let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                 self.routeForPolyline[polyline] = middleRoute
-                self.delegate?.didGenerate(overlays: [polyline])
+                self.delegate?.didGenerate(overlay: polyline)
             }
             let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
-            self.routes.append(safestRoute)
+            self.routes[0] = safestRoute
             safestRoute.calculateRoute {
                 var coordinates = $0
                 let polyline = MKPolyline(coordinates: &coordinates, count: coordinates.count)
                 self.routeForPolyline[polyline] = safestRoute
-                self.delegate?.didGenerate(overlays: [polyline])
+                self.delegate?.didGenerate(overlay: polyline)
             }
+        }
+    }
+    
+    private weak var routingViewController: RoutingViewController?
+    var bottomViewController: UIViewController? {
+        return routingViewController
+    }
+    
+    var bottomSegue: String? {
+        return "Route"
+    }
+    
+    func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
+        if let dst = segue.destination as? RoutingViewController {
+            bottomHeight.constant = dst.preferredContentSize.height
+            routingViewController = dst
         }
     }
 }

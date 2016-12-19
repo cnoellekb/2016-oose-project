@@ -113,7 +113,10 @@ class SearchingState: State, SearchTableViewControllerDelegate {
         delegate?.select(annotation: locations[0])
     }
     
-    weak var searchTableViewController: SearchTableViewController?
+    private weak var searchTableViewController: SearchTableViewController?
+    var bottomViewController: UIViewController? {
+        return searchTableViewController
+    }
     
     var bottomSegue: String? {
         return "Search"

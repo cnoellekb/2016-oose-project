@@ -15,6 +15,8 @@ class Route {
     /// Destination
     private let to: CLLocationCoordinate2D
     
+    var result = [String: Any]()
+    
     /// Stroke color for overlay
     var color: UIColor {
         return .red
@@ -57,6 +59,7 @@ class Route {
                     let sessionID = route["sessionId"] as? String else {
                 return
             }
+            result = route
             Route.routeShape(ofSessionID: sessionID, completion: completion)
         }.resume()
     }
