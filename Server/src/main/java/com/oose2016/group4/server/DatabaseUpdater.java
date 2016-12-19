@@ -271,8 +271,10 @@ public class DatabaseUpdater {
         If the grids table has never been updated with the traffics source library, we pull the traffics data from the source.
          */
         if (trafficUpdateCount == null) {
+            int counter = 0;
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
             for (Object trafficObj : trafficList ) {
+
                 Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
 
@@ -292,6 +294,10 @@ public class DatabaseUpdater {
                 ArrayList<Object> trafficCoordinatesList = (ArrayList<Object>) trafficEntryGeometry.get("coordinates");
 
                 for (Object coordinate : trafficCoordinatesList) {
+
+                    counter ++;
+                    if(counter>1000) return;
+
                     ArrayList<Double> coordinateSingleList = (ArrayList<Double>) coordinate;
                     double latitude = coordinateSingleList.get(1);
                     double longitude = coordinateSingleList.get(0);
@@ -334,13 +340,15 @@ public class DatabaseUpdater {
                     }
 
                 }
-            }
-
             /*
             Leave record in the log so that the update for traffic data never get performed again.
              */
-            String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
-            mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
+                String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
+                mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
+
+            }
+
+
         }
     }
 

@@ -150,11 +150,11 @@ public class SurvivalService {
 	}
 
 
-	public void testUpdate(){
+	public void testUpdate() {
 		try (Connection conn = db.open()) {
 			DatabaseUpdater dbUpdater= new DatabaseUpdater(conn);
 			dbUpdater.initialUpdate();
-			dbUpdater.test();
+			dbUpdater.update("");
 		} catch (IOException ioe ) {
 			ioe.printStackTrace();
 		} catch (Sql2oException sqle) {
