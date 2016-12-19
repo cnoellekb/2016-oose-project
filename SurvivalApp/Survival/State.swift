@@ -20,6 +20,7 @@ protocol StateDelegate: class {
     func didGenerate(overlay: MKOverlay)
     func choose(location: Location, for type: SearchingState.SearchType)
     func choose(route: Route)
+    func stopNavigation()
     /// Called when state is reporting an error
     ///
     /// - Parameters:
@@ -37,7 +38,6 @@ protocol State {
     var annotations: [MKAnnotation] { get }
     /// All overlays for this state
     var overlays: [MKOverlay] { get }
-    var topViewController: UIViewController? { get }
     var bottomViewController: UIViewController? { get }
     /// Stroke color for overlay
     ///
@@ -45,6 +45,7 @@ protocol State {
     /// - Returns: color
     func strokeColor(for overlay: MKOverlay) -> UIColor?
     func didSelect(annotation: MKAnnotation)
+    func update(location: CLLocationCoordinate2D)
     var shouldShowTop: Bool { get }
     var bottomSegue: String? { get }
     func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint)
@@ -60,9 +61,6 @@ extension State {
     var overlays: [MKOverlay] {
         return []
     }
-    var topViewController: UIViewController? {
-        return nil
-    }
     var bottomViewController: UIViewController? {
         return nil
     }
@@ -74,6 +72,8 @@ extension State {
         return nil
     }
     func didSelect(annotation: MKAnnotation) {
+    }
+    func update(location: CLLocationCoordinate2D) {
     }
     var shouldShowTop: Bool {
         return false

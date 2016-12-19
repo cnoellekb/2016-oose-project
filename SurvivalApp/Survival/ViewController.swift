@@ -51,6 +51,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             toTextField.leftViewMode = .always
         }
     }
+    weak var topViewController: NavigatingTopViewController!
     @IBOutlet weak var bottomContainer: UIView!
     @IBOutlet weak var bottomHightConstraint: NSLayoutConstraint!
     @IBOutlet weak var showTopConstraint: NSLayoutConstraint!
@@ -95,6 +96,10 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     }
     
+    #if DEMO
+    private let simulatedUserLocation = SimulatedUserLocation()
+    #endif
+    
     // MARK: - State
     
     /// Current state of operation
@@ -121,10 +126,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                 UIView.animate(withDuration: 0.5) {
                     self.view.layoutIfNeeded()
                 }
-            }
-            if let topVC = state?.topViewController {
-                topVC.removeFromParentViewController()
-                topVC.view.removeFromSuperview()
             }
             if let bottomVC = state?.bottomViewController {
                 bottomVC.removeFromParentViewController()
@@ -184,7 +185,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
+        if let dst = segue.destination as? NavigatingTopViewController {
+            topViewController = dst
+        } else {
+            state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
+        }
     }
     
     // MARK: - StateDelegate
@@ -242,8 +247,26 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     
     func choose(route: Route) {
-        state = NavigatingState(route: route)
-        mapView.setUserTrackingMode(.follow, animated: true)
+        state = NavigatingState(route: route, topViewController: topViewController)
+        #if DEMO
+            mapView.showsUserLocation = false
+            mapView.addAnnotation(simulatedUserLocation)
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                let oldCoordinate = self.simulatedUserLocation.coordinate
+                let newCoordinate = CLLocationCoordinate2D(latitude: oldCoordinate.latitude + 0.1, longitude: oldCoordinate.longitude + 0.1)
+                self.simulatedUserLocation.coordinate = newCoordinate
+            }
+        #else
+            mapView.setUserTrackingMode(.follow, animated: true)
+        #endif
+    }
+    
+    func stopNavigation() {
+        state = nil
+        #if DEMO
+            mapView.removeAnnotation(simulatedUserLocation)
+            mapView.showsUserLocation = true
+        #endif
     }
     
     // MARK: - Text field target-actions
@@ -356,6 +379,22 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
     }
     
+    #if !DEMO
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
     }
+    #endif
 }
+
+#if DEMO
+private class SimulatedUserLocation: MKUserLocation {
+    private var simulatedCoordinate = CLLocationCoordinate2D(latitude: 39, longitude: -76)
+    override dynamic var coordinate: CLLocationCoordinate2D {
+        get {
+            return simulatedCoordinate
+        }
+        set {
+            simulatedCoordinate = newValue
+        }
+    }
+}
+#endif
