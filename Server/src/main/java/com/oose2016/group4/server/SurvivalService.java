@@ -35,10 +35,10 @@ public class SurvivalService {
 	 * @param to bottom right coordinate
 	 * @return linkIds
 	 */
-	public AvoidLinkIds getAvoidLinkIds(Coordinate from, Coordinate to) {
+	public AvoidLinkIds getAvoidLinkIds(Coordinate from, Coordinate to, String table) {
 		try (Connection conn = db.open()) {
-			int[] red = fetchLinkIds(conn, from, to, "count > 50");
-			int[] yellow = fetchLinkIds(conn, from, to, "count > 10 AND count <= 50");
+			int[] red = fetchLinkIds(conn, from, to, "count > 50", table);
+			int[] yellow = fetchLinkIds(conn, from, to, "count > 10 AND count <= 50", table);
 			return new AvoidLinkIds(red, yellow);
 		} catch (Sql2oException e) {
 			logger.error("Failed to fetch linkIds", e);
@@ -58,9 +58,9 @@ public class SurvivalService {
 	 * @return array of linkIds
 	 * @throws Sql2oException when query fails
 	 */
-	private int[] fetchLinkIds(Connection conn, Coordinate from, Coordinate to, String predicate)
+	private int[] fetchLinkIds(Connection conn, Coordinate from, Coordinate to, String predicate, String table)
 			throws Sql2oException, NullPointerException {
-		String sql = "SELECT linkId, COUNT(linkId) AS count FROM crimes WHERE "
+		String sql = "SELECT linkId, COUNT(linkId) AS count FROM " + table + " WHERE "
 				+ "latitude >= :fromLat AND latitude <= :toLat AND "
 				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate
 				+ " ORDER BY count DESC LIMIT 20";
@@ -88,15 +88,14 @@ public class SurvivalService {
 	 */
 	public List<Crime> getCrimes(Crime from, Crime to, int timeOfDay, String table) {
 		try (Connection conn = db.open()) {
-			String sql = "SELECT date, address, latitude, longitude, type FROM :table WHERE "
+			String sql = "SELECT date, address, latitude, longitude, type FROM " + table + " WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
 					+ "longitude >= :fromLng AND longitude <= :toLng AND date <= :toDate;";
 					//+ "time = :timeOfDay"; TODO figure out what to do with this
 			Query query = conn.createQuery(sql);
 			query.addParameter("fromLat", from.getLat()).addParameter("toLat", to.getLat())
 				.addParameter("fromLng", from.getLng()).addParameter("toLng", to.getLng())
-				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate())
-				.addParameter("table", table);
+				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate());
 				//.addParameter("timeOfDay", timeOfDay);
 			List<Crime> results = query.executeAndFetch(Crime.class);
 			return results;
@@ -123,20 +122,21 @@ public class SurvivalService {
 		}
 	}
 	
-	public String getSafetyRating(double lat, double lng) {
+	public String getSafetyRating(double lat, double lng, String table) {
 		try (Connection conn = db.open()) {
 			Grid grid = new Grid(lat, lng);
 			int x = grid.getX();
 			int y = grid.getY();
-			String sql = "SELECT SUM(alarm) FROM grids WHERE "
+			
+			String sql = "SELECT SUM(alarm) FROM :table WHERE "
 					+ "x <= :x + 1 AND x >= :x - 1 AND y <= :y + 1 AND y >= :y - 1;";
 			Query query = conn.createQuery(sql);
-			query.addParameter("x", x).addParameter("y", y);
+			query.addParameter("x", x).addParameter("y", y).addParameter("table", table);
 			double result = query.executeScalar(Double.class);
 			
-			if (result > 200) {
+			if (result > 400000) {
 				return "red";
-			} else if (result > 50) {
+			} else if (result > 200000) {
 				return "yellow";
 			} else {
 				return "green";

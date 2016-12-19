@@ -40,7 +40,7 @@ public class SurvivalController {
 				Coordinate to = new Coordinate(toLat, toLng);
 				Coordinate.sortAndExpand(from, to);
 				response.status(200);
-				return survivalService.getAvoidLinkIds(from, to);
+				return survivalService.getAvoidLinkIds(from, to, "crimes");
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(400);
@@ -88,7 +88,7 @@ public class SurvivalController {
 		get(API_CONTEXT + "/safety/rating", "application/json", (request, response) -> {
 			double lat = Double.parseDouble(request.queryParams("lat"));
 			double lng = Double.parseDouble(request.queryParams("lng"));
-			return survivalService.getSafetyRating(lat,lng);
+			return survivalService.getSafetyRating(lat, lng, "grids");
 		}, new JsonTransformer());
 	}
 

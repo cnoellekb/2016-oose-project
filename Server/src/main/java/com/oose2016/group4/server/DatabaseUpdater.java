@@ -52,9 +52,8 @@ public class DatabaseUpdater {
      * @throws IOException
      */
     public void update(String table) throws IOException {
-        //updateTraffics();
-        updateCrimes();
-        System.out.println("finished update crimes");
+        updateTraffics();
+        updateCrimes(table);
     }
 
 
@@ -63,7 +62,7 @@ public class DatabaseUpdater {
      * updateTraffics has to be executed after updateCrimes.
      * @throws IOException
      */
-    private void updateCrimes() throws IOException {
+    private void updateCrimes(String table) throws IOException {
 
         String sqlQueryUpdateCounter = " SELECT updatecount FROM updatelog WHERE sourcename='crime'; ";
         Integer crimeUpdateCount = mConnection.createQuery(sqlQueryUpdateCounter).executeScalar(Integer.class);
@@ -141,11 +140,12 @@ public class DatabaseUpdater {
             int x = grid.getX();
             int y = grid.getY();
 
-            String sqlFetchLinkId = "SELECT linkId FROM grids WHERE x= :xParam and y= :yParam ";
+            String sqlFetchLinkId = "SELECT linkId FROM :table WHERE x= :xParam and y= :yParam ";
             Query queryFetchLinkID = mConnection.createQuery(sqlFetchLinkId);
             Integer linkIdByXY = queryFetchLinkID
                     .addParameter("xParam", x)
                     .addParameter("yParam", y)
+                    .addParameter("table", table)
                     .executeScalar(Integer.class);
             
 
@@ -162,7 +162,7 @@ public class DatabaseUpdater {
                      of this crime record.
                      */
                     int aadt = getGridAADT(x,y); 
-                    if (aadt == 0) aadt = 1;
+                    if (aadt == 0) aadt = 7600; // approx average population (density?)
 
                     String sqlUpdateGrids = "INSERT OR REPLACE INTO grids (x, y, linkId, alarm, AADT)"
                             + "VALUES(:xParam, :yParam, "
@@ -281,7 +281,6 @@ public class DatabaseUpdater {
         if (trafficUpdateCount == null) {
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
 
-            int count = 0;
             for (Object trafficObj : trafficList ) {
                 Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
@@ -316,8 +315,6 @@ public class DatabaseUpdater {
                             .addParameter("aadtParam", AADT)
                             .executeUpdate();
                 }
-                count++;
-                if (count == 10) break;
             }
 
             /*
