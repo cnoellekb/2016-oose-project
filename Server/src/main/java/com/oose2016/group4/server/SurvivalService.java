@@ -224,4 +224,26 @@ public class SurvivalService {
 		in.close();
 		return response;
 	}
+	
+	public String getSafetyRating(double x, double y) {
+		try (Connection conn = db.open()) {
+			String sql = "SELECT SUM(alarm) FROM grids WHERE "
+					+ "x <= :x + 0.0001 AND x >= :x - 0.0001 AND y <= :y + 0.0001 AND y >= :y - 0.0001;";
+			Query query = conn.createQuery(sql);
+			query.addParameter("x", x).addParameter("y", y);
+			double result = query.executeScalar(Double.class);
+			
+			if (result > 200) {
+				return "red";
+			} else if (result > 50) {
+				return "yellow";
+			} else {
+				return "green";
+			}
+			
+		} catch (Sql2oException e) {
+			logger.error("Failed to get crimes", e);
+			return null;
+		}	
+	}
 }

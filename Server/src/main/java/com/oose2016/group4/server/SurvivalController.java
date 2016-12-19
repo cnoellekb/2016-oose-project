@@ -97,5 +97,14 @@ public class SurvivalController {
 			survivalService.updateDB();
 			return Collections.EMPTY_MAP;
 		}, new JsonTransformer());
+		
+		/**
+		 * 
+		 */
+		get(API_CONTEXT + "/safety/rating", "application/json", (request, response) -> {
+			double x = Double.parseDouble(request.queryParams("x"));
+			double y = Double.parseDouble(request.queryParams("y"));
+			return survivalService.getSafetyRating(x,y);
+		}, new JsonTransformer());
 	}
 }
