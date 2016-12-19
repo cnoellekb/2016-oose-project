@@ -229,7 +229,7 @@ public class ServerTest {
 			PowerMockito.when(CrimeAPIHandler.preProccessCrimeData())
 				.thenReturn(new Gson().fromJson(json, ArrayList.class));
 			
-			s.updateDB("TestCrimes", conn);
+			s.updateDB("TestCrimes");
 			
 			String selectSQL = "SELECT * FROM TestCrimes";
 			

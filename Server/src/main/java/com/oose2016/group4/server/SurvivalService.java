@@ -78,6 +78,7 @@ public class SurvivalService {
 	}
 	
 	/**
+	/**
 	 * Retrieve all the crimes in the database within a certain time, latitude and longitude 
 	 * range.
 	 * @param from starting crime point
