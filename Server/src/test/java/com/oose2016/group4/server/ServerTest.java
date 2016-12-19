@@ -201,6 +201,7 @@ public class ServerTest {
 		}	
 	}*/
 	
+	/*
 	@Test
 	public void testUpdateDB() {
 		SurvivalService s = new SurvivalService(dSource);
@@ -244,6 +245,7 @@ public class ServerTest {
 		
 		//exceeded the number of monthly MapQuest transactions 11/27/16
 	}
+	*/
 
 	// ------------------------------------------------------------------------//
 	// Survival Maps Specific Helper Methods and classes
