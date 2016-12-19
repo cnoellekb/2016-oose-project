@@ -32,6 +32,7 @@ protocol StateDelegate: class {
 protocol State {
     /// Event delegate
     weak var delegate: StateDelegate? { get set }
+    var preferredStatusBarStyle: UIStatusBarStyle { get }
     /// All annotations for this state
     var annotations: [MKAnnotation] { get }
     /// All overlays for this state
@@ -44,11 +45,15 @@ protocol State {
     /// - Returns: color
     func strokeColor(for overlay: MKOverlay) -> UIColor?
     func didSelect(annotation: MKAnnotation)
+    var shouldShowTop: Bool { get }
     var bottomSegue: String? { get }
     func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint)
 }
 
 extension State {
+    var preferredStatusBarStyle: UIStatusBarStyle {
+        return .default
+    }
     var annotations: [MKAnnotation] {
         return []
     }
@@ -69,6 +74,9 @@ extension State {
         return nil
     }
     func didSelect(annotation: MKAnnotation) {
+    }
+    var shouldShowTop: Bool {
+        return false
     }
     var bottomSegue: String? {
         return nil

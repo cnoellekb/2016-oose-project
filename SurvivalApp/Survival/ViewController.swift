@@ -53,8 +53,14 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     @IBOutlet weak var bottomContainer: UIView!
     @IBOutlet weak var bottomHightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var showTopConstraint: NSLayoutConstraint!
+    @IBOutlet weak var hideTopConstraint: NSLayoutConstraint!
     @IBOutlet weak var showBottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var hideBottomConstraint: NSLayoutConstraint!
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return state?.preferredStatusBarStyle ?? .default
+    }
     
     // MARK: - Location
     
@@ -101,6 +107,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                 mapView.removeOverlays(overlays)
             }
             var shouldLayout = false
+            if showTopConstraint.isActive {
+                showTopConstraint.isActive = false
+                hideTopConstraint.isActive = true
+                shouldLayout = true
+            }
             if showBottomConstraint.isActive {
                 showBottomConstraint.isActive = false
                 hideBottomConstraint.isActive = true
@@ -123,6 +134,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         didSet {
             state?.delegate = self
             var shouldLayout = false
+            if state?.shouldShowTop == true {
+                showTopConstraint.isActive = true
+                hideTopConstraint.isActive = false
+                shouldLayout = true
+            }
             if let bottomSegue = state?.bottomSegue {
                 performSegue(withIdentifier: bottomSegue, sender: nil)
                 showBottomConstraint.isActive = true
@@ -134,6 +150,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                     self.view.layoutIfNeeded()
                 }
             }
+            setNeedsStatusBarAppearanceUpdate()
         }
     }
     
@@ -210,6 +227,23 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+    
+    func choose(location: Location, for type: SearchingState.SearchType) {
+        state = nil
+        if type == .to {
+            to = location
+            toTextField.text = location.title
+            route()
+        } else {
+            from = location
+            fromTextField.text = location.title
+        }
+    }
+    
+    func choose(route: Route) {
+        state = NavigatingState(route: route)
+        mapView.setUserTrackingMode(.follow, animated: true)
     }
     
     // MARK: - Text field target-actions
@@ -309,18 +343,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         choose(location: location, for: search.searchType)
     }
     
-    func choose(location: Location, for type: SearchingState.SearchType) {
-        state = nil
-        if type == .to {
-            to = location
-            toTextField.text = location.title
-            route()
-        } else {
-            from = location
-            fromTextField.text = location.title
-        }
-    }
-    
     /// Maintain minimal zoom level
     ///
     /// - Parameters:
@@ -332,5 +354,8 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             let newCamera = MKMapCamera(lookingAtCenter: camera.centerCoordinate, fromDistance: 1265.5, pitch: camera.pitch, heading: camera.heading)
             mapView.setCamera(newCamera, animated: animated)
         }
+    }
+    
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
     }
 }

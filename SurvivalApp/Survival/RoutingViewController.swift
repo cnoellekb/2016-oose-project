@@ -31,8 +31,8 @@ class RoutingViewController: UIViewController {
                 routeType = nil
             } else {
                 buttonView.backgroundColor = #colorLiteral(red: 0.007406264544, green: 0.4804522395, blue: 0.99433285, alpha: 1)
-                updateLabels()
             }
+            updateLabels()
         }
     }
     

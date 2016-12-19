@@ -72,18 +72,18 @@ class RoutingState: State, RoutingViewControllerDelegate {
         let route = Route(from: from, to: to)
         route.calculateRoute {
             self.routes[2] = route
-            self.handle(coordinates: $0, route: route)
+            self.handle(coordinates: route.shape, route: route)
         }
         RoutingState.avoidLinkIds(from: from, to: to) {
             let middleRoute = MiddleRoute(from: from, to: to, avoidLinkIds: $0)
             middleRoute.calculateRoute {
                 self.routes[1] = middleRoute
-                self.handle(coordinates: $0, route: middleRoute)
+                self.handle(coordinates: middleRoute.shape, route: middleRoute)
             }
             let safestRoute = SafestRoute(from: from, to: to, avoidLinkIds: $0)
             safestRoute.calculateRoute {
                 self.routes[0] = safestRoute
-                self.handle(coordinates: $0, route: safestRoute)
+                self.handle(coordinates: safestRoute.shape, route: safestRoute)
             }
         }
     }
