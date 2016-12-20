@@ -15,9 +15,12 @@ class Route {
     /// Destination
     private let to: CLLocationCoordinate2D
     
+    var result = [String: Any]()
+    var shape = [CLLocationCoordinate2D]()
+    
     /// Stroke color for overlay
     var color: UIColor {
-        return .red
+        return #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
     }
     
     /// Initializes a route
@@ -48,7 +51,7 @@ class Route {
     /// Queries MapQuest server for the route
     ///
     /// - Parameter completion: called when request is completed
-    func calculateRoute(completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
+    func calculateRoute(completion: @escaping () -> ()) {
         guard let url = routingQuery.url else { return }
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data,
@@ -57,7 +60,8 @@ class Route {
                     let sessionID = route["sessionId"] as? String else {
                 return
             }
-            Route.routeShape(ofSessionID: sessionID, completion: completion)
+            self.result = route
+            self.routeShape(ofSessionID: sessionID, completion: completion)
         }.resume()
     }
     
@@ -66,7 +70,7 @@ class Route {
     /// - Parameters:
     ///   - id: session ID
     ///   - completion: called when request is completed
-    private static func routeShape(ofSessionID id: String, completion: @escaping ([CLLocationCoordinate2D]) -> ()) {
+    private func routeShape(ofSessionID id: String, completion: @escaping () -> ()) {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "open.mapquestapi.com"
@@ -91,8 +95,11 @@ class Route {
             while let lat = i.next(), let lng = i.next() {
                 coordinates.append(CLLocationCoordinate2D(latitude: lat, longitude: lng))
             }
-            DispatchQueue.main.async {
-                completion(coordinates)
+            if coordinates.count > 0 {
+                DispatchQueue.main.async {
+                    self.shape = coordinates
+                    completion()
+                }
             }
         }.resume()
     }
@@ -105,7 +112,7 @@ class MiddleRoute: Route {
     
     /// Stroke color for overlay
     override var color: UIColor {
-        return .yellow
+        return #colorLiteral(red: 0.9994240403, green: 0.9855536819, blue: 0, alpha: 1)
     }
     
     /// Calls super and add constraints for middle route
@@ -138,7 +145,7 @@ class SafestRoute: Route {
     
     /// Stroke color for overlay
     override var color: UIColor {
-        return .green
+        return #colorLiteral(red: 0, green: 0.9768045545, blue: 0, alpha: 1)
     }
     
     /// Calls super and add constraints for safest route

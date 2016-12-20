@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E21D0BA61E079D3700F8E946 /* NavigatingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21D0BA51E079D3700F8E946 /* NavigatingState.swift */; };
 		E252293C1DC84AA10073BBC8 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293B1DC84AA10073BBC8 /* State.swift */; };
 		E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E252293D1DC84AC60073BBC8 /* RoutingState.swift */; };
 		E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258877A1DA5797400F251C9 /* AppDelegate.swift */; };
@@ -18,6 +19,13 @@
 		E258879B1DA5797400F251C9 /* SurvivalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E258879A1DA5797400F251C9 /* SurvivalUITests.swift */; };
 		E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E273DA2C1DD96971008AFDBD /* SearchingState.swift */; };
 		E2CAEE881DB00E5300D7390B /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CAEE871DB00E5300D7390B /* Route.swift */; };
+		E2CBE4681E05F88600AB42CD /* BottomSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4671E05F88600AB42CD /* BottomSegue.swift */; };
+		E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */; };
+		E2CBE46C1E05FB0F00AB42CD /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */; };
+		E2CBE46E1E07207700AB42CD /* RoutingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */; };
+		E2DC16101E0867B600EC5E43 /* NavigatingTopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DC160F1E0867B600EC5E43 /* NavigatingTopViewController.swift */; };
+		E2DC16121E0867C400EC5E43 /* NavigatingBottomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DC16111E0867C400EC5E43 /* NavigatingBottomViewController.swift */; };
+		E2DC16141E0870F200EC5E43 /* Maneuver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DC16131E0870F200EC5E43 /* Maneuver.swift */; };
 		E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E65EBE1DB2FA9B00F427DF /* Location.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E21D0BA51E079D3700F8E946 /* NavigatingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigatingState.swift; sourceTree = "<group>"; };
 		E252293B1DC84AA10073BBC8 /* State.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		E252293D1DC84AC60073BBC8 /* RoutingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingState.swift; sourceTree = "<group>"; };
 		E25887771DA5797400F251C9 /* Survival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Survival.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,6 +65,13 @@
 		E258879C1DA5797400F251C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E273DA2C1DD96971008AFDBD /* SearchingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchingState.swift; sourceTree = "<group>"; };
 		E2CAEE871DB00E5300D7390B /* Route.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		E2CBE4671E05F88600AB42CD /* BottomSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSegue.swift; sourceTree = "<group>"; };
+		E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
+		E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResultTableViewCell.swift; sourceTree = "<group>"; };
+		E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingViewController.swift; sourceTree = "<group>"; };
+		E2DC160F1E0867B600EC5E43 /* NavigatingTopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigatingTopViewController.swift; sourceTree = "<group>"; };
+		E2DC16111E0867C400EC5E43 /* NavigatingBottomViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigatingBottomViewController.swift; sourceTree = "<group>"; };
+		E2DC16131E0870F200EC5E43 /* Maneuver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Maneuver.swift; sourceTree = "<group>"; };
 		E2E65EBE1DB2FA9B00F427DF /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -109,10 +125,18 @@
 			children = (
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
+				E2CBE4671E05F88600AB42CD /* BottomSegue.swift */,
 				E252293B1DC84AA10073BBC8 /* State.swift */,
 				E273DA2C1DD96971008AFDBD /* SearchingState.swift */,
+				E2CBE4691E05F9CC00AB42CD /* SearchTableViewController.swift */,
+				E2CBE46B1E05FB0F00AB42CD /* SearchResultTableViewCell.swift */,
 				E252293D1DC84AC60073BBC8 /* RoutingState.swift */,
+				E2CBE46D1E07207700AB42CD /* RoutingViewController.swift */,
+				E21D0BA51E079D3700F8E946 /* NavigatingState.swift */,
+				E2DC160F1E0867B600EC5E43 /* NavigatingTopViewController.swift */,
+				E2DC16111E0867C400EC5E43 /* NavigatingBottomViewController.swift */,
 				E2E65EBE1DB2FA9B00F427DF /* Location.swift */,
+				E2DC16131E0870F200EC5E43 /* Maneuver.swift */,
 				E2CAEE871DB00E5300D7390B /* Route.swift */,
 				E258877E1DA5797400F251C9 /* Main.storyboard */,
 				E25887811DA5797400F251C9 /* Assets.xcassets */,
@@ -210,6 +234,11 @@
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = 5Z4L8A2TF8;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 0;
+							};
+						};
 					};
 					E258878A1DA5797400F251C9 = {
 						CreatedOnToolsVersion = 8.0;
@@ -277,10 +306,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2DC16101E0867B600EC5E43 /* NavigatingTopViewController.swift in Sources */,
+				E2CBE46E1E07207700AB42CD /* RoutingViewController.swift in Sources */,
+				E21D0BA61E079D3700F8E946 /* NavigatingState.swift in Sources */,
 				E252293E1DC84AC60073BBC8 /* RoutingState.swift in Sources */,
+				E2CBE46A1E05F9CC00AB42CD /* SearchTableViewController.swift in Sources */,
 				E2C00A341DFA47C900C7E955 /* SearchingState.swift in Sources */,
+				E2CBE4681E05F88600AB42CD /* BottomSegue.swift in Sources */,
 				E2CAEE881DB00E5300D7390B /* Route.swift in Sources */,
 				E258877D1DA5797400F251C9 /* ViewController.swift in Sources */,
+				E2DC16121E0867C400EC5E43 /* NavigatingBottomViewController.swift in Sources */,
+				E2CBE46C1E05FB0F00AB42CD /* SearchResultTableViewCell.swift in Sources */,
+				E2DC16141E0870F200EC5E43 /* Maneuver.swift in Sources */,
 				E2E65EBF1DB2FA9B00F427DF /* Location.swift in Sources */,
 				E252293C1DC84AA10073BBC8 /* State.swift in Sources */,
 				E258877B1DA5797400F251C9 /* AppDelegate.swift in Sources */,
@@ -440,6 +477,7 @@
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = Survival/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-DDEMO";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.jhu.Survival;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
@@ -453,6 +491,7 @@
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = Survival/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-DDEMO";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.jhu.Survival;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
