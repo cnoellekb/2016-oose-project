@@ -1,21 +1,16 @@
 package com.oose2016.group4.server;
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 import org.sql2o.Connection;
 import org.sql2o.Query;
 
-import com.google.gson.Gson;
+import java.math.BigDecimal;
 
 public class DatabaseUpdater {
     private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
@@ -29,7 +24,9 @@ public class DatabaseUpdater {
 
     private static String SQL_INITIATE_UPDATE_LOG=
             "CREATE TABLE IF NOT EXISTS updatelog "
-            +"(sourcename VARCHAR(50) NOT NULL, updatecount INTEGER NOT NULL, PRIMARY KEY (sourcename));";
+            +"(sourcename VARCHAR(50) NOT NULL, updatecount INTEGER NOT NULL);";
+
+    private static String SQL_DB_NOSYNC = " PRAGMA synchronous=OFF; ";
 
     private Connection mConnection;
 
@@ -44,6 +41,7 @@ public class DatabaseUpdater {
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_LINKID_GRID).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_UPDATE_LOG).executeUpdate();
+        mConnection.createQuery(SQL_DB_NOSYNC).executeUpdate();
     }
 
     /**
@@ -133,7 +131,7 @@ public class DatabaseUpdater {
             /*
             If the coordinate of this crime data entry does not satisfy our location range restriction, ditch the record;
              */
-            if ( !getLocationRange(latitude, longitude) ) continue;
+            if ( !isCoordinateEligible(latitude, longitude) ) continue;
 
             //Map the coordinates to grid coordinates;
             Grid grid = new Grid(latitude,longitude);
@@ -271,7 +269,10 @@ public class DatabaseUpdater {
         If the grids table has never been updated with the traffics source library, we pull the traffics data from the source.
          */
         if (trafficUpdateCount == null) {
+            System.out.printf("traffic count is : %d.%n", trafficUpdateCount);
             int counter = 0;
+            System.out.printf("counter: %d%n", counter);
+
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
             for (Object trafficObj : trafficList ) {
 
@@ -279,13 +280,16 @@ public class DatabaseUpdater {
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
 
                 Double d = (Double) trafficEntryProperties.get("AADT_2014");
-                double AADT_dbl = (double)d;
+                double AADT_dbl = (double) d;
                 int AADT = (int) AADT_dbl;
+                System.out.printf("AADT: %d%n", AADT);
 
                 /*
                 if this point is on highway, ditch the point, since highway data is not useful for pedestrian guidance reference.
                 */
-                if (AADT > 40000) continue;
+                if (AADT > 50000) continue;
+
+//                if (AADT!=2113) continue;
 
                 /*
                 The above AADT value is shared by a list of coordinates, as fetched below;
@@ -296,16 +300,49 @@ public class DatabaseUpdater {
                 for (Object coordinate : trafficCoordinatesList) {
 
                     counter ++;
-                    if(counter>1000) return;
+                    System.out.printf("counter: %d%n", counter);
+//                    if(counter>10) {
+//                        System.out.printf("counter cap %n");
+////                       String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
+////                        mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
+//                        return;
+//                    }
 
-                    ArrayList<Double> coordinateSingleList = (ArrayList<Double>) coordinate;
-                    double latitude = coordinateSingleList.get(1);
-                    double longitude = coordinateSingleList.get(0);
+                    ArrayList<Object> coordinateSingleList = (ArrayList<Object>) coordinate;
+
+//                    System.out.println("Coordinate list ok");
+
+//                    double latitude = ((Number) coordinateSingleList.get(1)).doubleValue();
+//                    System.out.printf("latitudeBig is %d%n", latitudeBig);
+//                    BigDecimal latitudeBig = new BigDecimal((String) coordinateSingleList.get(1)) ;
+//                    Double latitude = (Double) coordinateSingleList.get(1);
+
+                    Object latitudeObj = coordinateSingleList.get(1);
+                    Object longitudeObj = coordinateSingleList.get(1);
+
+                    if (!(latitudeObj instanceof Double) || !(longitudeObj instanceof Double)) {
+                        System.out.println("Not double");
+                        continue;
+                    }
+
+//                    BigDecimal longitudeBig = new BigDecimal(((Number) coordinateSingleList.get(0)).doubleValue()) ;
+//                    System.out.printf("longitudeBig is %d%n", longitudeBig);
+//                    BigDecimal longitudeBig = new BigDecimal((String) coordinateSingleList.get(0)) ;
+//                    double longitude = ((Number) coordinateSingleList.get(0)).doubleValue();
+//                    Double longitude = (Double) coordinateSingleList.get(0);double longitude = Double.parseDouble(coordinateSingleList.get(0)*10);
+
+//                    double latitude = latitudeBig.doubleValue();
+//                    System.out.printf("latitude is %d%n", latitude);
+//                    double longitude = longitudeBig.doubleValue();
+//                    System.out.printf("longitude is %d%n", longitude);
 
                     //Get the grid coordinate of this geo-coordinate;
-                    Grid grid = new Grid (latitude, longitude);
+                    Grid grid = new Grid ((Double) latitudeObj, (Double) longitudeObj);
                     int x = grid.getX();
                     int y = grid.getY();
+//                    System.out.printf("x is %d and y is %d%n", x, y);
+
+
 
                     //Check to see if this grid has been updated with traffic data;
                     String sqlQueryGrid = " SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam;";
@@ -329,27 +366,27 @@ public class DatabaseUpdater {
                         If this grid has already been updated, with traffic data, update the AADT for this grid if the new
                         value is larger than the previous value;
                          */
-                        int aadtMaxForGrid = Math.max(AADT,aadtInGrids);
 
-                        String sqlUpdateGrid = " UPDATE grids SET AADT= :aadtParam WHERE x= :xParam AND y= :yParam; ";
+                        int aadtNew = Math.max(AADT, aadtInGrids);
+
+                        String sqlUpdateGrid = " UPDATE grids SET AADT = :aadtParam WHERE x= :xParam AND y= :yParam; ";
                         mConnection.createQuery(sqlUpdateGrid)
-                                .addParameter("aadtParam", aadtMaxForGrid)
+                                .addParameter("aadtParam", aadtNew)
                                 .addParameter("xParam", x)
                                 .addParameter("yParam", y)
                                 .executeUpdate();
+
                     }
 
                 }
-            /*
-            Leave record in the log so that the update for traffic data never get performed again.
-             */
-                String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
-                mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
 
             }
 
-
-        }
+            /*
+            Leave record in the log so that the update for traffic data never get performed again.
+             */
+            String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
+            mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();        }
     }
 
 
@@ -394,7 +431,7 @@ public class DatabaseUpdater {
      * @param longitude
      * @return boolean value denoting whether the coordinate is eligible for the updater's consideration.
      */
-    private boolean getLocationRange(double latitude, double longitude) {
+    private boolean isCoordinateEligible(double latitude, double longitude) {
         return  (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
     }
 

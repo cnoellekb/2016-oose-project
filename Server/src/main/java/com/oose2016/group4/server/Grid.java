@@ -1,6 +1,7 @@
 package com.oose2016.group4.server;
 
 import java.lang.Math;
+import java.math.BigDecimal;
 
 /**This class is used to map latitudes and longitudes in double type into grids on the map, which is plotted with
  * int type indices x and y.
@@ -28,6 +29,14 @@ public class Grid {
 		this.x = (int) dx;
 		this.y = (int) dy;
     }
+
+//    public Grid (BigDecimal lat, BigDecimal lng) {
+//        BigDecimal latitudeDegree = lat.multiply(new BigDecimal(Math.PI / 180));
+//        BigDecimal dx = lng.add(new BigDecimal(180)).multiply(new BigDecimal(262144/360));
+//        BigDecimal dy = (1 - (Math.log(Math.tan(latitudeDegree) + 1 / Math.cos(latitudeDegree)) / Math.PI)) / 2 * 262144;
+//        this.x = (int) dx;
+//        this.y = (int) dy;
+//    }
 
     public int getX() { return x; }
     public int getY() { return y; }

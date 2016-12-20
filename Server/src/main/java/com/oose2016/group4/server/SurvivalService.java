@@ -157,8 +157,8 @@ public class SurvivalService {
 			dbUpdater.update("");
 		} catch (IOException ioe ) {
 			ioe.printStackTrace();
-		} catch (Sql2oException sqle) {
-			logger.error("Fail", sqle);
+		} catch (Sql2oException sqle1) {
+			logger.error("Fail", sqle1);
 		}
 	}
 
