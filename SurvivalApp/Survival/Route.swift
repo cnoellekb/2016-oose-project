@@ -95,9 +95,11 @@ class Route {
             while let lat = i.next(), let lng = i.next() {
                 coordinates.append(CLLocationCoordinate2D(latitude: lat, longitude: lng))
             }
-            DispatchQueue.main.async {
-                self.shape = coordinates
-                completion()
+            if coordinates.count > 0 {
+                DispatchQueue.main.async {
+                    self.shape = coordinates
+                    completion()
+                }
             }
         }.resume()
     }

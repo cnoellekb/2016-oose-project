@@ -6,6 +6,7 @@
 //  Guoye Zhang, Channing Kimble-Brown, Neha Kulkarni, Jeana Yee, Qiang Zhang
 
 import MapKit
+import AVFoundation
 
 class NavigatingState: State, NavigatingBottomViewControllerDelegate {
     /// Event delegate
@@ -31,29 +32,69 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         return #colorLiteral(red: 0.01680417731, green: 0.1983509958, blue: 1, alpha: 1)
     }
     
-    var route: Route
-    var maneuvers: [Maneuver]
+    private var route: Route
+    private var maneuvers: [Maneuver]
+    private var fullTime: Double
+    private var fullDistance: Double
+    private var remainingDistance: Double
+    private var currentManeuverIndex = 0
+    private var currentLocation: CLLocationCoordinate2D
+    var isMuted: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "mute")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "mute")
+            if newValue {
+                speechSynthesizer.stopSpeaking(at: .immediate)
+            }
+        }
+    }
     
-    init(route: Route, topViewController: NavigatingTopViewController) {
+    init(route: Route, topViewController: NavigatingTopViewController, currentLocation: CLLocationCoordinate2D) {
         self.route = route
-        maneuvers = (route.result["maneuvers"] as? [[String: Any]])?.flatMap {
-            if let narrative = $0["narrative"] as? String,
+        fullTime = route.result["time"] as? Double ?? 0
+        fullDistance = route.result["distance"] as? Double ?? 0
+        maneuvers = (((route.result["legs"] as? [Any])?[0] as? [String: Any])?["maneuvers"] as? [[String: Any]])?.flatMap {
+            if var narrative = $0["narrative"] as? String,
                     let distance = $0["distance"] as? Double,
                     let streets = $0["streets"] as? [String],
                     let directionName = $0["directionName"] as? String,
                     let startPoint = $0["startPoint"] as? [String: Double],
                     let latitude = startPoint["lat"],
-                    let longitude = startPoint["png"],
+                    let longitude = startPoint["lng"],
                     let turnType = $0["turnType"] as? Int {
+                if narrative.hasSuffix(" (See map for details).") {
+                    narrative = String(narrative.characters.dropLast(23))
+                }
                 return Maneuver(narrative: narrative, distance: distance, streets: streets, directionName: directionName, startPoint: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), turnType: turnType)
             }
             return nil
-        } ?? []
+        } ?? [Maneuver(narrative: "", distance: 0, streets: [], directionName: "", startPoint: CLLocationCoordinate2D(latitude: 0, longitude: 0), turnType: 0)]
+        remainingDistance = fullDistance - maneuvers[0].distance
         navigatingTopViewController = topViewController
+        self.currentLocation = currentLocation
+        speak(sentence: maneuvers[0].narrative)
     }
     
     var shouldShowTop: Bool {
         return true
+    }
+    
+    func update(location: CLLocationCoordinate2D) {
+        currentLocation = location
+        updateViews()
+    }
+    
+    private let speechSynthesizer = AVSpeechSynthesizer()
+    
+    func speak(sentence: String) {
+        if !isMuted {
+            let utterance = AVSpeechUtterance(string: sentence)
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+            speechSynthesizer.stopSpeaking(at: .word)
+            speechSynthesizer.speak(utterance)
+        }
     }
     
     private weak var navigatingTopViewController: NavigatingTopViewController?
@@ -76,5 +117,41 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
     
     func stopNavigation() {
         delegate?.stopNavigation()
+    }
+    
+    private let distanceFormatter: MKDistanceFormatter = {
+        let formatter = MKDistanceFormatter()
+        formatter.unitStyle = .abbreviated
+        return formatter
+    }()
+    private let dateComponentsFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .short
+        return formatter
+    }()
+    
+    func updateViews() {
+        let next = currentManeuverIndex == maneuvers.count - 1 ? route.shape.last! : maneuvers[currentManeuverIndex + 1].startPoint
+        let distance = MKMetersBetweenMapPoints(MKMapPointForCoordinate(currentLocation), MKMapPointForCoordinate(next))
+        let remainingDistance = self.remainingDistance * 1609.344 + distance
+        if distance < 10 {
+            currentManeuverIndex += 1
+            if currentManeuverIndex == maneuvers.count {
+                speak(sentence: "You have arrived at your destination")
+                delegate?.stopNavigation()
+                return
+            } else {
+                self.remainingDistance -= maneuvers[currentManeuverIndex].distance
+                speak(sentence: maneuvers[currentManeuverIndex].narrative)
+            }
+        }
+        let maneuver = maneuvers[currentManeuverIndex]
+        navigatingTopViewController?.turnSignImageView.image = maneuver.turnTypeImage
+        navigatingTopViewController?.directionLabel.text = maneuver.directionName
+        navigatingTopViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: distance)
+        navigatingTopViewController?.streetsLabel.text = maneuver.streets.dropFirst().reduce(maneuver.streets.first) { "\($0)\n\($1)" }
+        navigatingBottomViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: remainingDistance)
+        navigatingBottomViewController?.timeLabel.text = dateComponentsFormatter.string(from: remainingDistance / (fullDistance * 1609.344) * fullTime)
     }
 }

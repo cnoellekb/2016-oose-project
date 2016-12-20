@@ -434,33 +434,33 @@
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="mos-2x-vJb">
                                 <rect key="frame" x="16" y="10" width="343" height="60"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="K7w-GZ-FhA">
-                                        <rect key="frame" x="0.0" y="0.0" width="32" height="60"/>
-                                        <state key="normal" title="Stop"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="K7w-GZ-FhA">
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="60"/>
+                                        <state key="normal" image="Delete"/>
                                         <connections>
                                             <action selector="stop" destination="wQj-hZ-OZt" eventType="touchUpInside" id="JcN-rA-UiI"/>
                                         </connections>
                                     </button>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="QRd-wy-52w">
-                                        <rect key="frame" x="40" y="0.0" width="260" height="60"/>
+                                        <rect key="frame" x="58" y="0.0" width="227" height="60"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" text="Time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WN-Db-A42">
-                                                <rect key="frame" x="0.0" y="0.0" width="260" height="33.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="227" height="33.5"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" text="Distance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C5a-Zn-2l9">
-                                                <rect key="frame" x="0.0" y="33.5" width="260" height="26.5"/>
+                                                <rect key="frame" x="0.0" y="33.5" width="227" height="26.5"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i0T-QS-fvr">
-                                        <rect key="frame" x="308" y="0.0" width="35" height="60"/>
-                                        <state key="normal" title="Mute"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i0T-QS-fvr">
+                                        <rect key="frame" x="293" y="0.0" width="50" height="60"/>
+                                        <state key="normal" image="Speaker"/>
                                         <connections>
                                             <action selector="mute" destination="wQj-hZ-OZt" eventType="touchUpInside" id="c1H-hc-SHk"/>
                                         </connections>
@@ -481,6 +481,7 @@
                     <size key="freeformSize" width="375" height="80"/>
                     <connections>
                         <outlet property="distanceLabel" destination="C5a-Zn-2l9" id="5GM-mC-31Z"/>
+                        <outlet property="muteButton" destination="i0T-QS-fvr" id="gQi-xD-Xev"/>
                         <outlet property="timeLabel" destination="1WN-Db-A42" id="pwE-KR-Ilw"/>
                     </connections>
                 </viewController>
@@ -560,4 +561,8 @@
             <point key="canvasLocation" x="1008.8" y="-244.6776611694153"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Delete" width="50" height="50"/>
+        <image name="Speaker" width="50" height="50"/>
+    </resources>
 </document>

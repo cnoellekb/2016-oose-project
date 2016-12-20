@@ -247,7 +247,8 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     
     func choose(route: Route) {
-        state = NavigatingState(route: route, topViewController: topViewController)
+        guard let currentLocation = mapView.userLocation.location?.coordinate else { return }
+        state = NavigatingState(route: route, topViewController: topViewController, currentLocation: currentLocation)
         #if DEMO
             mapView.showsUserLocation = false
             moveSimulatedUserLocation(along: route)

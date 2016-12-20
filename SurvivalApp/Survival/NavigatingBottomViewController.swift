@@ -8,6 +8,8 @@
 import UIKit
 
 protocol NavigatingBottomViewControllerDelegate: class {
+    var isMuted: Bool { get set }
+    func updateViews()
     func stopNavigation()
 }
 
@@ -16,9 +18,19 @@ class NavigatingBottomViewController: UIViewController {
     
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
+    @IBOutlet weak var muteButton: UIButton!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        delegate?.updateViews()
+        updateImage()
+    }
     
     @IBAction func mute() {
-        
+        if let delegate = delegate {
+            delegate.isMuted = !delegate.isMuted
+            updateImage()
+        }
     }
     
     @IBAction func stop() {
@@ -28,5 +40,13 @@ class NavigatingBottomViewController: UIViewController {
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
+    }
+    
+    private func updateImage() {
+        if delegate?.isMuted == true {
+            muteButton.setImage(#imageLiteral(resourceName: "Mute"), for: .normal)
+        } else {
+            muteButton.setImage(#imageLiteral(resourceName: "Speaker"), for: .normal)
+        }
     }
 }
