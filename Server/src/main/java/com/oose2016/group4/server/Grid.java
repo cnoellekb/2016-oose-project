@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class Grid {
     private int x,y;
     private int mLinkId;
-    private float mAlarm;
+    private double mAlarm;
     private int mAADT;
 
     public Grid (int x, int y) {
@@ -39,7 +39,38 @@ public class Grid {
         mAADT = 0;
     }
 
+    public Grid() {
+        x =0 ;
+        y = 0 ;
+        mLinkId = 0;
+        mAlarm = 0;
+        mAADT = 0;
+    }
+
+    public Grid(int xArg, int yArg, int linkIdArg, double alarmArg, int aadtArg) {
+        x = xArg;
+        y= yArg;
+        mLinkId = linkIdArg;
+        mAlarm = alarmArg;
+        mAADT = aadtArg;
+    }
+
+    public void setmLinkId(int mLinkId) {
+        this.mLinkId = mLinkId;
+    }
+
+    public void setmAlarm(double mAlarm) {
+        this.mAlarm = mAlarm;
+    }
+
+    public void setmAADT(int mAADT) {
+        this.mAADT = mAADT;
+    }
 
     public int getX() { return x; }
     public int getY() { return y; }
+    public int getmLinkId() { return mLinkId; }
+    public double getmAlarm() { return mAlarm; }
+    public int getmAADT() { return mAADT; }
+
 }

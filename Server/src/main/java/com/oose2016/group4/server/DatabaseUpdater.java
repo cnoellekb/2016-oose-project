@@ -7,8 +7,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.sun.javafx.scene.traversal.WeightedClosestCorner;
 import org.sql2o.Connection;
-import org.sql2o.Query;
+
+import java.util.List;
 
 public class DatabaseUpdater {
     private static String SQL_INITIATE_TABLE_CRIMES = "CREATE TABLE IF NOT EXISTS crimes "
@@ -25,6 +27,8 @@ public class DatabaseUpdater {
                     + "(sourcename VARCHAR(50) NOT NULL, updatecount INTEGER NOT NULL);";
 
     private static String SQL_DB_NOSYNC = " PRAGMA synchronous=OFF; ";
+
+    private static int TYPE_WEIGHT_FACTOR = 10000;
 
     private Connection mConnection;
 
@@ -50,7 +54,8 @@ public class DatabaseUpdater {
      */
     public void update(String table) throws IOException {
         updateTraffics();
-        //updateCrimes();
+//        updateHistoricalCrimes();
+//        updateCrimes();
     }
 
 
@@ -71,9 +76,11 @@ public class DatabaseUpdater {
         if (crimeUpdateCount == null) {
             String sqlInitializeCount = " INSERT INTO updatelog VALUES ( 'crime', 0); ";
             mConnection.createQuery(sqlInitializeCount).executeUpdate();
+            System.out.println("crimes update count initialized.");
         }
 
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
+        System.out.println("ArrayList data fetched.");
 
         /*
         Get the date of the most recent crime record of last updateDB operation.
@@ -83,8 +90,17 @@ public class DatabaseUpdater {
         Object dateLastUpdateObj = mConnection.createQuery(sqlDate).executeScalar(Integer.class);
         int dateLastUpdate = 0;
         if (dateLastUpdateObj != null) dateLastUpdate = (Integer) dateLastUpdateObj;
+        System.out.println("Date of last update fetched.");
+
+        int counter = 0;
+        System.out.printf("new crimes counter: 0%n");
+
+        String sqlFetchGridsTable = "SELECT * FROM grids; ";
+        List<Grid> gridList = mConnection.createQuery(sqlFetchGridsTable).executeAndFetch(Grid.class);
 
         for (Object crimeEntry : crimeList) {
+            counter ++;
+            System.out.printf("new crimes counter: %d%n", counter);
             Map<String, Object> crime = (Map<String, Object>) crimeEntry;
 
             //ditch record if incomplete.
@@ -140,39 +156,28 @@ public class DatabaseUpdater {
             int x = grid.getX();
             int y = grid.getY();
 
-            String sqlFetchLinkId = "SELECT linkId FROM grids WHERE x= :xParam and y= :yParam ";
-            Query queryFetchLinkID = mConnection.createQuery(sqlFetchLinkId);
-            Integer linkIdByXY = queryFetchLinkID
-                    .addParameter("xParam", x)
-                    .addParameter("yParam", y)
-                    .executeScalar(Integer.class);
+            Grid gridFound = fetchGridByXY(x,y,gridList);
 
-            if (linkIdByXY == null) {
+            int linkIdByXY = gridFound.getmLinkId();
+
+
+            if (linkIdByXY < 0 ) {
                 /*
                 This grid has not been updated either by traffic source or crimes source.
                  */
-                try {
-                    linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
+
+                linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
                     /*
                     Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate
                     the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
                      of this crime record.
                      */
-                    int aadt = getGridAADT(x, y);
+                int aadtToAdd = getApproximateGridAADT(x, y);
+                Grid gridToAdd = new Grid(x,y,linkIdByXY,crimeTypeWeight * TYPE_WEIGHT_FACTOR/aadtToAdd, aadtToAdd);
 
-                    String sqlUpdateGrids = "INSERT INTO grids"
-                            + "VALUES(:xParam, :yParam, :linkIdByXYParam, :crimeTypeWeightParam * 10000 / :aadtParam, :aadtParam);";
-                    mConnection.createQuery(sqlUpdateGrids)
-                            .addParameter("xParam", x)
-                            .addParameter("yParam", y)
-                            .addParameter("linkIdByXYParam", linkIdByXY)
-                            .addParameter("crimeTypeWeightParam", crimeTypeWeight)
-                            .addParameter("aadtParam", aadt)
-                            .executeUpdate();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                }
+                gridList.add(gridToAdd);
+
             } else {
                 /*
                 In this situation, the grid has been discovered by at least one traffic update, but may or may not have been
@@ -183,29 +188,17 @@ public class DatabaseUpdater {
                     In this situation, the grid also has never been discovered by any crimes update. That is saying, no
                     crime record has existed on this grid. Until now :(
                      */
-                    try {
-                        linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
+                    linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
 
-                        String sqlUpdateCrimeForGrid = "UPDATE grids SET linkId= :linkIdParam WHERE x= :xParam AND y= :yParam";
-                        mConnection.createQuery(sqlUpdateCrimeForGrid)
-                                .addParameter("linkIdParam", linkIdByXY)
-                                .addParameter("xParam", x)
-                                .addParameter("yParam", y)
-                                .executeUpdate();
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
+                    gridFound.setmLinkId(linkIdByXY);
+
                 }
 
                 /*
                 Either way, since this grid has been discovered already, we have to update it with this crime record's weight.
                  */
-                String sqlUpdateCrimeWeightForGrid = "UPDATE grids SET alarm=alarm+ :crimeTypeWeightParam * 10000/AADT WHERE x= :xParam AND y= :yParam";
-                mConnection.createQuery(sqlUpdateCrimeWeightForGrid)
-                        .addParameter("crimeTypeWeightParam", crimeTypeWeight)
-                        .addParameter("xParam", x)
-                        .addParameter("yParam", y)
-                        .executeUpdate();
+                double previousAlarm = gridFound.getmAlarm();
+                gridFound.setmAlarm(previousAlarm + crimeTypeWeight * TYPE_WEIGHT_FACTOR / gridFound.getmAADT());
             }
 
             /*
@@ -276,8 +269,6 @@ public class DatabaseUpdater {
             int counter = 0;
             System.out.printf("counter: %d%n", counter);
 
-//            ArrayList<Grid> grids = new ArrayList<Grid>();
-
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
             for (Object trafficObj : trafficList) {
 
@@ -323,15 +314,10 @@ public class DatabaseUpdater {
 
                     if (!isCoordinateEligibleForTrafficUpdate(lat, lng)) continue;
 
-//                    System.out.printf("latitude is %f and longitude is %f%n", lat, lng);
-
-
                     //Get the grid coordinate of this geo-coordinate;
                     Grid grid = new Grid(latitude, longitude);
                     int x = grid.getX();
                     int y = grid.getY();
-//                    System.out.printf("x is %d and y is %d%n", x,y);
-
 
                     //Check to see if this grid has been updated with traffic data;
                     String sqlQueryGrid = " SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam;";
@@ -379,6 +365,63 @@ public class DatabaseUpdater {
         }
     }
 
+    private void updateHistoricalCrimes() throws IOException {
+
+        String sqlQueryLogHistorical = "SELECT updatecount FROM updatelog WHERE sourcename='historical';";
+        Integer historicalUpdateCount = mConnection.createQuery(sqlQueryLogHistorical).executeScalar(Integer.class);
+
+        if (historicalUpdateCount == null) {
+            String sqlFetchHistoricalCrimes = " SELECT * from crimes; ";
+            List<Crime> crimeListHistorical = mConnection.createQuery(sqlFetchHistoricalCrimes).executeAndFetch(Crime.class);
+            String sqlFetchGridsTable = " SELECT * from grids; ";
+            List<Grid> gridList = mConnection.createQuery(sqlFetchGridsTable).executeAndFetch(Grid.class);
+            for ( Crime crimeObj : crimeListHistorical ) {
+                Grid crimeGrid = new Grid(crimeObj.getLat(),crimeObj.getLng());
+                int x = crimeGrid.getX();
+                int y= crimeGrid.getY();
+
+                Grid gridFoundInTable = fetchGridByXY(x,y,gridList);
+                if (gridFoundInTable.getX() > 0 ) {
+                    gridFoundInTable.setmLinkId(crimeObj.getLinkId());
+                    double previousAlarm = gridFoundInTable.getmAlarm();
+                    gridFoundInTable.setmAlarm(getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/gridFoundInTable.getmAADT()+previousAlarm);
+                } else {
+                    int aadtToAdd = getApproximateGridAADT(x,y);
+                    Grid gridToAdd = new Grid(x,y,crimeObj.getLinkId(),getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/aadtToAdd,aadtToAdd);
+                    gridList.add(gridToAdd);
+                }
+            }
+            for (Grid eachGrid : gridList ) {
+                String sqlClearGridsTable = " DELETE FROM grids; ";
+                mConnection.createQuery(sqlClearGridsTable).executeUpdate();
+
+                String sqlInsertNewGridsTable = " INSERT INTO grids VALUES "
+                        + " ( :xParam, :yParam, :linkIdParam, :alarmParam, :aadtParam ); ";
+                mConnection.createQuery(sqlInsertNewGridsTable)
+                        .addParameter("xParam", eachGrid.getX())
+                        .addParameter("yParam", eachGrid.getY())
+                        .addParameter("linkIdParam", eachGrid.getmLinkId())
+                        .addParameter("alarmParam", eachGrid.getmAlarm())
+                        .addParameter("aadtParam", eachGrid.getmAADT())
+                        .executeUpdate();
+            }
+
+            String sqlUpdateLogCounterHistorical = " INSERT INTO updatelog VALUES('historical', 1); ";
+            mConnection.createQuery(sqlUpdateLogCounterHistorical).executeUpdate();
+        }
+
+
+
+    }
+
+    private Grid fetchGridByXY(int x, int y, List<Grid> gridList ) {
+        for (Grid eachGrid : gridList ) {
+            if ((eachGrid.getX() == x) && (eachGrid.getY() == y)) return eachGrid;
+        }
+        Grid nullGrid = new Grid();
+        nullGrid.setmLinkId(-1);
+        return nullGrid;
+    }
 
     /**
      * Based on the type (of a crime entry) as described by the passed in String, we return a corresponding value that
@@ -387,7 +430,7 @@ public class DatabaseUpdater {
      * @param type The crime type.
      * @return The weight value for this type of crime.
      */
-    private int getCrimeTypeWeight(String type) {
+    public int getCrimeTypeWeight(String type) {
         String typeAllCap = type.toUpperCase();
         if (typeAllCap.contains("ASSAULT")) {
             if (typeAllCap.contains("THREAT")) {
@@ -428,7 +471,7 @@ public class DatabaseUpdater {
     }
 
     private boolean isCoordinateEligibleForTrafficUpdate(double latitude, double longitude) {
-        return (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
+        return (latitude < 41.62974) && (latitude > 39.2004) && (longitude < -76.51783) && (longitude > -76.71136);
     }
 
     /**
@@ -439,7 +482,7 @@ public class DatabaseUpdater {
      * @param y y index of the to be discovered grid
      * @return The AADT value for the grid.
      */
-    private int getGridAADT(int x, int y) {
+    private int getApproximateGridAADT(int x, int y) {
         double leftAADT = discoverClosestAADT(x, y, -1, 0, 10);
         double rightAADT = discoverClosestAADT(x, y, 1, 0, 10);
         double upAADT = discoverClosestAADT(x, y, 0, 1, 10);
@@ -449,7 +492,7 @@ public class DatabaseUpdater {
     }
 
     /**
-     * Helper method for getGridAADT. Recursive in nature;
+     * Helper method for getApproximateGridAADT. Recursive in nature;
      *
      * @param x                  grid x index
      * @param y                  grid y index
@@ -478,6 +521,7 @@ public class DatabaseUpdater {
         //Look further if otherwise. Gave the result of next iteration a coefficient of 0.8 to indicate distance's influence on AADT values.
         return 0.8 * discoverClosestAADT(x + xIncrement, y + yIncrement, xIncrement, yIncrement, maxDistanceCounter - 1);
     }
+
 
     public void test() throws IOException {
 //        String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
