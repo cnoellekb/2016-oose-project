@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.sun.javafx.scene.traversal.WeightedClosestCorner;
 import org.sql2o.Connection;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class DatabaseUpdater {
 
     private static String SQL_DB_NOSYNC = " PRAGMA synchronous=OFF; ";
 
-    private static int TYPE_WEIGHT_FACTOR = 10000;
+    private static int TYPE_WEIGHT_FACTOR = 100000;
 
     private Connection mConnection;
 
@@ -54,7 +53,7 @@ public class DatabaseUpdater {
      */
     public void update(String table) throws IOException {
         updateTraffics();
-//        updateHistoricalCrimes();
+        updateHistoricalCrimes();
 //        updateCrimes();
     }
 
@@ -69,6 +68,7 @@ public class DatabaseUpdater {
 
         String sqlQueryUpdateCounter = " SELECT updatecount FROM updatelog WHERE sourcename='crime'; ";
         Integer crimeUpdateCount = mConnection.createQuery(sqlQueryUpdateCounter).executeScalar(Integer.class);
+        System.out.println("Feched crimes update count");
 
         /*
         Initialize the tuple in updatelog for crimes if it is not there yet.
@@ -97,10 +97,12 @@ public class DatabaseUpdater {
 
         String sqlFetchGridsTable = "SELECT * FROM grids; ";
         List<Grid> gridList = mConnection.createQuery(sqlFetchGridsTable).executeAndFetch(Grid.class);
+        System.out.println("Grids table fetched from database");
 
         for (Object crimeEntry : crimeList) {
             counter ++;
             System.out.printf("new crimes counter: %d%n", counter);
+
             Map<String, Object> crime = (Map<String, Object>) crimeEntry;
 
             //ditch record if incomplete.
@@ -141,6 +143,8 @@ public class DatabaseUpdater {
             double latitude = a.get(1);
             double longitude = a.get(0);
 
+            System.out.printf("This crime record is for latitude: %f and longtitude:%f%n", latitude,longitude);
+
             /*
             We only take into consideration crime records that occurs in a relative small area around Homewood. This is enough
             to display the essence of the project and necessary to cope with MapQuest's access restrictions on non-commercial users.
@@ -150,33 +154,39 @@ public class DatabaseUpdater {
             If the coordinate of this crime data entry does not satisfy our location range restriction, ditch the record;
              */
             if (!isCoordinateEligibleForCrimeUpdate(latitude, longitude)) continue;
+            System.out.println("This location is eligible for update");
 
             //Map the coordinates to grid coordinates;
             Grid grid = new Grid(latitude, longitude);
             int x = grid.getX();
             int y = grid.getY();
+            System.out.printf("Trying to find grid(%d,%d) in the grids list%n",x,y);
 
             Grid gridFound = fetchGridByXY(x,y,gridList);
 
-            int linkIdByXY = gridFound.getmLinkId();
+            int linkIdByXY = gridFound.getLinkId();
 
 
             if (linkIdByXY < 0 ) {
                 /*
                 This grid has not been updated either by traffic source or crimes source.
                  */
-
+                System.out.printf("There previously was not grid(%d,%d) in the database%n",x,y);
                 linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
+                System.out.printf("The linkId requested from MapQuest is %d%n",linkIdByXY);
 
-                    /*
-                    Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate
-                    the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
-                     of this crime record.
-                     */
+                /*
+                Since this grid has never been discovered by either updateCrimes or updateTraffic, we have to calculate
+                the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
+                 of this crime record.
+                */
                 int aadtToAdd = getApproximateGridAADT(x, y);
+                System.out.printf("The approximate AADT for this grid is %d%n", aadtToAdd);
+
                 Grid gridToAdd = new Grid(x,y,linkIdByXY,crimeTypeWeight * TYPE_WEIGHT_FACTOR/aadtToAdd, aadtToAdd);
 
                 gridList.add(gridToAdd);
+                System.out.println("New grid added");
 
             } else {
                 /*
@@ -188,17 +198,21 @@ public class DatabaseUpdater {
                     In this situation, the grid also has never been discovered by any crimes update. That is saying, no
                     crime record has existed on this grid. Until now :(
                      */
+                    System.out.printf("There previously was a grid (%d,%d) in the databse, but this grid not yet contain any crime%n", x,y);
                     linkIdByXY = MapQuestHandler.requestLinkId(latitude, longitude);
+                    System.out.printf("The new linkId requested from MapQuest is %d%n", linkIdByXY);
 
-                    gridFound.setmLinkId(linkIdByXY);
+                    gridFound.setLinkId(linkIdByXY);
+                    System.out.println("Set the linkId for the grid");
 
                 }
 
                 /*
                 Either way, since this grid has been discovered already, we have to update it with this crime record's weight.
                  */
-                double previousAlarm = gridFound.getmAlarm();
-                gridFound.setmAlarm(previousAlarm + crimeTypeWeight * TYPE_WEIGHT_FACTOR / gridFound.getmAADT());
+                double previousAlarm = gridFound.getAlarm();
+                gridFound.setAlarm(previousAlarm + crimeTypeWeight * TYPE_WEIGHT_FACTOR / gridFound.getAADT());
+                System.out.println("Alarm value for the grid has been updated with the help of pre-existing AADT");
             }
 
             /*
@@ -238,6 +252,8 @@ public class DatabaseUpdater {
                         .executeUpdate();
             }
         }
+
+
 
         /*
         Update log.
@@ -369,45 +385,82 @@ public class DatabaseUpdater {
 
         String sqlQueryLogHistorical = "SELECT updatecount FROM updatelog WHERE sourcename='historical';";
         Integer historicalUpdateCount = mConnection.createQuery(sqlQueryLogHistorical).executeScalar(Integer.class);
+        System.out.println("historical update count fetched.");
 
         if (historicalUpdateCount == null) {
+            System.out.println("start updating historical data.");
+
             String sqlFetchHistoricalCrimes = " SELECT * from crimes; ";
             List<Crime> crimeListHistorical = mConnection.createQuery(sqlFetchHistoricalCrimes).executeAndFetch(Crime.class);
+            System.out.println("historical crimes data fetched into memory.");
+
             String sqlFetchGridsTable = " SELECT * from grids; ";
             List<Grid> gridList = mConnection.createQuery(sqlFetchGridsTable).executeAndFetch(Grid.class);
+            System.out.println("grids table with no crime record fetched into memory");
+
+            int counter = 0;
+            System.out.printf("Historical counter: %d%n", counter);
+
             for ( Crime crimeObj : crimeListHistorical ) {
                 Grid crimeGrid = new Grid(crimeObj.getLat(),crimeObj.getLng());
+
+                counter ++;
+                System.out.printf("historical counter: %d%n", counter);
+
                 int x = crimeGrid.getX();
                 int y= crimeGrid.getY();
+                System.out.printf("x is %d and y is %d%n", x, y);
 
                 Grid gridFoundInTable = fetchGridByXY(x,y,gridList);
+                System.out.println("Is this grid in previously in grids table?");
                 if (gridFoundInTable.getX() > 0 ) {
-                    gridFoundInTable.setmLinkId(crimeObj.getLinkId());
-                    double previousAlarm = gridFoundInTable.getmAlarm();
-                    gridFoundInTable.setmAlarm(getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/gridFoundInTable.getmAADT()+previousAlarm);
+                    System.out.printf("There previously was grid (%d,%d) in the grids table.%n",x,y);
+                    gridFoundInTable.setLinkId(crimeObj.getLinkId());
+                    System.out.printf("Change its linkId to this crime record's linkId:%d%n",crimeObj.getLinkId());
+                    double previousAlarm = gridFoundInTable.getAlarm();
+                    System.out.printf("Before this crime record, the alarm for grid (%d,%d) is %f. The AADT is %d%n",x,y,previousAlarm,gridFoundInTable.getAADT());
+                    System.out.printf("The type weight for this crime is %d%n",getCrimeTypeWeight(crimeObj.getType()));
+                    gridFoundInTable.setAlarm(getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/gridFoundInTable.getAADT()+previousAlarm);
+                    System.out.printf("Change the grid's alarm to %f.%n", gridFoundInTable.getAlarm());
                 } else {
+                    System.out.printf("There previously was not a grid (%d,%d) in the grids table.%n", x, y);
                     int aadtToAdd = getApproximateGridAADT(x,y);
-                    Grid gridToAdd = new Grid(x,y,crimeObj.getLinkId(),getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/aadtToAdd,aadtToAdd);
+                    System.out.printf("The approximate AADT for this grid is %d%n", aadtToAdd);
+                    System.out.printf("The type for this crime is %s and the weight for this crime is %d%n", crimeObj.getType(),getCrimeTypeWeight(crimeObj.getType()));
+                    double alarmToAdd = getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/aadtToAdd;
+                    Grid gridToAdd = new Grid(x,y,crimeObj.getLinkId(),alarmToAdd,aadtToAdd);
                     gridList.add(gridToAdd);
+                    System.out.printf("New grid added to the list, with the alarm value of %f%n", alarmToAdd);
                 }
             }
+            System.out.printf("There are currently %d grids in the grid list%n", gridList.size());
+            String sqlClearGridsTable = " DELETE FROM grids; ";
+            mConnection.createQuery(sqlClearGridsTable).executeUpdate();
+
+            counter = 0;
+            System.out.println("Start putting grid list back into db");
+
             for (Grid eachGrid : gridList ) {
-                String sqlClearGridsTable = " DELETE FROM grids; ";
-                mConnection.createQuery(sqlClearGridsTable).executeUpdate();
+                counter ++;
+                System.out.printf("Insert counter: %d%n", counter);
+
+//                if ( eachGrid.getLinkId()==0) continue;
+
+//                System.out.printf("Grid(%d,%d,%d,%f,%d) %n",eachGrid.getX(),eachGrid.getY(), eachGrid.getLinkId(),eachGrid.getAlarm(),eachGrid.getAADT());
 
                 String sqlInsertNewGridsTable = " INSERT INTO grids VALUES "
                         + " ( :xParam, :yParam, :linkIdParam, :alarmParam, :aadtParam ); ";
                 mConnection.createQuery(sqlInsertNewGridsTable)
                         .addParameter("xParam", eachGrid.getX())
                         .addParameter("yParam", eachGrid.getY())
-                        .addParameter("linkIdParam", eachGrid.getmLinkId())
-                        .addParameter("alarmParam", eachGrid.getmAlarm())
-                        .addParameter("aadtParam", eachGrid.getmAADT())
+                        .addParameter("linkIdParam", eachGrid.getLinkId())
+                        .addParameter("alarmParam", eachGrid.getAlarm())
+                        .addParameter("aadtParam", eachGrid.getAADT())
                         .executeUpdate();
             }
 
-            String sqlUpdateLogCounterHistorical = " INSERT INTO updatelog VALUES('historical', 1); ";
-            mConnection.createQuery(sqlUpdateLogCounterHistorical).executeUpdate();
+//            String sqlUpdateLogCounterHistorical = " INSERT INTO updatelog VALUES('historical', 1); ";
+//            mConnection.createQuery(sqlUpdateLogCounterHistorical).executeUpdate();
         }
 
 
@@ -419,7 +472,7 @@ public class DatabaseUpdater {
             if ((eachGrid.getX() == x) && (eachGrid.getY() == y)) return eachGrid;
         }
         Grid nullGrid = new Grid();
-        nullGrid.setmLinkId(-1);
+        nullGrid.setLinkId(-1);
         return nullGrid;
     }
 
@@ -440,6 +493,8 @@ public class DatabaseUpdater {
             } else if (typeAllCap.contains("AGG")) {
                 return 11;
             }
+        } else if (typeAllCap.contains("AUTO") || typeAllCap.contains("ARSON") || typeAllCap.contains("RESIDENCE") || typeAllCap.contains("BURGLARY")) {
+            return 1;
         } else if (typeAllCap.contains("ROBBERY")) {
             if (typeAllCap.contains("STREET")) {
                 return 10;
@@ -454,6 +509,8 @@ public class DatabaseUpdater {
             return 7;
         } else if (typeAllCap.contains("HOMICIDE")) {
             return 25;
+        } else if (typeAllCap.contains("LARCENY")) {
+            return 5;
         }
         return 0;
     }
@@ -484,11 +541,17 @@ public class DatabaseUpdater {
      */
     private int getApproximateGridAADT(int x, int y) {
         double leftAADT = discoverClosestAADT(x, y, -1, 0, 10);
+        System.out.printf("Cloeset AADT on the left is %f%n", leftAADT);
         double rightAADT = discoverClosestAADT(x, y, 1, 0, 10);
+        System.out.printf("Cloeset AADT on the right is %f%n", rightAADT);
         double upAADT = discoverClosestAADT(x, y, 0, 1, 10);
+        System.out.printf("Cloeset AADT on the up is %f%n", upAADT);
         double downAADT = discoverClosestAADT(x, y, 0, -1, 10);
+        System.out.printf("Cloeset AADT on the down is %f%n", downAADT);
         //sum up the influences of the closest grids which has its own AADT values from all four directions.
-        return (int) (leftAADT + rightAADT + upAADT + downAADT);
+        int rawAADT = (int) (leftAADT + rightAADT + upAADT + downAADT) * 1/3;
+        if (rawAADT == 0) rawAADT++;
+        return rawAADT;
     }
 
     /**
@@ -502,8 +565,10 @@ public class DatabaseUpdater {
      * @return
      */
     private double discoverClosestAADT(int x, int y, int xIncrement, int yIncrement, int maxDistanceCounter) {
+        System.out.printf("Discovering cloeset AADT for (%d,%d)%n", x,y);
         //If reached max distance of the exploration, return lowest value for AADT;
         if (maxDistanceCounter == 0) {
+            System.out.printf("Max depth reached, reaching AADT for (%d,%d) as 1%n", x,y);
             return 1;
         }
 
@@ -512,12 +577,14 @@ public class DatabaseUpdater {
                 .addParameter("xParam", x)
                 .addParameter("yParam", y)
                 .executeScalar(Integer.class);
+//        System.out.printf("aadt is %d", aadt);
 
         //If this (x,y) grid has AADT value, return;
         if (aadt != null) {
+            System.out.printf("Found one closest AADT: %d%n", aadt);
             return aadt;
         }
-
+        System.out.printf("No AADT for grid (%d,%d), digging further at (%d,%d)%n", x, y, x+xIncrement,y+yIncrement);
         //Look further if otherwise. Gave the result of next iteration a coefficient of 0.8 to indicate distance's influence on AADT values.
         return 0.8 * discoverClosestAADT(x + xIncrement, y + yIncrement, xIncrement, yIncrement, maxDistanceCounter - 1);
     }
@@ -598,40 +665,48 @@ public class DatabaseUpdater {
 //                    .addParameter("lngParam", longitude)
 //                    .executeUpdate();
 
-        String sql = " CREATE TABLE IF NOT EXISTS testcrime (latitude REAL NOT NULL, longitude REAL NOT NULL); ";
-        mConnection.createQuery(sql).executeUpdate();
-        System.out.println(1);
-        int counter = 0;
+//        String sql = " CREATE TABLE IF NOT EXISTS testcrime (latitude REAL NOT NULL, longitude REAL NOT NULL); ";
+//        mConnection.createQuery(sql).executeUpdate();
+//        System.out.println(1);
+//        int counter = 0;
+//
+//        ArrayList<Object> crimeList = HistoricalCrimeAPIHandler.preProccessCrimeData();
+//        System.out.println(2);
+//
+//        for ( Object crimeObj: crimeList) {
+//
+//            counter ++;
+//            System.out.printf("counter: %d%n", counter);
+//            ArrayList<Object> listCrimeData = (ArrayList<Object>) crimeObj;
+//
+//            String dateStr = (String) listCrimeData.get(8);
+//            LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+//            int date = 86400 * (int) dateLocal.toEpochDay();
+//
+//            String type = (String) listCrimeData.get(12);
+//            String inOut = (String) listCrimeData.get(13);
+//            String address = (String) listCrimeData.get(11);
+//
+//            ArrayList<Object> listCoordinate = (ArrayList<Object>) listCrimeData.get(18);
+//            double latitude = (Double) listCoordinate.get(1);
+//            double longitude = (Double) listCoordinate.get(2);
+//
+//            String sqlInsertCoordinate = " INSERT INTO testcrime VALUES ( :latParam, :lngParam);";
+//            mConnection.createQuery(sqlInsertCoordinate)
+//                    .addParameter("latParam", latitude)
+//                    .addParameter("lngParam", longitude)
+//                    .executeUpdate();
 
-        ArrayList<Object> crimeList = HistoricalCrimeAPIHandler.preProccessCrimeData();
-        System.out.println(2);
+//        }
+        int x = 75316;
+        int y= 99915;
 
-        for ( Object crimeObj: crimeList) {
-
-            counter ++;
-            System.out.printf("counter: %d%n", counter);
-            ArrayList<Object> listCrimeData = (ArrayList<Object>) crimeObj;
-
-            String dateStr = (String) listCrimeData.get(8);
-            LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            int date = 86400 * (int) dateLocal.toEpochDay();
-
-            String type = (String) listCrimeData.get(12);
-            String inOut = (String) listCrimeData.get(13);
-            String address = (String) listCrimeData.get(11);
-
-            ArrayList<Object> listCoordinate = (ArrayList<Object>) listCrimeData.get(18);
-            double latitude = (Double) listCoordinate.get(1);
-            double longitude = (Double) listCoordinate.get(2);
-
-            String sqlInsertCoordinate = " INSERT INTO testcrime VALUES ( :latParam, :lngParam);";
-            mConnection.createQuery(sqlInsertCoordinate)
-                    .addParameter("latParam", latitude)
-                    .addParameter("lngParam", longitude)
-                    .executeUpdate();
-
-        }
-
+        String sqlFetchAADT = "SELECT AADT FROM grids WHERE x= :xParam AND y= :yParam";
+        Integer aadt = mConnection.createQuery(sqlFetchAADT)
+                .addParameter("xParam", x)
+                .addParameter("yParam", y)
+                .executeScalar(Integer.class);
+        System.out.printf("aadt is %d", aadt);
 
     }
 
