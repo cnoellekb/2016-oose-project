@@ -121,6 +121,7 @@ public class SurvivalService {
 			logger.error("Failed to get crimes", e);
 		}
 	}
+
 	
 	public String getSafetyRating(double lat, double lng, String table) {
 		try (Connection conn = db.open()) {
@@ -147,5 +148,6 @@ public class SurvivalService {
 			return null;
 		}	
 	}
+
 
 }

@@ -90,6 +90,9 @@ public class SurvivalController {
 			double lng = Double.parseDouble(request.queryParams("lng"));
 			return survivalService.getSafetyRating(lat, lng, "grids");
 		}, new JsonTransformer());
+
 	}
+
+
 
 }
