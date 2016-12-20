@@ -135,9 +135,9 @@ public class SurvivalService {
 			query.addParameter("x", x).addParameter("y", y).addParameter("table", table);
 			double result = query.executeScalar(Double.class);
 			
-			if (result > 400000) {
+			if (result > 18000) {
 				return "red";
-			} else if (result > 200000) {
+			} else if (result > 9000) {
 				return "yellow";
 			} else {
 				return "green";
