@@ -56,7 +56,7 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         fullTime = route.result["time"] as? Double ?? 0
         fullDistance = route.result["distance"] as? Double ?? 0
         maneuvers = (((route.result["legs"] as? [Any])?[0] as? [String: Any])?["maneuvers"] as? [[String: Any]])?.flatMap {
-            if var narrative = $0["narrative"] as? String,
+            if let narrative = $0["narrative"] as? String,
                     let distance = $0["distance"] as? Double,
                     let streets = $0["streets"] as? [String],
                     let directionName = $0["directionName"] as? String,
@@ -64,9 +64,6 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
                     let latitude = startPoint["lat"],
                     let longitude = startPoint["lng"],
                     let turnType = $0["turnType"] as? Int {
-                if narrative.hasSuffix(" (See map for details).") {
-                    narrative = String(narrative.characters.dropLast(23))
-                }
                 return Maneuver(narrative: narrative, distance: distance, streets: streets, directionName: directionName, startPoint: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), turnType: turnType)
             }
             return nil
@@ -90,6 +87,36 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
     
     func speak(sentence: String) {
         if !isMuted {
+            var sentence = sentence
+            if sentence.hasSuffix(" (See map for details).") {
+                sentence.removeSubrange(sentence.index(sentence.endIndex, offsetBy: -23)..<sentence.endIndex)
+            }
+            sentence = sentence.replacingOccurrences(of: " Ln ", with: " Link ")
+            sentence = sentence.replacingOccurrences(of: " Ln.", with: " Link.")
+            if sentence.hasSuffix(" Ln") {
+                sentence.removeSubrange(sentence.index(sentence.endIndex, offsetBy: -1)..<sentence.endIndex)
+                sentence += "ink"
+            }
+            sentence = sentence.replacingOccurrences(of: " E ", with: " East ")
+            sentence = sentence.replacingOccurrences(of: " W ", with: " West ")
+            sentence = sentence.replacingOccurrences(of: " S ", with: " South ")
+            sentence = sentence.replacingOccurrences(of: " N ", with: " North ")
+            if sentence.hasPrefix("E ") {
+                sentence.removeSubrange(sentence.startIndex...sentence.startIndex)
+                sentence = "East" + sentence
+            }
+            if sentence.hasPrefix("W ") {
+                sentence.removeSubrange(sentence.startIndex...sentence.startIndex)
+                sentence = "West" + sentence
+            }
+            if sentence.hasPrefix("S ") {
+                sentence.removeSubrange(sentence.startIndex...sentence.startIndex)
+                sentence = "South" + sentence
+            }
+            if sentence.hasPrefix("N ") {
+                sentence.removeSubrange(sentence.startIndex...sentence.startIndex)
+                sentence = "North" + sentence
+            }
             let utterance = AVSpeechUtterance(string: sentence)
             utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             speechSynthesizer.stopSpeaking(at: .word)
@@ -150,7 +177,7 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         navigatingTopViewController?.turnSignImageView.image = maneuver.turnTypeImage
         navigatingTopViewController?.directionLabel.text = maneuver.directionName
         navigatingTopViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: distance)
-        navigatingTopViewController?.streetsLabel.text = maneuver.streets.dropFirst().reduce(maneuver.streets.first) { "\($0)\n\($1)" }
+        navigatingTopViewController?.streetsLabel.text = maneuver.streets.dropFirst().reduce(maneuver.streets.first) { "\($0) / \($1)" }
         navigatingBottomViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: remainingDistance)
         navigatingBottomViewController?.timeLabel.text = dateComponentsFormatter.string(from: remainingDistance / (fullDistance * 1609.344) * fullTime)
     }
