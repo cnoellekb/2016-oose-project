@@ -2,6 +2,7 @@ package com.oose2016.group4.server;
 
 
 import static org.mockito.Mockito.*;
+
 import org.sql2o.Connection;
 import org.sql2o.Query;
 import org.sql2o.Sql2o;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
 
 import com.google.gson.Gson;
+
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -33,6 +35,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 public class ServerTest {
 	
 	private final Logger logger = LoggerFactory.getLogger(ServerTest.class);
+	private final String TESTCRIMES = "TestCrimes";
 	
 	SQLiteDataSource dSource;
 	// ------------------------------------------------------------------------//
@@ -112,28 +115,68 @@ public class ServerTest {
 	public void testGetAvoidLinkIds() throws Exception {
 		SurvivalService s = new SurvivalService(dSource);
 		
-		Coordinate from = new Coordinate(30, -100);
-		Coordinate to = new Coordinate(40, -70);
-		int[] red = s.getAvoidLinkIds(from, to).getRed();
-		int[] yellow = s.getAvoidLinkIds(from, to).getYellow();
+		try (Connection conn = s.getDb().open()){
+			String sql1 = "CREATE TABLE IF NOT EXISTS " + TESTCRIMES 
+					+ " (date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
+					+ "latitude REAL NOT NULL, longitude REAL NOT NULL, "
+					+ "type TEXT, PRIMARY KEY (date, linkId, type));";
+			conn.createQuery(sql1).executeUpdate();
+			
+			int date = 0, linkid = 0;
+			String address = "", type = "";
+			double latitude = 0, longitude = 0;
+			
+			String sql2 = " INSERT INTO " + TESTCRIMES
+                    + " VALUES(:date, :linkid, :address, :latitude, :longitude, :type); ";
+			
+			for (int i = 0; i < 60; i++) {
+				Crime c = new Crime(date, address, type, latitude, longitude, linkid);
+				conn.createQuery(sql2).bind(c).executeUpdate();
+				
+				latitude++;
+				longitude++;
+			}
+			
+			linkid = 1;
+					
+			for (int i = 0; i < 40; i++) {
+				Crime c = new Crime(date, address, type, latitude, longitude, linkid);
+				conn.createQuery(sql2).bind(c).executeUpdate();
+				
+				latitude++;
+				longitude++;
+			}
+			
+			linkid = 2;
+			
+			for (int i = 0; i < 20; i++) {
+				Crime c = new Crime(date, address, type, latitude, longitude, linkid);
+				conn.createQuery(sql2).bind(c).executeUpdate();
+				
+				latitude++;
+				longitude++;
+			}
+			
+			Coordinate from = new Coordinate(0, 0);
+			Coordinate to = new Coordinate(120, 120);
+			
+			int[] red = s.getAvoidLinkIds(from, to, TESTCRIMES).getRed();
+			int[] yellow = s.getAvoidLinkIds(from, to, TESTCRIMES).getYellow();
 		
-		int[] redTarget = {48299070, 36327827, 28819535, 37416235, 
-				35909734, 1179627, 29907635, 29635202, 48302329, 
-				27356703, 27594660, 49012296, 40948040, 48298941, 
-				47004373, 44009832, 43317606, 27232763, 35893926, 40947872};
-		int[] yellowTarget = {1184010, 1184490, 1187635, 1194826, 
-				1196216, 1197046, 1198468, 1202785, 1213592, 28840608, 
-				36299695, 37180155, 40912890, 44009705, 46469921, 
-				47825278, 52427587, 53198833, 56220229, 56761221}; 
-
-		assertTrue(Arrays.equals(red, redTarget));
-		assertTrue(Arrays.equals(yellow, yellowTarget));
-		
-		Coordinate from1 = null;
-		Coordinate to1 = null;
-		assertEquals(s.getAvoidLinkIds(from1, to1), null);
+			int[] redTarget = {0};
+			int[] yellowTarget = {1}; 
+	
+			assertTrue(Arrays.equals(red, redTarget));
+			assertTrue(Arrays.equals(yellow, yellowTarget));
+			
+			Coordinate from1 = null;
+			Coordinate to1 = null;
+			assertEquals(s.getAvoidLinkIds(from1, to1, TESTCRIMES), null);
+		} catch (Sql2oException e) {
+			logger.error("Failed to get avoid linkIds in ServerTest", e);
+		}	
 	}
-	/*
+	
 	@Test
 	public void testGetCrimes() {
 		SurvivalService s = new SurvivalService(dSource);
@@ -199,7 +242,7 @@ public class ServerTest {
 		} catch (Sql2oException e) {
 			logger.error("Failed to get crimes in ServerTest", e);
 		}	
-	}*/
+	}
 	
 	/*
 	@Test
@@ -230,6 +273,12 @@ public class ServerTest {
 			PowerMockito.when(CrimeAPIHandler.preProccessCrimeData())
 				.thenReturn(new Gson().fromJson(json, ArrayList.class));
 			
+			String sqltable = "CREATE TABLE IF NOT EXISTS TestCrimes "
+		            + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address TEXT NOT NULL, "
+		            + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
+		            + "type TEXT, PRIMARY KEY (date, linkId, type, latitude, longitude));";
+			conn.createQuery(sqltable).executeUpdate();
+			
 			s.updateDB("TestCrimes");
 			
 			String selectSQL = "SELECT * FROM TestCrimes";
@@ -244,9 +293,25 @@ public class ServerTest {
 		}
 		
 		//exceeded the number of monthly MapQuest transactions 11/27/16
+	} */
+	
+	@Test
+	public void testSafetyRating() {
+		SurvivalService s = new SurvivalService(dSource);
+		try (Connection conn = s.getDb().open()){
+			double lat = 39.5;
+			double lng = 76.5;
+			String table = "TestSafetyRating";
+			
+			String sqltable = "CREATE TABLE IF NOT EXISTS TestSafetyRating "
+		            + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT INTEGER NOT NULL, "
+		            + " PRIMARY KEY (x, y));";
+			conn.createQuery(sqltable).executeUpdate();
+			
+			s.getSafetyRating(lat, lng, table);
+		}
 	}
-	*/
-
+	
 	// ------------------------------------------------------------------------//
 	// Survival Maps Specific Helper Methods and classes
 	// ------------------------------------------------------------------------//
@@ -255,12 +320,14 @@ public class ServerTest {
 		dataSource.setUrl("jdbc:sqlite:server.db"); 
 
 		Sql2o db = new Sql2o(dataSource);
-/*
+		
 		try (Connection conn = db.open()) {
 			String sql = "DROP TABLE IF EXISTS TestCrimes";
 			conn.createQuery(sql).executeUpdate();
+			String sql2 = "DROP TABLE IF EXISTS TestSafetyRating";
+			conn.createQuery(sql2).executeUpdate();
 		}
-	*/
+	
 		return dataSource;
 	}
 }

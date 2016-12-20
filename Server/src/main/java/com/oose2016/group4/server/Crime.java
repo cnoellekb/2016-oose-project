@@ -45,7 +45,7 @@ public class Crime {
 		return type;
 	}
 	
-	public double getLinkId() {
+	public int getLinkId() {
 		return linkid;
 	}
 	
