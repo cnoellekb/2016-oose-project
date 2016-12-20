@@ -91,10 +91,6 @@ public class SurvivalController {
 			return survivalService.getSafetyRating(lat, lng, "grids");
 		}, new JsonTransformer());
 
-		get(API_CONTEXT + "/update/test", "application/json", (request, response) -> {
-			survivalService.testUpdate();
-			return Collections.EMPTY_MAP;
-		}, new JsonTransformer());
 	}
 
 
