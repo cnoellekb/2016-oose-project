@@ -10,34 +10,32 @@ import java.util.Map;
 import org.sql2o.Connection;
 import org.sql2o.Query;
 
-import java.math.BigDecimal;
-
 public class DatabaseUpdater {
-    private static String SQL_INITIATE_TABLE_CRIMES ="CREATE TABLE IF NOT EXISTS crimes "
+    private static String SQL_INITIATE_TABLE_CRIMES = "CREATE TABLE IF NOT EXISTS crimes "
             + "(date INTEGER NOT NULL, linkId INTEGER NOT NULL, address VARCHAR(100) NOT NULL, "
             + "latitude REAL NOT NULL, longitude REAL NOT NULL, "
             + "type VARCHAR(100), PRIMARY KEY (date, linkId, type, latitude, longitude));";
 
-    private static String SQL_INITIATE_LINKID_GRID="CREATE TABLE IF NOT EXISTS grids "
+    private static String SQL_INITIATE_LINKID_GRID = "CREATE TABLE IF NOT EXISTS grids "
             + "(x INTEGER NOT NULL, y INTEGER NOT NULL, linkId INTEGER NOT NULL, alarm REAL NOT NULL, AADT INTEGER NOT NULL, "
             + " PRIMARY KEY (x, y));";
 
-    private static String SQL_INITIATE_UPDATE_LOG=
+    private static String SQL_INITIATE_UPDATE_LOG =
             "CREATE TABLE IF NOT EXISTS updatelog "
-            +"(sourcename VARCHAR(50) NOT NULL, updatecount INTEGER NOT NULL);";
+                    + "(sourcename VARCHAR(50) NOT NULL, updatecount INTEGER NOT NULL);";
 
     private static String SQL_DB_NOSYNC = " PRAGMA synchronous=OFF; ";
 
     private Connection mConnection;
 
-    public DatabaseUpdater(Connection conn){
+    public DatabaseUpdater(Connection conn) {
         mConnection = conn;
     }
 
     /**
      * Execute the initial SQL query to make sure of the table existing before updating tuples into it
      */
-    protected void initialUpdate(){
+    protected void initialUpdate() {
         mConnection.createQuery(SQL_INITIATE_TABLE_CRIMES).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_LINKID_GRID).executeUpdate();
         mConnection.createQuery(SQL_INITIATE_UPDATE_LOG).executeUpdate();
@@ -47,6 +45,7 @@ public class DatabaseUpdater {
     /**
      * Main task of the DatabaseUpdater class
      * TODO consider making bot updateTraffics and updateCrimes abstract so that we have an Template Method pattern;
+     *
      * @throws IOException
      */
     public void update(String table) throws IOException {
@@ -58,6 +57,7 @@ public class DatabaseUpdater {
     /**
      * The heavy weight of the updateDB operation. Fetches data from crime library, parse each record and process appropriately.
      * updateTraffics has to be executed after updateCrimes.
+     *
      * @throws IOException
      */
     private void updateCrimes() throws IOException {
@@ -68,7 +68,7 @@ public class DatabaseUpdater {
         /*
         Initialize the tuple in updatelog for crimes if it is not there yet.
          */
-        if ( crimeUpdateCount == null ) {
+        if (crimeUpdateCount == null) {
             String sqlInitializeCount = " INSERT INTO updatelog VALUES ( 'crime', 0); ";
             mConnection.createQuery(sqlInitializeCount).executeUpdate();
         }
@@ -84,8 +84,8 @@ public class DatabaseUpdater {
         int dateLastUpdate = 0;
         if (dateLastUpdateObj != null) dateLastUpdate = (Integer) dateLastUpdateObj;
 
-        for (Object crimeEntry: crimeList) {
-            Map<String, Object> crime = (Map<String,Object>) crimeEntry;
+        for (Object crimeEntry : crimeList) {
+            Map<String, Object> crime = (Map<String, Object>) crimeEntry;
 
             //ditch record if incomplete.
             if (!crime.containsKey("crimedate")
@@ -100,7 +100,7 @@ public class DatabaseUpdater {
             int date = 86400 * (int) dateLocal.toEpochDay();
 
             //ditch record if has been covered in previous updateDB operations.
-            if(date <= dateLastUpdate) continue;
+            if (date <= dateLastUpdate) continue;
 
             String type = (String) crime.get("description");
 
@@ -119,6 +119,8 @@ public class DatabaseUpdater {
 
             String address = (String) crime.get("location");
             Map<String, Object> location_1 = (Map<String, Object>) crime.get("location_1");
+            if (location_1 == null) continue;
+
             ArrayList<Double> a = (ArrayList<Double>) location_1.get("coordinates");
             double latitude = a.get(1);
             double longitude = a.get(0);
@@ -131,10 +133,10 @@ public class DatabaseUpdater {
             /*
             If the coordinate of this crime data entry does not satisfy our location range restriction, ditch the record;
              */
-            if ( !isCoordinateEligible(latitude, longitude) ) continue;
+            if (!isCoordinateEligibleForCrimeUpdate(latitude, longitude)) continue;
 
             //Map the coordinates to grid coordinates;
-            Grid grid = new Grid(latitude,longitude);
+            Grid grid = new Grid(latitude, longitude);
             int x = grid.getX();
             int y = grid.getY();
 
@@ -145,7 +147,7 @@ public class DatabaseUpdater {
                     .addParameter("yParam", y)
                     .executeScalar(Integer.class);
 
-            if (linkIdByXY == null ) {
+            if (linkIdByXY == null) {
                 /*
                 This grid has not been updated either by traffic source or crimes source.
                  */
@@ -157,7 +159,7 @@ public class DatabaseUpdater {
                     the AADT value (the traffic factor) for this grid. Then we can update the grids table with due accommodation
                      of this crime record.
                      */
-                    int aadt = getGridAADT(x,y);
+                    int aadt = getGridAADT(x, y);
 
                     String sqlUpdateGrids = "INSERT INTO grids"
                             + "VALUES(:xParam, :yParam, :linkIdByXYParam, :crimeTypeWeightParam * 10000 / :aadtParam, :aadtParam);";
@@ -229,7 +231,7 @@ public class DatabaseUpdater {
                     .addParameter("lngParam", longitude)
                     .executeScalar(Integer.class);
 
-            if ( datePrevious == null ) {
+            if (datePrevious == null) {
                 String sqlInsertToCrimes = " INSERT INTO crimes "
                         + " VALUES( :dateParam, :linkIdParam, :addressParam, :latParam, :lngParam, :typeParam); ";
 
@@ -255,6 +257,7 @@ public class DatabaseUpdater {
      * Method to update all traffic records from source into the Grids table. This method is ensured to be run only once
      * in the application's lifetime because according to our observation on the source, the source library is not likely
      * to be updated in the foreseeable future.
+     *
      * @throws IOException
      */
     private void updateTraffics() throws IOException {
@@ -273,8 +276,10 @@ public class DatabaseUpdater {
             int counter = 0;
             System.out.printf("counter: %d%n", counter);
 
+//            ArrayList<Grid> grids = new ArrayList<Grid>();
+
             ArrayList<Object> trafficList = TrafficAPIHandler.preProcessTrafficData();
-            for (Object trafficObj : trafficList ) {
+            for (Object trafficObj : trafficList) {
 
                 Map<String, Object> trafficEntry = (Map<String, Object>) trafficObj;
                 Map<String, Object> trafficEntryProperties = (Map<String, Object>) trafficEntry.get("properties");
@@ -289,8 +294,6 @@ public class DatabaseUpdater {
                 */
                 if (AADT > 50000) continue;
 
-//                if (AADT!=2113) continue;
-
                 /*
                 The above AADT value is shared by a list of coordinates, as fetched below;
                  */
@@ -299,49 +302,35 @@ public class DatabaseUpdater {
 
                 for (Object coordinate : trafficCoordinatesList) {
 
-                    counter ++;
+                    counter++;
                     System.out.printf("counter: %d%n", counter);
-//                    if(counter>10) {
-//                        System.out.printf("counter cap %n");
-////                       String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
-////                        mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
-//                        return;
-//                    }
 
                     ArrayList<Object> coordinateSingleList = (ArrayList<Object>) coordinate;
 
-//                    System.out.println("Coordinate list ok");
-
-//                    double latitude = ((Number) coordinateSingleList.get(1)).doubleValue();
-//                    System.out.printf("latitudeBig is %d%n", latitudeBig);
-//                    BigDecimal latitudeBig = new BigDecimal((String) coordinateSingleList.get(1)) ;
-//                    Double latitude = (Double) coordinateSingleList.get(1);
-
                     Object latitudeObj = coordinateSingleList.get(1);
-                    Object longitudeObj = coordinateSingleList.get(1);
+                    Object longitudeObj = coordinateSingleList.get(0);
 
                     if (!(latitudeObj instanceof Double) || !(longitudeObj instanceof Double)) {
                         System.out.println("Not double");
                         continue;
                     }
 
-//                    BigDecimal longitudeBig = new BigDecimal(((Number) coordinateSingleList.get(0)).doubleValue()) ;
-//                    System.out.printf("longitudeBig is %d%n", longitudeBig);
-//                    BigDecimal longitudeBig = new BigDecimal((String) coordinateSingleList.get(0)) ;
-//                    double longitude = ((Number) coordinateSingleList.get(0)).doubleValue();
-//                    Double longitude = (Double) coordinateSingleList.get(0);double longitude = Double.parseDouble(coordinateSingleList.get(0)*10);
+                    Double latitude = (Double) latitudeObj;
+                    Double longitude = (Double) longitudeObj;
 
-//                    double latitude = latitudeBig.doubleValue();
-//                    System.out.printf("latitude is %d%n", latitude);
-//                    double longitude = longitudeBig.doubleValue();
-//                    System.out.printf("longitude is %d%n", longitude);
+                    double lat = (double) latitude;
+                    double lng = (double) longitude;
+
+                    if (!isCoordinateEligibleForTrafficUpdate(lat, lng)) continue;
+
+//                    System.out.printf("latitude is %f and longitude is %f%n", lat, lng);
+
 
                     //Get the grid coordinate of this geo-coordinate;
-                    Grid grid = new Grid ((Double) latitudeObj, (Double) longitudeObj);
+                    Grid grid = new Grid(latitude, longitude);
                     int x = grid.getX();
                     int y = grid.getY();
-//                    System.out.printf("x is %d and y is %d%n", x, y);
-
+//                    System.out.printf("x is %d and y is %d%n", x,y);
 
 
                     //Check to see if this grid has been updated with traffic data;
@@ -352,7 +341,7 @@ public class DatabaseUpdater {
                             .executeScalar(Integer.class);
 
                     //If this grid has never been updated with traffic data, insert a new tuple for this grid;
-                    if ( aadtInGrids == null ) {
+                    if (aadtInGrids == null) {
                         String sqlInsertCoordinate = "INSERT INTO grids "
                                 + " VALUES(:xParam, :yParam, 0, 0, :aadtParam); ";
 
@@ -386,13 +375,15 @@ public class DatabaseUpdater {
             Leave record in the log so that the update for traffic data never get performed again.
              */
             String sqlUpdateLogCounter = " INSERT INTO updatelog VALUES('traffic', 1); ";
-            mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();        }
+            mConnection.createQuery(sqlUpdateLogCounter).executeUpdate();
+        }
     }
 
 
     /**
      * Based on the type (of a crime entry) as described by the passed in String, we return a corresponding value that
      * is appropriate for the particular crime type;
+     *
      * @param type The crime type.
      * @return The weight value for this type of crime.
      */
@@ -407,7 +398,7 @@ public class DatabaseUpdater {
                 return 11;
             }
         } else if (typeAllCap.contains("ROBBERY")) {
-            if (typeAllCap.contains("STREET"))  {
+            if (typeAllCap.contains("STREET")) {
                 return 10;
             } else {
                 return 8;
@@ -427,24 +418,30 @@ public class DatabaseUpdater {
     /**
      * A method that examine the coordinate's eligibility for update.
      * TODO Maybe this method can be refactored as abstract, which is implemented by sunclasses, among which there is TestUpdater which does what is done here, and also RealUpdater which defines less intentionally restrictive ranges.
+     *
      * @param latitude
      * @param longitude
      * @return boolean value denoting whether the coordinate is eligible for the updater's consideration.
      */
-    private boolean isCoordinateEligible(double latitude, double longitude) {
-        return  (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
+    private boolean isCoordinateEligibleForCrimeUpdate(double latitude, double longitude) {
+        return (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
+    }
+
+    private boolean isCoordinateEligibleForTrafficUpdate(double latitude, double longitude) {
+        return (latitude < 39.353414) && (latitude > 39.282497) && (longitude < -76.549413) && (longitude > -76.673241);
     }
 
     /**
      * For grids that has not been discovered by traffic updates before but is currently being discovered by crime update;
      * this algorithm calculates the approximate AADT value for the grid, based on the AADT values around this new grid.
+     *
      * @param x x index of the to be discovered grid
      * @param y y index of the to be discovered grid
      * @return The AADT value for the grid.
      */
     private int getGridAADT(int x, int y) {
         double leftAADT = discoverClosestAADT(x, y, -1, 0, 10);
-        double rightAADT = discoverClosestAADT(x,y, 1, 0, 10);
+        double rightAADT = discoverClosestAADT(x, y, 1, 0, 10);
         double upAADT = discoverClosestAADT(x, y, 0, 1, 10);
         double downAADT = discoverClosestAADT(x, y, 0, -1, 10);
         //sum up the influences of the closest grids which has its own AADT values from all four directions.
@@ -453,16 +450,17 @@ public class DatabaseUpdater {
 
     /**
      * Helper method for getGridAADT. Recursive in nature;
-     * @param x grid x index
-     * @param y grid y index
-     * @param xIncrement Gave xIncrement a separate argument to increase method's reusablity
-     * @param yIncrement Gave yIncrement a separate argument to increase method's reusablity
+     *
+     * @param x                  grid x index
+     * @param y                  grid y index
+     * @param xIncrement         Gave xIncrement a separate argument to increase method's reusablity
+     * @param yIncrement         Gave yIncrement a separate argument to increase method's reusablity
      * @param maxDistanceCounter A counter to to prevent the algorithm from going too far thus affecting performance
      * @return
      */
     private double discoverClosestAADT(int x, int y, int xIncrement, int yIncrement, int maxDistanceCounter) {
         //If reached max distance of the exploration, return lowest value for AADT;
-        if (maxDistanceCounter ==0 ) {
+        if (maxDistanceCounter == 0) {
             return 1;
         }
 
@@ -478,29 +476,120 @@ public class DatabaseUpdater {
         }
 
         //Look further if otherwise. Gave the result of next iteration a coefficient of 0.8 to indicate distance's influence on AADT values.
-        return 0.8* discoverClosestAADT(x+xIncrement, y+yIncrement, xIncrement, yIncrement, maxDistanceCounter-1);
+        return 0.8 * discoverClosestAADT(x + xIncrement, y + yIncrement, xIncrement, yIncrement, maxDistanceCounter - 1);
     }
 
     public void test() throws IOException {
-        String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
-        Integer trafficUpdateCount = mConnection.createQuery(sqlQueryLog).executeScalar(Integer.class);
+//        String sqlQueryLog = "SELECT updatecount FROM updatelog WHERE sourcename='traffic';";
+//        Integer trafficUpdateCount = mConnection.createQuery(sqlQueryLog).executeScalar(Integer.class);
+//
+//        String sqlInitiateTestTable = " CREATE TABLE IF NOT EXISTS test "
+//                + " (name VARCHAR(50) NOT NULL, data INTEGER NOT NULL, PRIMARY KEY(name)); ";
+//        mConnection.createQuery(sqlInitiateTestTable).executeUpdate();
+//
+//        int data = 1;
+//        if( trafficUpdateCount == null ) data = 0;
+//
+//        String sqlStoreTestData = " INSERT INTO test "
+//                + " VALUES( 'testTrafficCount', :dataParam); ";
+//        mConnection.createQuery(sqlStoreTestData)
+//                .addParameter("dataParam", data)
+////                .executeUpdate();
+//        ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
+//
+//        String sql = " CREATE TABLE IF NOT EXISTS testcrime (latitude REAL NOT NULL, longitude REAL NOT NULL); ";
+//        mConnection.createQuery(sql).executeUpdate();
+//
+//        for (Object crimeEntry : crimeList) {
+//            Map<String, Object> crime = (Map<String, Object>) crimeEntry;
+////            System.out.print(1);
+//
+//            String dateStr = (String) crime.get("crimedate");
+////            System.out.print(2);
+//
+//            LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+////            System.out.print(3);
+//
+//            int date = 86400 * (int) dateLocal.toEpochDay();
+////            System.out.print(4);
+//
+//
+//
+//            String type = (String) crime.get("description");
+////            System.out.print(5);
+//
+//
+//
+//            int crimeTypeWeight = getCrimeTypeWeight(type);
+////            System.out.print(6);
+//
+//
+//            String inOut = (String) crime.get("inside_outside");
+////            System.out.print(7);
+//
+//
+//            String address = (String) crime.get("location");
+////            System.out.print(8);
+//
+//            Map<String, Object> location_1 = (Map<String, Object>) crime.get("location_1");
+//            if (location_1 == null) continue;
+////            System.out.print(9);
+//
+//
+//            ArrayList<Object> a = (ArrayList<Object>) location_1.get("coordinates");
+////            System.out.print(10);
+//
+//            Object latitudeObj = a.get(1);
+//            Object longitudeObj = a.get(0);
+//
+////            if (!(latitudeObj instanceof Double) || !(longitudeObj instanceof Double)) continue;
+////            System.out.print(11);
+//
+//            Double latitude = (Double) latitudeObj;
+//            Double longitude = (Double) longitudeObj;
+//
+//            String sqlInsertCoordinate = " INSERT INTO testcrime VALUES ( :latParam, :lngParam);";
+//            mConnection.createQuery(sqlInsertCoordinate)
+//                    .addParameter("latParam", latitude)
+//                    .addParameter("lngParam", longitude)
+//                    .executeUpdate();
 
-        String sqlInitiateTestTable = " CREATE TABLE IF NOT EXISTS test "
-                + " (name VARCHAR(50) NOT NULL, data INTEGER NOT NULL, PRIMARY KEY(name)); ";
-        mConnection.createQuery(sqlInitiateTestTable).executeUpdate();
+        String sql = " CREATE TABLE IF NOT EXISTS testcrime (latitude REAL NOT NULL, longitude REAL NOT NULL); ";
+        mConnection.createQuery(sql).executeUpdate();
+        System.out.println(1);
+        int counter = 0;
 
-        int data = 1;
-        if( trafficUpdateCount == null ) data = 0;
+        ArrayList<Object> crimeList = HistoricalCrimeAPIHandler.preProccessCrimeData();
+        System.out.println(2);
 
-        String sqlStoreTestData = " INSERT INTO test "
-                + " VALUES( 'testTrafficCount', :dataParam); ";
-        mConnection.createQuery(sqlStoreTestData)
-                .addParameter("dataParam", data)
-                .executeUpdate();
+        for ( Object crimeObj: crimeList) {
+
+            counter ++;
+            System.out.printf("counter: %d%n", counter);
+            ArrayList<Object> listCrimeData = (ArrayList<Object>) crimeObj;
+
+            String dateStr = (String) listCrimeData.get(8);
+            LocalDate dateLocal = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            int date = 86400 * (int) dateLocal.toEpochDay();
+
+            String type = (String) listCrimeData.get(12);
+            String inOut = (String) listCrimeData.get(13);
+            String address = (String) listCrimeData.get(11);
+
+            ArrayList<Object> listCoordinate = (ArrayList<Object>) listCrimeData.get(18);
+            double latitude = (Double) listCoordinate.get(1);
+            double longitude = (Double) listCoordinate.get(2);
+
+            String sqlInsertCoordinate = " INSERT INTO testcrime VALUES ( :latParam, :lngParam);";
+            mConnection.createQuery(sqlInsertCoordinate)
+                    .addParameter("latParam", latitude)
+                    .addParameter("lngParam", longitude)
+                    .executeUpdate();
+
+        }
 
 
     }
-
 
 
 }

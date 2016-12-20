@@ -10,10 +10,16 @@ import java.math.BigDecimal;
  */
 public class Grid {
     private int x,y;
+    private int mLinkId;
+    private float mAlarm;
+    private int mAADT;
 
     public Grid (int x, int y) {
         this.x=x;
         this.y=y;
+        mLinkId = 0;
+        mAlarm = 0;
+        mAADT = 0;
     }
 
     /**
@@ -28,15 +34,11 @@ public class Grid {
 		double dy = (1 - (Math.log(Math.tan(latitudeDegree) + 1 / Math.cos(latitudeDegree)) / Math.PI)) / 2 * 262144;
 		this.x = (int) dx;
 		this.y = (int) dy;
+        mLinkId = 0;
+        mAlarm = 0;
+        mAADT = 0;
     }
 
-//    public Grid (BigDecimal lat, BigDecimal lng) {
-//        BigDecimal latitudeDegree = lat.multiply(new BigDecimal(Math.PI / 180));
-//        BigDecimal dx = lng.add(new BigDecimal(180)).multiply(new BigDecimal(262144/360));
-//        BigDecimal dy = (1 - (Math.log(Math.tan(latitudeDegree) + 1 / Math.cos(latitudeDegree)) / Math.PI)) / 2 * 262144;
-//        this.x = (int) dx;
-//        this.y = (int) dy;
-//    }
 
     public int getX() { return x; }
     public int getY() { return y; }
