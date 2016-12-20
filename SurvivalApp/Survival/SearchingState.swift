@@ -8,7 +8,7 @@
 import MapKit
 
 /// State of searching
-class SearchingState: State {
+class SearchingState: State, SearchTableViewControllerDelegate {
     /// Event delegate
     var delegate: StateDelegate?
     /// All annotations generated here
@@ -27,7 +27,9 @@ class SearchingState: State {
     var searchType: SearchType
     
     /// Results of search
-    private var locations = [Location]()
+    var locations = [Location]()
+    
+    var index = 0
     
     /// Search for location by name
     ///
@@ -92,17 +94,53 @@ class SearchingState: State {
                         if result.isEmpty {
                             self.delegate?.reportError(title: "No result", message: nil)
                         } else {
-                            self.locations = result
-                            self.delegate?.didGenerateAnnotations(self.locations)
+                            self.handle(result: result)
                         }
                     }
                 }
             } else {
                 DispatchQueue.main.async {
-                    self.locations = result
-                    self.delegate?.didGenerateAnnotations(self.locations)
+                    self.handle(result: result)
                 }
             }
+        }
+    }
+    
+    private func handle(result: [Location]) {
+        locations = result
+        searchTableViewController?.update()
+        delegate?.didGenerate(annotations: locations)
+        delegate?.select(annotation: locations[0])
+    }
+    
+    private weak var searchTableViewController: SearchTableViewController?
+    var bottomViewController: UIViewController? {
+        return searchTableViewController
+    }
+    
+    var bottomSegue: String? {
+        return "Search"
+    }
+    
+    func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
+        if let dst = segue.destination as? SearchTableViewController {
+            bottomHeight.constant = dst.preferredContentSize.height
+            searchTableViewController = dst
+            dst.delegate = self
+        }
+    }
+    
+    func didTapRow(at index: Int) {
+        delegate?.select(annotation: locations[index])
+    }
+    
+    func didTapSetButton(at index: Int) {
+        delegate?.choose(location: locations[index], for: searchType)
+    }
+    
+    func didSelect(annotation: MKAnnotation) {
+        if let location = annotation as? Location, let index = locations.index(of: location) {
+            searchTableViewController?.select(row: index)
         }
     }
 }

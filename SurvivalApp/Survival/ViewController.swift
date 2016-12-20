@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 /// Main view controller with a map view
-class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
+class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, StateDelegate {
     // MARK: - UI
     
     /// Main map view
@@ -26,7 +26,6 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
                 mapView.add(overlay, level: .aboveLabels)
             }
             
-            mapView.mapType = .satellite
             mapView.delegate = self
         }
     }
@@ -52,6 +51,54 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             toTextField.leftViewMode = .always
         }
     }
+    weak var topViewController: NavigatingTopViewController!
+    @IBOutlet weak var bottomContainer: UIView!
+    @IBOutlet weak var bottomHightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var showTopConstraint: NSLayoutConstraint!
+    @IBOutlet weak var hideTopConstraint: NSLayoutConstraint!
+    @IBOutlet weak var showBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var hideBottomConstraint: NSLayoutConstraint!
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return state?.preferredStatusBarStyle ?? .default
+    }
+    
+    // MARK: - Location
+    
+    private let locationManager = CLLocationManager()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse:
+            locationManager.requestLocation()
+        default:
+            break
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
+            locationManager.requestLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    }
+    
+    #if DEMO
+    private let simulatedUserLocation = SimulatedUserLocation()
+    #endif
     
     // MARK: - State
     
@@ -64,9 +111,47 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             if let overlays = state?.overlays, !overlays.isEmpty {
                 mapView.removeOverlays(overlays)
             }
+            var shouldLayout = false
+            if showTopConstraint.isActive {
+                showTopConstraint.isActive = false
+                hideTopConstraint.isActive = true
+                shouldLayout = true
+            }
+            if showBottomConstraint.isActive {
+                showBottomConstraint.isActive = false
+                hideBottomConstraint.isActive = true
+                shouldLayout = true
+            }
+            if shouldLayout {
+                UIView.animate(withDuration: 0.5) {
+                    self.view.layoutIfNeeded()
+                }
+            }
+            if let bottomVC = state?.bottomViewController {
+                bottomVC.removeFromParentViewController()
+                bottomVC.view.removeFromSuperview()
+            }
         }
         didSet {
             state?.delegate = self
+            var shouldLayout = false
+            if state?.shouldShowTop == true {
+                showTopConstraint.isActive = true
+                hideTopConstraint.isActive = false
+                shouldLayout = true
+            }
+            if let bottomSegue = state?.bottomSegue {
+                performSegue(withIdentifier: bottomSegue, sender: nil)
+                showBottomConstraint.isActive = true
+                hideBottomConstraint.isActive = false
+                shouldLayout = true
+            }
+            if shouldLayout {
+                UIView.animate(withDuration: 0.5) {
+                    self.view.layoutIfNeeded()
+                }
+            }
+            setNeedsStatusBarAppearanceUpdate()
         }
     }
     
@@ -92,7 +177,19 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             reportError(title: "Please enter an origination", message: "Cannot get current location.")
             return
         }
-        state = RoutingState(from: from, to: to)
+        if let routingState = RoutingState(from: from, to: to) {
+            state = routingState
+        } else {
+            reportError(title: "Are you seriously going to walk this far?", message: nil)
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let dst = segue.destination as? NavigatingTopViewController {
+            topViewController = dst
+        } else {
+            state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
+        }
     }
     
     // MARK: - StateDelegate
@@ -100,19 +197,30 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
     /// Display annotations generated by current state
     ///
     /// - Parameter annotations: array of annotations
-    func didGenerateAnnotations(_ annotations: [MKAnnotation]) {
+    func didGenerate(annotations: [MKAnnotation]) {
         guard annotations.count > 0 else { return }
-        mapView.showAnnotations(annotations, animated: true)
+        mapView.addAnnotations(annotations)
+        let latitudes = annotations.map { $0.coordinate.latitude }
+        let longitudes = annotations.map { $0.coordinate.longitude }
+        let min = CLLocationCoordinate2D(latitude: latitudes.max()!, longitude: longitudes.min()!)
+        let max = CLLocationCoordinate2D(latitude: latitudes.min()!, longitude: longitudes.max()!)
+        let minPoint = MKMapPointForCoordinate(min)
+        let maxPoint = MKMapPointForCoordinate(max)
+        let size = MKMapSize(width: maxPoint.x - minPoint.x, height: maxPoint.y - minPoint.y)
+        let rect = MKMapRect(origin: minPoint, size: size)
+        mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 200, left: 100, bottom: 250, right: 100), animated: true)
+    }
+    
+    func select(annotation: MKAnnotation) {
+        mapView.selectAnnotation(annotation, animated: true)
     }
     
     /// Display overlays generated by current state
     ///
     /// - Parameter overlays: array of overlays
-    func didGenerateOverlays(_ overlays: [MKOverlay]) {
-        guard overlays.count > 0 else { return }
-        mapView.addOverlays(overlays, level: .aboveRoads)
-        let rect = overlays.dropFirst().reduce(overlays[0].boundingMapRect) { MKMapRectUnion($0, $1.boundingMapRect) }
-        mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 150, left: 20, bottom: 20, right: 20), animated: true)
+    func didGenerate(overlay: MKOverlay) {
+        mapView.add(overlay, level: .aboveRoads)
+        mapView.setVisibleMapRect(overlay.boundingMapRect, edgePadding: UIEdgeInsets(top: 150, left: 20, bottom: 150, right: 20), animated: true)
     }
     
     /// Display an error from current state
@@ -126,11 +234,83 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         present(alert, animated: true)
     }
     
+    func choose(location: Location, for type: SearchingState.SearchType) {
+        state = nil
+        if type == .to {
+            to = location
+            toTextField.text = location.title
+            route()
+        } else {
+            from = location
+            fromTextField.text = location.title
+        }
+    }
+    
+    func choose(route: Route) {
+        guard let currentLocation = mapView.userLocation.location?.coordinate else { return }
+        state = NavigatingState(route: route, topViewController: topViewController, currentLocation: currentLocation)
+        #if DEMO
+            mapView.showsUserLocation = false
+            moveSimulatedUserLocation(along: route)
+            mapView.addAnnotation(simulatedUserLocation)
+        #else
+            mapView.setUserTrackingMode(.follow, animated: true)
+        #endif
+    }
+    
+    #if DEMO
+    private var timer: Timer?
+    
+    private func moveSimulatedUserLocation(along route: Route) {
+        guard let start = route.shape.first else { return }
+        simulatedUserLocation.coordinate = start
+        var index = 0
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) {
+            if index >= route.shape.count - 1 {
+                $0.invalidate()
+                return
+            }
+            var now = self.simulatedUserLocation.coordinate
+            var move = 10.0
+            repeat {
+                let end = route.shape[index + 1]
+                let distance = MKMetersBetweenMapPoints(MKMapPointForCoordinate(now), MKMapPointForCoordinate(end))
+                if (distance <= move) {
+                    move -= distance
+                    now = end
+                    index += 1
+                    if index == route.shape.count - 1 {
+                        break
+                    }
+                } else {
+                    let k = move / distance
+                    let latitude = (end.latitude - now.latitude) * k + now.latitude
+                    let longitude = (end.longitude - now.longitude) * k + now.longitude
+                    now = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                    move = 0
+                }
+            } while move > 0
+            self.simulatedUserLocation.coordinate = now
+            self.mapView.setCenter(now, animated: true)
+            self.state?.update(location: now)
+        }
+    }
+    #endif
+    
+    func stopNavigation() {
+        state = nil
+        #if DEMO
+            timer?.invalidate()
+            mapView.removeAnnotation(simulatedUserLocation)
+            mapView.showsUserLocation = true
+        #endif
+    }
+    
     // MARK: - Text field target-actions
     
     /// Origination completed
     @IBAction func fromTextFieldDone() {
-        if let text = fromTextField.text, !text.isEmpty, text != from?.title {
+        if let text = fromTextField.text, !text.isEmpty {
             search(for: text, type: .from)
             fromTextField.resignFirstResponder()
         } else {
@@ -152,11 +332,7 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
     /// Destination completed
     @IBAction func toTextFieldDone() {
         if let text = toTextField.text, !text.isEmpty {
-            if text != to?.title {
-                search(for: text, type: .to)
-            } else {
-                route()
-            }
+            search(for: text, type: .to)
         }
         toTextField.resignFirstResponder()
     }
@@ -200,10 +376,18 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             let pin = mapView.dequeueReusableAnnotationView(withIdentifier: "Pin") as? MKPinAnnotationView ?? MKPinAnnotationView(annotation: location, reuseIdentifier: "Pin")
             pin.animatesDrop = true
             pin.canShowCallout = true
-            pin.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
+            let button = UIButton(type: .detailDisclosure)
+            button.setImage(#imageLiteral(resourceName: "Arrow"), for: .normal)
+            pin.rightCalloutAccessoryView = button
             return pin
         }
         return nil
+    }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        if let annotation = view.annotation {
+            state?.didSelect(annotation: annotation)
+        }
     }
     
     /// Select location
@@ -216,15 +400,7 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
         guard let search = state as? SearchingState, let location = view.annotation as? Location else {
             return
         }
-        state = nil
-        if search.searchType == .to {
-            to = location
-            toTextField.text = location.title
-            route()
-        } else {
-            from = location
-            fromTextField.text = location.title
-        }
+        choose(location: location, for: search.searchType)
     }
     
     /// Maintain minimal zoom level
@@ -239,4 +415,24 @@ class ViewController: UIViewController, MKMapViewDelegate, StateDelegate {
             mapView.setCamera(newCamera, animated: animated)
         }
     }
+    
+    #if !DEMO
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        state?.update(location: userLocation.coordinate)
+    }
+    #endif
 }
+
+#if DEMO
+private class SimulatedUserLocation: MKUserLocation {
+    private var simulatedCoordinate = CLLocationCoordinate2D(latitude: 39, longitude: -76)
+    override dynamic var coordinate: CLLocationCoordinate2D {
+        get {
+            return simulatedCoordinate
+        }
+        set {
+            simulatedCoordinate = newValue
+        }
+    }
+}
+#endif
