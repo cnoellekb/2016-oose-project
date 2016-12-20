@@ -54,7 +54,7 @@ public class DatabaseUpdater {
     public void update(String table) throws IOException {
         updateTraffics();
         updateHistoricalCrimes();
-//        updateCrimes();
+        updateCrimes();
     }
 
 
@@ -76,11 +76,11 @@ public class DatabaseUpdater {
         if (crimeUpdateCount == null) {
             String sqlInitializeCount = " INSERT INTO updatelog VALUES ( 'crime', 0); ";
             mConnection.createQuery(sqlInitializeCount).executeUpdate();
-            System.out.println("crimes update count initialized.");
+            System.out.println("This is the first update from crime source, crimes update count initialized.");
         }
 
         ArrayList<Object> crimeList = CrimeAPIHandler.preProccessCrimeData();
-        System.out.println("ArrayList data fetched.");
+        System.out.println("ArrayList data fetched from the crime source.");
 
         /*
         Get the date of the most recent crime record of last updateDB operation.
@@ -166,7 +166,6 @@ public class DatabaseUpdater {
 
             int linkIdByXY = gridFound.getLinkId();
 
-
             if (linkIdByXY < 0 ) {
                 /*
                 This grid has not been updated either by traffic source or crimes source.
@@ -182,11 +181,14 @@ public class DatabaseUpdater {
                 */
                 int aadtToAdd = getApproximateGridAADT(x, y);
                 System.out.printf("The approximate AADT for this grid is %d%n", aadtToAdd);
+                System.out.printf("The type of this crime is %s and its type weight is %d%n", type, crimeTypeWeight);
 
-                Grid gridToAdd = new Grid(x,y,linkIdByXY,crimeTypeWeight * TYPE_WEIGHT_FACTOR/aadtToAdd, aadtToAdd);
+                double alarmToAdd = crimeTypeWeight * TYPE_WEIGHT_FACTOR/aadtToAdd;
+
+                Grid gridToAdd = new Grid(x,y,linkIdByXY,alarmToAdd, aadtToAdd);
 
                 gridList.add(gridToAdd);
-                System.out.println("New grid added");
+                System.out.printf("New grid added with alarm %f%n", alarmToAdd);
 
             } else {
                 /*
@@ -211,8 +213,12 @@ public class DatabaseUpdater {
                 Either way, since this grid has been discovered already, we have to update it with this crime record's weight.
                  */
                 double previousAlarm = gridFound.getAlarm();
+                System.out.printf("The alarm for the found grid before updating is %f%n", previousAlarm);
+                System.out.printf("The AADT for the found grid is %d%n", gridFound.getAADT());
+
                 gridFound.setAlarm(previousAlarm + crimeTypeWeight * TYPE_WEIGHT_FACTOR / gridFound.getAADT());
-                System.out.println("Alarm value for the grid has been updated with the help of pre-existing AADT");
+                System.out.printf("Alarm value for the grid has been updated to %f%n", gridFound.getAlarm());
+
             }
 
             /*
@@ -252,9 +258,7 @@ public class DatabaseUpdater {
                         .executeUpdate();
             }
         }
-
-
-
+        putGridsListBackToDB(gridList);
         /*
         Update log.
          */
@@ -401,70 +405,75 @@ public class DatabaseUpdater {
             int counter = 0;
             System.out.printf("Historical counter: %d%n", counter);
 
-            for ( Crime crimeObj : crimeListHistorical ) {
-                Grid crimeGrid = new Grid(crimeObj.getLat(),crimeObj.getLng());
+            for (Crime crimeObj : crimeListHistorical) {
+                Grid crimeGrid = new Grid(crimeObj.getLat(), crimeObj.getLng());
 
-                counter ++;
+                counter++;
                 System.out.printf("historical counter: %d%n", counter);
 
                 int x = crimeGrid.getX();
-                int y= crimeGrid.getY();
+                int y = crimeGrid.getY();
                 System.out.printf("x is %d and y is %d%n", x, y);
 
-                Grid gridFoundInTable = fetchGridByXY(x,y,gridList);
+                Grid gridFoundInTable = fetchGridByXY(x, y, gridList);
                 System.out.println("Is this grid in previously in grids table?");
-                if (gridFoundInTable.getX() > 0 ) {
-                    System.out.printf("There previously was grid (%d,%d) in the grids table.%n",x,y);
+                if (gridFoundInTable.getX() > 0) {
+                    System.out.printf("There previously was grid (%d,%d) in the grids table.%n", x, y);
                     gridFoundInTable.setLinkId(crimeObj.getLinkId());
-                    System.out.printf("Change its linkId to this crime record's linkId:%d%n",crimeObj.getLinkId());
+                    System.out.printf("Change its linkId to this crime record's linkId:%d%n", crimeObj.getLinkId());
                     double previousAlarm = gridFoundInTable.getAlarm();
-                    System.out.printf("Before this crime record, the alarm for grid (%d,%d) is %f. The AADT is %d%n",x,y,previousAlarm,gridFoundInTable.getAADT());
-                    System.out.printf("The type weight for this crime is %d%n",getCrimeTypeWeight(crimeObj.getType()));
-                    gridFoundInTable.setAlarm(getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/gridFoundInTable.getAADT()+previousAlarm);
+                    System.out.printf("Before this crime record, the alarm for grid (%d,%d) is %f. The AADT is %d%n", x, y, previousAlarm, gridFoundInTable.getAADT());
+                    System.out.printf("The type weight for this crime is %d%n", getCrimeTypeWeight(crimeObj.getType()));
+                    gridFoundInTable.setAlarm(getCrimeTypeWeight(crimeObj.getType()) * TYPE_WEIGHT_FACTOR / gridFoundInTable.getAADT() + previousAlarm);
                     System.out.printf("Change the grid's alarm to %f.%n", gridFoundInTable.getAlarm());
                 } else {
                     System.out.printf("There previously was not a grid (%d,%d) in the grids table.%n", x, y);
-                    int aadtToAdd = getApproximateGridAADT(x,y);
+                    int aadtToAdd = getApproximateGridAADT(x, y);
                     System.out.printf("The approximate AADT for this grid is %d%n", aadtToAdd);
-                    System.out.printf("The type for this crime is %s and the weight for this crime is %d%n", crimeObj.getType(),getCrimeTypeWeight(crimeObj.getType()));
-                    double alarmToAdd = getCrimeTypeWeight(crimeObj.getType())*TYPE_WEIGHT_FACTOR/aadtToAdd;
-                    Grid gridToAdd = new Grid(x,y,crimeObj.getLinkId(),alarmToAdd,aadtToAdd);
+                    System.out.printf("The type for this crime is %s and the weight for this crime is %d%n", crimeObj.getType(), getCrimeTypeWeight(crimeObj.getType()));
+                    double alarmToAdd = getCrimeTypeWeight(crimeObj.getType()) * TYPE_WEIGHT_FACTOR / aadtToAdd;
+                    Grid gridToAdd = new Grid(x, y, crimeObj.getLinkId(), alarmToAdd, aadtToAdd);
                     gridList.add(gridToAdd);
                     System.out.printf("New grid added to the list, with the alarm value of %f%n", alarmToAdd);
                 }
             }
             System.out.printf("There are currently %d grids in the grid list%n", gridList.size());
-            String sqlClearGridsTable = " DELETE FROM grids; ";
-            mConnection.createQuery(sqlClearGridsTable).executeUpdate();
+            putGridsListBackToDB(gridList);
+            String sqlUpdateLogCounterHistorical = " INSERT INTO updatelog VALUES('historical', 1); ";
+            mConnection.createQuery(sqlUpdateLogCounterHistorical).executeUpdate();
+        }
 
-            counter = 0;
-            System.out.println("Start putting grid list back into db");
 
-            for (Grid eachGrid : gridList ) {
-                counter ++;
-                System.out.printf("Insert counter: %d%n", counter);
+    }
+
+
+
+    private void putGridsListBackToDB(List<Grid> gridList) {
+
+        String sqlClearGridsTable = " DELETE FROM grids; ";
+        mConnection.createQuery(sqlClearGridsTable).executeUpdate();
+
+        int counter = 0;
+        System.out.println("Start putting grid list back into db");
+
+        for (Grid eachGrid : gridList) {
+            counter++;
+            System.out.printf("Insert counter: %d%n", counter);
 
 //                if ( eachGrid.getLinkId()==0) continue;
 
 //                System.out.printf("Grid(%d,%d,%d,%f,%d) %n",eachGrid.getX(),eachGrid.getY(), eachGrid.getLinkId(),eachGrid.getAlarm(),eachGrid.getAADT());
 
-                String sqlInsertNewGridsTable = " INSERT INTO grids VALUES "
-                        + " ( :xParam, :yParam, :linkIdParam, :alarmParam, :aadtParam ); ";
-                mConnection.createQuery(sqlInsertNewGridsTable)
-                        .addParameter("xParam", eachGrid.getX())
-                        .addParameter("yParam", eachGrid.getY())
-                        .addParameter("linkIdParam", eachGrid.getLinkId())
-                        .addParameter("alarmParam", eachGrid.getAlarm())
-                        .addParameter("aadtParam", eachGrid.getAADT())
-                        .executeUpdate();
-            }
-
-//            String sqlUpdateLogCounterHistorical = " INSERT INTO updatelog VALUES('historical', 1); ";
-//            mConnection.createQuery(sqlUpdateLogCounterHistorical).executeUpdate();
+            String sqlInsertNewGridsTable = " INSERT INTO grids VALUES "
+                    + " ( :xParam, :yParam, :linkIdParam, :alarmParam, :aadtParam ); ";
+            mConnection.createQuery(sqlInsertNewGridsTable)
+                    .addParameter("xParam", eachGrid.getX())
+                    .addParameter("yParam", eachGrid.getY())
+                    .addParameter("linkIdParam", eachGrid.getLinkId())
+                    .addParameter("alarmParam", eachGrid.getAlarm())
+                    .addParameter("aadtParam", eachGrid.getAADT())
+                    .executeUpdate();
         }
-
-
-
     }
 
     private Grid fetchGridByXY(int x, int y, List<Grid> gridList ) {
