@@ -27,13 +27,25 @@ class SurvivalUITests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // Use recording to get started writing UI tests.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        
+    func testAll() {
         let app = XCUIApplication()
-        app.textFields["My Location"].tap()
-        app.typeText("johns hopkins university\r")
+        let fromTextField = app.textFields["My Location"]
+        fromTextField.tap()
+        fromTextField.typeText("Baltimore\n")
+        
+        let setButton = app.tables.children(matching: .cell).element(boundBy: 0).buttons["Set"]
+        setButton.tap()
+        
+        let toTextField = app.textFields.containing(.staticText, identifier:"To: ").element
+        toTextField.tap()
+        toTextField.typeText("Towson\n")
+        setButton.tap()
+        app.buttons["Start"].tap()
+        
+        let speakerButton = app.buttons["Speaker"]
+        speakerButton.tap()
+        speakerButton.tap()
+        app.buttons["Delete"].tap()
+        app.alerts["Stop navigation?"].buttons["Stop"].tap()
     }
-    
 }
