@@ -50,6 +50,7 @@
 		E21D0BA51E079D3700F8E946 /* NavigatingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigatingState.swift; sourceTree = "<group>"; };
 		E252293B1DC84AA10073BBC8 /* State.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		E252293D1DC84AC60073BBC8 /* RoutingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingState.swift; sourceTree = "<group>"; };
+		E25622041E0A5D2E00843F3E /* Survival.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Survival.entitlements; sourceTree = "<group>"; };
 		E25887771DA5797400F251C9 /* Survival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Survival.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E258877A1DA5797400F251C9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E258877C1DA5797400F251C9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -123,6 +124,7 @@
 		E25887791DA5797400F251C9 /* Survival */ = {
 			isa = PBXGroup;
 			children = (
+				E25622041E0A5D2E00843F3E /* Survival.entitlements */,
 				E258877A1DA5797400F251C9 /* AppDelegate.swift */,
 				E258877C1DA5797400F251C9 /* ViewController.swift */,
 				E2CBE4671E05F88600AB42CD /* BottomSegue.swift */,
@@ -236,7 +238,10 @@
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
-								enabled = 0;
+								enabled = 1;
+							};
+							com.apple.SafariKeychain = {
+								enabled = 1;
 							};
 						};
 					};
@@ -474,6 +479,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Survival/Survival.entitlements;
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = Survival/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -488,6 +494,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Survival/Survival.entitlements;
 				DEVELOPMENT_TEAM = 5Z4L8A2TF8;
 				INFOPLIST_FILE = Survival/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

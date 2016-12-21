@@ -20,6 +20,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+                let url = userActivity.webpageURL,
+                let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return false
+        }
+        let query = urlComponents.queryItems ?? []
+        var dict = [String: String]()
+        for item in query {
+            dict[item.name] = item.value
+        }
+        NotificationCenter.default.post(name: .openURL, object: nil, userInfo: dict)
+        return true
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.

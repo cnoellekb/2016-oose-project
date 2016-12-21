@@ -24,6 +24,10 @@
 	<string>afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Survival uses your location to navigate.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
