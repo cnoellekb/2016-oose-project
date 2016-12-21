@@ -43,10 +43,6 @@ class NavigatingBottomViewController: UIViewController {
     }
     
     private func updateImage() {
-        if delegate?.isMuted == true {
-            muteButton.setImage(#imageLiteral(resourceName: "Mute"), for: .normal)
-        } else {
-            muteButton.setImage(#imageLiteral(resourceName: "Speaker"), for: .normal)
-        }
+        muteButton.isSelected = delegate?.isMuted ?? false
     }
 }
