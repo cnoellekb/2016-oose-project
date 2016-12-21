@@ -8,6 +8,7 @@
 import MapKit
 import AVFoundation
 
+/// State of navigating
 class NavigatingState: State, NavigatingBottomViewControllerDelegate {
     /// Event delegate
     weak var delegate: StateDelegate? {
@@ -18,8 +19,10 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         }
     }
     
+    /// All overlays generated here
     var overlays = [MKOverlay]()
     
+    /// White status bar
     var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -32,13 +35,21 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         return #colorLiteral(red: 0.01680417731, green: 0.1983509958, blue: 1, alpha: 1)
     }
     
+    /// Route to navigate
     private var route: Route
+    /// Maneuvers of route
     private var maneuvers: [Maneuver]
+    /// Full time
     private var fullTime: Double
+    /// Full distance
     private var fullDistance: Double
+    /// Remaining distance by maneuvers
     private var remainingDistance: Double
+    /// Current maneuver
     private var currentManeuverIndex = 0
+    /// Current location
     private var currentLocation: CLLocationCoordinate2D
+    /// Voice is muted or not
     var isMuted: Bool {
         get {
             return UserDefaults.standard.bool(forKey: "mute")
@@ -51,6 +62,12 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         }
     }
     
+    /// Initializes navigating state and start navigation
+    ///
+    /// - Parameters:
+    ///   - route: route to navigate
+    ///   - topViewController: top view controller to display
+    ///   - currentLocation: current user location
     init(route: Route, topViewController: NavigatingTopViewController, currentLocation: CLLocationCoordinate2D) {
         self.route = route
         fullTime = route.result["time"] as? Double ?? 0
@@ -74,18 +91,26 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         speak(sentence: maneuvers[0].narrative)
     }
     
+    /// Should show top view controller
     var shouldShowTop: Bool {
         return true
     }
     
+    /// User moved to new location
+    ///
+    /// - Parameter location: updated location
     func update(location: CLLocationCoordinate2D) {
         currentLocation = location
         updateViews()
     }
     
+    /// Speech synthesizer for voice navigation
     private let speechSynthesizer = AVSpeechSynthesizer()
     
-    func speak(sentence: String) {
+    /// Speak a sentence
+    ///
+    /// - Parameter sentence: sentence to speak
+    private func speak(sentence: String) {
         if !isMuted {
             var sentence = sentence
             if sentence.hasSuffix(" (See map for details).") {
@@ -124,16 +149,25 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         }
     }
     
+    /// Top view controller
     private weak var navigatingTopViewController: NavigatingTopViewController?
+    /// Bottom view controller
     private weak var navigatingBottomViewController: NavigatingBottomViewController?
+    /// Bottom view controller for State protocol
     var bottomViewController: UIViewController? {
         return navigatingBottomViewController
     }
     
+    /// Bottom view controller segue name
     var bottomSegue: String? {
         return "Navigate"
     }
     
+    /// Handle bottom view controller segue
+    ///
+    /// - Parameters:
+    ///   - segue: Storyboard segue
+    ///   - bottomHeight: bottom container height constraint
     func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
         if let dst = segue.destination as? NavigatingBottomViewController {
             bottomHeight.constant = dst.preferredContentSize.height
@@ -142,15 +176,18 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         }
     }
     
+    /// Stop navigation
     func stopNavigation() {
         delegate?.stopNavigation()
     }
     
+    /// Distance formatter
     private let distanceFormatter: MKDistanceFormatter = {
         let formatter = MKDistanceFormatter()
         formatter.unitStyle = .abbreviated
         return formatter
     }()
+    /// Time formatter
     private let dateComponentsFormatter: DateComponentsFormatter = {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute]
@@ -158,6 +195,7 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         return formatter
     }()
     
+    /// Update labels and images
     func updateViews() {
         let next = currentManeuverIndex == maneuvers.count - 1 ? route.shape.last! : maneuvers[currentManeuverIndex + 1].startPoint
         let distance = MKMetersBetweenMapPoints(MKMapPointForCoordinate(currentLocation), MKMapPointForCoordinate(next))

@@ -88,6 +88,11 @@ class RoutingState: State, RoutingViewControllerDelegate {
         }
     }
     
+    /// Handle routing result
+    ///
+    /// - Parameters:
+    ///   - coordinates: coordinates of a route
+    ///   - route: route
     private func handle(coordinates: [CLLocationCoordinate2D], route: Route) {
         let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
         self.routeForPolyline[polyline] = route
@@ -95,15 +100,23 @@ class RoutingState: State, RoutingViewControllerDelegate {
         self.routingViewController?.update()
     }
     
+    /// Bottom view controller
     private weak var routingViewController: RoutingViewController?
+    /// Bottom view controller for State protocol
     var bottomViewController: UIViewController? {
         return routingViewController
     }
     
+    /// Bottom view controller segue name
     var bottomSegue: String? {
         return "Route"
     }
     
+    /// Handle bottom view controller segue
+    ///
+    /// - Parameters:
+    ///   - segue: Storyboard segue
+    ///   - bottomHeight: bottom container height constraint
     func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
         if let dst = segue.destination as? RoutingViewController {
             bottomHeight.constant = dst.preferredContentSize.height
@@ -112,10 +125,18 @@ class RoutingState: State, RoutingViewControllerDelegate {
         }
     }
     
+    /// User choosed a route
+    ///
+    /// - Parameter route: chosen route
     func choose(route: Route) {
         delegate?.choose(route: route)
     }
     
+    /// Report error of bottom view controller
+    ///
+    /// - Parameters:
+    ///   - title: error title
+    ///   - message: error message
     func reportError(title: String, message: String?) {
         delegate?.reportError(title: title, message: message)
     }

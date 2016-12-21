@@ -7,7 +7,9 @@
 
 import UIKit
 
+/// Replace bottom view controller of main view controller
 class BottomSegue: UIStoryboardSegue {
+    /// Perform the segue
     override func perform() {
         let vc = source as! ViewController
         vc.addChildViewController(destination)
