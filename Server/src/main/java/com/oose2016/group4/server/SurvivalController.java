@@ -1,5 +1,6 @@
 package com.oose2016.group4.server;
 
+import static spark.Spark.before;
 import static spark.Spark.get;
 
 import java.util.Collections;
@@ -26,6 +27,9 @@ public class SurvivalController {
 	 * Setup handlers for all request paths.
 	 */
 	private void setupEndpoints() {
+		before((request, response) -> {
+			response.header("Access-Control-Allow-Origin", "*");
+		});
 		/**
 		 * Retrieve linkIDs to Avoid
 		 */
