@@ -22,11 +22,6 @@
 	<true/>
 	<key>MQApplicationKey</key>
 	<string>afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Survival uses your location to navigate.</string>
 	<key>UILaunchStoryboardName</key>

@@ -10,9 +10,8 @@ import UIKit
 /// Address of our own server
 let server: URLComponents = {
     var urlComponents = URLComponents()
-    urlComponents.scheme = "http"
-    urlComponents.host = "127.0.0.1"
-    urlComponents.port = 8080
+    urlComponents.scheme = "https"
+    urlComponents.host = "oose-survival.herokuapp.com"
     return urlComponents
 }()
 
