@@ -11,6 +11,7 @@ Survival Maps App
 Website (Mirrors)
 -----------------
 [Heroku App](https://oose-survival.herokuapp.com)
+
 [Github Pages](https://jhu-oose.github.io/2016-group-4/site/)
 
 Server
