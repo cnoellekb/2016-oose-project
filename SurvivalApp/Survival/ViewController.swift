@@ -8,6 +8,10 @@
 import UIKit
 import MapKit
 
+extension Notification.Name {
+    static let openURL = Notification.Name("OpenURL")
+}
+
 /// Main view controller with a map view
 class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, StateDelegate {
     // MARK: - UI
@@ -75,22 +79,52 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse:
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         default:
             break
+        }
+        
+        NotificationCenter.default.addObserver(forName: .openURL, object: nil, queue: nil) {
+            let numberFormatter = NumberFormatter()
+            if let dict = $0.userInfo,
+                    let from = dict["from"] as? String,
+                    let to = dict["to"] as? String,
+                    let fromLatString = dict["fromLat"] as? String,
+                    let toLatString = dict["toLat"] as? String,
+                    let fromLngString = dict["fromLng"] as? String,
+                    let toLngString = dict["toLng"] as? String,
+                    let fromLat = numberFormatter.number(from: fromLatString)?.doubleValue,
+                    let toLat = numberFormatter.number(from: toLatString)?.doubleValue,
+                    let fromLng = numberFormatter.number(from: fromLngString)?.doubleValue,
+                    let toLng = numberFormatter.number(from: toLngString)?.doubleValue {
+                self.fromTextField.text = from
+                self.toTextField.text = to
+                self.from = Location(address: from, coordinate: CLLocationCoordinate2D(latitude: fromLat, longitude: fromLng))
+                self.to = Location(address: to, coordinate: CLLocationCoordinate2D(latitude: toLat, longitude: toLng))
+                self.route()
+            }
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         }
     }
     
+    private var firstLocationUpdate = true
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
-        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
-        mapView.setRegion(region, animated: true)
+        let location = locations.last!.coordinate
+        if firstLocationUpdate {
+            let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+            let region = MKCoordinateRegion(center: location, span: span)
+            mapView.setRegion(region, animated: true)
+            firstLocationUpdate = false
+        }
+        #if !DEMO
+            state?.update(location: location)
+        #endif
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -151,6 +185,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                     self.view.layoutIfNeeded()
                 }
             }
+            locationManager.allowsBackgroundLocationUpdates = state is NavigatingState
             setNeedsStatusBarAppearanceUpdate()
         }
     }
@@ -415,12 +450,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             mapView.setCamera(newCamera, animated: animated)
         }
     }
-    
-    #if !DEMO
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        state?.update(location: userLocation.coordinate)
-    }
-    #endif
 }
 
 #if DEMO
