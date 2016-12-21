@@ -3,10 +3,15 @@
 [![Build Status](https://travis-ci.com/jhu-oose/2016-group-4.svg?token=Tf3c7Gfbp6sM6spBqpry&branch=master)](https://travis-ci.com/jhu-oose/2016-group-4)
 
 Survival Maps App
-------------
+-----------------
 [Survival Maps App](https://github.com/jhu-oose/2016-group-4/tree/master/SurvivalApp) is a navigation app which avoids dangerous routes.
 
 [Documentation](https://jhu-oose.github.io/2016-group-4/jazzy/)
+
+Website (Mirrors)
+-----------------
+[Heroku App](https://oose-survival.herokuapp.com)
+[Github Pages](https://jhu-oose.github.io/2016-group-4/site/)
 
 Server
 ------
