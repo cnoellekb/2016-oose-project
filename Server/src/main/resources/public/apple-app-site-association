@@ -1,0 +1,11 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "5Z4L8A2TF8.edu.jhu.Survival",
+                "paths": [ "NOT /v1/*", "*"]
+            }
+        ]
+    }
+}
