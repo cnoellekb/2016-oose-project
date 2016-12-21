@@ -40,7 +40,7 @@ public class SurvivalController {
 				Coordinate to = new Coordinate(toLat, toLng);
 				Coordinate.sortAndExpand(from, to);
 				response.status(200);
-				return survivalService.getAvoidLinkIds(from, to, "crimes");
+				return survivalService.getAvoidLinkIds(from, to, "grids");
 			} catch (Exception e) {
 				logger.info("Invalid request", e);
 				response.status(400);
