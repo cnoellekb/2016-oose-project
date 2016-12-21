@@ -79,7 +79,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse:
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         default:
             break
         }
@@ -108,14 +108,23 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         }
     }
     
+    private var firstLocationUpdate = true
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
-        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
-        mapView.setRegion(region, animated: true)
+        let location = locations.last!.coordinate
+        if firstLocationUpdate {
+            let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+            let region = MKCoordinateRegion(center: location, span: span)
+            mapView.setRegion(region, animated: true)
+            firstLocationUpdate = false
+        }
+        #if !DEMO
+            state?.update(location: location)
+        #endif
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -176,6 +185,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                     self.view.layoutIfNeeded()
                 }
             }
+            locationManager.allowsBackgroundLocationUpdates = state is NavigatingState
             setNeedsStatusBarAppearanceUpdate()
         }
     }
@@ -440,12 +450,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             mapView.setCamera(newCamera, animated: animated)
         }
     }
-    
-    #if !DEMO
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        state?.update(location: userLocation.coordinate)
-    }
-    #endif
 }
 
 #if DEMO
