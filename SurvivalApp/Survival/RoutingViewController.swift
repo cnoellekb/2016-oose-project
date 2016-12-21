@@ -7,23 +7,45 @@
 
 import UIKit
 
+/// Data source and events
 protocol RoutingViewControllerDelegate: class {
+    /// Data source
     var routes: [Route?] { get }
+    /// Choose a route
+    ///
+    /// - Parameter route: chosen route
     func choose(route: Route)
+    /// Report error as alert
+    ///
+    /// - Parameters:
+    ///   - title: error title
+    ///   - message: error message
     func reportError(title: String, message: String?)
 }
 
+/// Bottom view controller of RoutingState
 class RoutingViewController: UIViewController {
+    /// RoutingState
     weak var delegate: RoutingViewControllerDelegate?
     
+    /// Time label
     @IBOutlet weak var timeLabel: UILabel!
+    /// Distance label
     @IBOutlet weak var distanceLabel: UILabel!
+    /// Button background view
     @IBOutlet weak var buttonView: UIView!
+    /// Safety slider
     @IBOutlet weak var slider: UISlider!
     
+    /// Type of route
+    ///
+    /// - safest: safest route
+    /// - middle: middle route
+    /// - fastest: fastest route
     private enum RouteType: Int {
         case safest, middle, fastest
     }
+    /// Type of route
     private var routeType: RouteType? {
         didSet {
             if let type = routeType, delegate?.routes[type.rawValue] == nil {
@@ -36,6 +58,9 @@ class RoutingViewController: UIViewController {
         }
     }
     
+    /// Move slider to exact location
+    ///
+    /// - Parameter sender: slider
     @IBAction func sliderValueChange(_ sender: UISlider) {
         sender.value.round(.toNearestOrAwayFromZero)
         let value = Int(sender.value)
@@ -44,6 +69,9 @@ class RoutingViewController: UIViewController {
         }
     }
     
+    /// User tapped on slider
+    ///
+    /// - Parameter sender: gesture recognizer
     @IBAction func sliderTap(_ sender: UITapGestureRecognizer) {
         let pointTapped = sender.location(in: view)
         let positionOfSlider = slider.frame.origin
@@ -53,6 +81,7 @@ class RoutingViewController: UIViewController {
         sliderValueChange(slider)
     }
     
+    /// Time formatter
     private let dateComponentsFormatter: DateComponentsFormatter = {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute]
@@ -60,6 +89,7 @@ class RoutingViewController: UIViewController {
         return formatter
     }()
     
+    /// Update contents on labels
     private func updateLabels() {
         guard let index = routeType?.rawValue,
                 let route = delegate?.routes[index],
@@ -73,10 +103,12 @@ class RoutingViewController: UIViewController {
         distanceLabel.text = String(format: "(%.1f mi)", distance)
     }
     
+    /// Receive data
     func update() {
         routeType = .safest
     }
     
+    /// Start navigation
     @IBAction func start() {
         if let type = routeType, let route = delegate?.routes[type.rawValue] {
             delegate?.choose(route: route)

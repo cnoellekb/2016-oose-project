@@ -20,6 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    /// Handle universal links
+    ///
+    /// - Parameters:
+    ///   - application: current application
+    ///   - userActivity: activity containing link
+    ///   - restorationHandler: unused
+    /// - Returns: true if handled
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
         guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
                 let url = userActivity.webpageURL,
