@@ -33,7 +33,7 @@ class SurvivalUITests: XCTestCase {
         
         let fromTextField = app.textFields["My Location"]
         fromTextField.tap()
-        fromTextField.typeText("Baltimore\n")
+        fromTextField.typeText("Baltimore, MD\n")
         
         let setButton = app.tables.children(matching: .cell).element(boundBy: 0).buttons["Set"]
         expectation(for: exists, evaluatedWith: setButton, handler: nil)
@@ -42,7 +42,7 @@ class SurvivalUITests: XCTestCase {
         
         let toTextField = app.textFields.containing(.staticText, identifier:"To: ").element
         toTextField.tap()
-        toTextField.typeText("Towson\n")
+        toTextField.typeText("Towson, MD\n")
         
         expectation(for: exists, evaluatedWith: setButton, handler: nil)
         waitForExpectations(timeout: 5, handler: nil)
