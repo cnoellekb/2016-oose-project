@@ -23,7 +23,8 @@ public class Grid {
 
     /**
      * The major purpose of this class: mapping actually geographical coordinates
-     * to integer-formatted grid coordinates.
+     * to integer-formatted grid coordinates, or conceptually, putting coordinates into
+     * grids on the map.
      * @param lat
      * @param lng
      */

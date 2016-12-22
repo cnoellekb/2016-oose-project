@@ -21,8 +21,7 @@ public class Bootstrap {
 	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	public static void main(String[] args) throws Exception {
-		// Check if the database file exists in the current directory. Abort if
-		// not
+		// Check if the database file exists in the current directory. Abort if not
 		DataSource dataSource = configureDataSource();
 		if (dataSource == null) {
 			System.out.printf("Could not find server.db in the current directory (%s). Terminating\n",

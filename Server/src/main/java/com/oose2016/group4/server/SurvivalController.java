@@ -65,6 +65,7 @@ public class SurvivalController {
 				int timeOfDay = Integer.parseInt(request.queryParams("timeOfDay"));
 				int fromDate = Integer.parseInt(request.queryParams("fromDate"));
 				int toDate = Integer.parseInt(request.queryParams("toDate"));
+
 				//types: <Comma separated Strings>
 				//get array of crimes (int date, String addr, double lat, double lng, String type
 				Crime from = new Crime(fromDate, fromLat, fromLng);
@@ -79,7 +80,8 @@ public class SurvivalController {
 		}, new JsonTransformer());
 		
 		/**
-		 * Do some data preprocessing for database.
+		 * Retrive data from data source, store them into the database with proper Weighting Algorithm
+		 * so that the data can serve the frontend's requirements.
 		 */
 		get(API_CONTEXT + "/update/db", "application/json", (request, response) -> {
 			survivalService.updateDB("crimes");
@@ -87,7 +89,8 @@ public class SurvivalController {
 		}, new JsonTransformer());
 		
 		/**
-		 * 
+		 * return a particular coordinate's safety rating based on the crime level evaluation data stored
+		 * in the database.
 		 */
 		get(API_CONTEXT + "/safety/rating", "application/json", (request, response) -> {
 			double lat = Double.parseDouble(request.queryParams("lat"));

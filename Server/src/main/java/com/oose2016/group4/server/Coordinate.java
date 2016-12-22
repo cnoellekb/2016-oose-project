@@ -15,15 +15,20 @@ public class Coordinate {
 	}
 
 	public Coordinate(double latitude, double longitude) throws Exception {
+		/*
+		abort if the coordinate parameter is illegal
+		 */
 		if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
 			throw new Exception("Not valid coordinate");
 		}
+
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
 
 	/**
-	 * Sort coordinates and expand a bit
+	 * Sort coordinates and expand a bit so that after the processing, we can always assume that
+	 * a.latitude<b.latitude, a.longitude<b.longitude
 	 * @param a set to top left coordinate
 	 * @param b set to bottom right coordinate
 	 */

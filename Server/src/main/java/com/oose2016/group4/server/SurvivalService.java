@@ -71,17 +71,7 @@ public class SurvivalService {
 				+ "y <= :fromY AND y >= :toY AND "
 				+ predicate + " ORDER BY alarm DESC LIMIT 20";
 		Query queryGetAvoidLindIds = conn.createQuery(sqlGetAvoidLindIds);
-//		abc = abc.addParameter("fromX", f)
-//				.addParameter("toLat", to.getLatitude())
-////				.addParameter("fromLng", from.getLongitude())
-//				.addParameter("toLng", to.getLongitude());
-//		List<AvoidLinkIds.LinkId> results =  abc.executeAndFetch(AvoidLinkIds.LinkId.class);
-//		int size = results.size();
-//		int[] linkIds = new int[size];
-//		for (int i = 0; i < size; i++) {
-//			linkIds[i] = results.get(i).getLinkId();
-//		}
-//		return linkIds;
+
 		List<Integer> avoidLindIds = queryGetAvoidLindIds
 				.addParameter("fromX", fromGrid.getX())
 				.addParameter("toX", toGrid.getX())
@@ -109,12 +99,15 @@ public class SurvivalService {
 			String sql = "SELECT date, address, latitude, longitude, type FROM " + table + " WHERE "
 					+ "latitude >= :fromLat AND latitude <= :toLat AND date >= :fromDate AND "
 					+ "longitude >= :fromLng AND longitude <= :toLng AND date <= :toDate;";
-					//+ "time = :timeOfDay"; TODO figure out what to do with this
+
 			Query query = conn.createQuery(sql);
-			query.addParameter("fromLat", from.getLat()).addParameter("toLat", to.getLat())
-				.addParameter("fromLng", from.getLng()).addParameter("toLng", to.getLng())
-				.addParameter("fromDate", from.getDate()).addParameter("toDate", to.getDate());
-				//.addParameter("timeOfDay", timeOfDay);
+			query.addParameter("fromLat", from.getLat())
+					.addParameter("toLat", to.getLat())
+					.addParameter("fromLng", from.getLng())
+					.addParameter("toLng", to.getLng())
+					.addParameter("fromDate", from.getDate())
+					.addParameter("toDate", to.getDate());
+
 			List<Crime> results = query.executeAndFetch(Crime.class);
 			return results;
 		} catch (Sql2oException e) {
@@ -140,7 +133,14 @@ public class SurvivalService {
 		}
 	}
 
-	
+	/**
+	 * Based on the sum of alarm values of the grid the input coordinate in and the eight grids surrounding it, determine
+	 * a safety rating of one of red/yellow/green to denote a safety level for the input coordinate.
+	 * @param lat latitude
+	 * @param lng longtitude
+	 * @param table name of the table in the database to use to fetch the data used for the rating algorithm
+	 * @return one of red/yellow/green to indicate the alarm/safety level of the given coordinate location
+	 */
 	public String getSafetyRating(double lat, double lng, String table) {
 		try (Connection conn = db.open()) {
 			Grid grid = new Grid(lat, lng);
@@ -149,8 +149,13 @@ public class SurvivalService {
 			
 			String sql = "SELECT SUM(alarm) FROM :table WHERE "
 					+ "x <= :x + 1 AND x >= :x - 1 AND y <= :y + 1 AND y >= :y - 1;";
+
 			Query query = conn.createQuery(sql);
-			query.addParameter("x", x).addParameter("y", y).addParameter("table", table);
+
+			query.addParameter("x", x)
+					.addParameter("y", y)
+					.addParameter("table", table);
+
 			double result = query.executeScalar(Double.class);
 			
 			if (result > 18000) {
