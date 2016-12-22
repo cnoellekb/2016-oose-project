@@ -10,11 +10,13 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 public class MapQuestHandler extends RequestHandler {
+	//The developer key needed to use MapQuest functionality
 	private static String MAPQUEST_KEY = "afbtgu28aAJW4kgGbc8yarMCZ3LdWWbh";
+
 	private static String mapquestEndpoint = "http://www.mapquestapi.com/directions/v2/findlinkid";
 	
 	/**
-	 * GETs the linkId associated with a particular crime's coordinates.
+	 * GETs the linkId associated with a particular coordinate.
 	 * @param lat latitude
 	 * @param lng longitude
 	 * @return the linkId of that crime
