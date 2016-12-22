@@ -29,8 +29,6 @@ class SearchingState: State, SearchTableViewControllerDelegate {
     /// Results of search
     var locations = [Location]()
     
-    var index = 0
-    
     /// Search for location by name
     ///
     /// - Parameters:
@@ -106,6 +104,9 @@ class SearchingState: State, SearchTableViewControllerDelegate {
         }
     }
     
+    /// Handle search result
+    ///
+    /// - Parameter result: search result
     private func handle(result: [Location]) {
         locations = result
         searchTableViewController?.update()
@@ -113,15 +114,23 @@ class SearchingState: State, SearchTableViewControllerDelegate {
         delegate?.select(annotation: locations[0])
     }
     
+    /// Bottom view controller
     private weak var searchTableViewController: SearchTableViewController?
+    /// Bottom view controller for State protocol
     var bottomViewController: UIViewController? {
         return searchTableViewController
     }
     
+    /// Bottom view controller segue name
     var bottomSegue: String? {
         return "Search"
     }
     
+    /// Handle bottom view controller segue
+    ///
+    /// - Parameters:
+    ///   - segue: Storyboard segue
+    ///   - bottomHeight: bottom container height constraint
     func prepare(for segue: UIStoryboardSegue, bottomHeight: NSLayoutConstraint) {
         if let dst = segue.destination as? SearchTableViewController {
             bottomHeight.constant = dst.preferredContentSize.height
@@ -130,14 +139,23 @@ class SearchingState: State, SearchTableViewControllerDelegate {
         }
     }
     
+    /// User tapped table view row
+    ///
+    /// - Parameter index: index of row
     func didTapRow(at index: Int) {
         delegate?.select(annotation: locations[index])
     }
     
+    /// User tapped set button on table view row
+    ///
+    /// - Parameter index: index of row
     func didTapSetButton(at index: Int) {
         delegate?.choose(location: locations[index], for: searchType)
     }
     
+    /// User selected annotation
+    ///
+    /// - Parameter annotation: selected annotation
     func didSelect(annotation: MKAnnotation) {
         if let location = annotation as? Location, let index = locations.index(of: location) {
             searchTableViewController?.select(row: index)

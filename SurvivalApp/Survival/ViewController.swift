@@ -8,6 +8,11 @@
 import UIKit
 import MapKit
 
+extension Notification.Name {
+    /// Receive URL via universal links
+    static let openURL = Notification.Name("OpenURL")
+}
+
 /// Main view controller with a map view
 class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, StateDelegate {
     // MARK: - UI
@@ -51,52 +56,125 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             toTextField.leftViewMode = .always
         }
     }
+    /// Top view controller for navigation
     weak var topViewController: NavigatingTopViewController!
+    /// Button view controller container
     @IBOutlet weak var bottomContainer: UIView!
+    /// Height constraint for bottom container
     @IBOutlet weak var bottomHightConstraint: NSLayoutConstraint!
+    /// Show top view controller (must not be active at the same time with hideTopConstraint)
     @IBOutlet weak var showTopConstraint: NSLayoutConstraint!
+    /// Hide top view controller (must not be active at the same time with showTopConstraint)
     @IBOutlet weak var hideTopConstraint: NSLayoutConstraint!
+    /// Show bottom view controller (must not be active at the same time with hideBottomConstraint)
     @IBOutlet weak var showBottomConstraint: NSLayoutConstraint!
+    /// Hide bottom view controller (must not be active at the same time with showBottomConstraint)
     @IBOutlet weak var hideBottomConstraint: NSLayoutConstraint!
     
+    /// System status bar color
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return state?.preferredStatusBarStyle ?? .default
     }
     
-    // MARK: - Location
-    
-    private let locationManager = CLLocationManager()
-    
+    /// View has been loaded
     override func viewDidLoad() {
         super.viewDidLoad()
+        authorizeLocationUpdate()
+        NotificationCenter.default.addObserver(forName: .openURL, object: nil, queue: nil) {
+            let numberFormatter = NumberFormatter()
+            if let dict = $0.userInfo,
+                let from = dict["from"] as? String,
+                let to = dict["to"] as? String,
+                let fromLatString = dict["fromLat"] as? String,
+                let toLatString = dict["toLat"] as? String,
+                let fromLngString = dict["fromLng"] as? String,
+                let toLngString = dict["toLng"] as? String,
+                let fromLat = numberFormatter.number(from: fromLatString)?.doubleValue,
+                let toLat = numberFormatter.number(from: toLatString)?.doubleValue,
+                let fromLng = numberFormatter.number(from: fromLngString)?.doubleValue,
+                let toLng = numberFormatter.number(from: toLngString)?.doubleValue {
+                self.fromTextField.text = from
+                self.toTextField.text = to
+                self.from = Location(address: from, coordinate: CLLocationCoordinate2D(latitude: fromLat, longitude: fromLng))
+                self.to = Location(address: to, coordinate: CLLocationCoordinate2D(latitude: toLat, longitude: toLng))
+                self.route()
+            }
+        }
+    }
+    
+    /// Handle Storyboard segue, forward bottom view controller segue to current state
+    ///
+    /// - Parameters:
+    ///   - segue: Storyboard segue
+    ///   - sender: unused
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let dst = segue.destination as? NavigatingTopViewController {
+            topViewController = dst
+        } else {
+            state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
+        }
+    }
+    
+    // MARK: - Location
+    
+    /// Location manager for location updates
+    private let locationManager = CLLocationManager()
+    
+    /// Check authrization status and start update locations
+    private func authorizeLocationUpdate() {
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         switch CLLocationManager.authorizationStatus() {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse:
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         default:
             break
         }
     }
     
+    /// Start update location if authorized
+    ///
+    /// - Parameters:
+    ///   - manager: location manager
+    ///   - status: new authorization status
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
-            locationManager.requestLocation()
+            manager.startUpdatingLocation()
         }
     }
     
+    /// If this is the first location update
+    private var firstLocationUpdate = true
+    
+    /// Zoom in to user location if this is the first update, otherwise forward the update to current state
+    ///
+    /// - Parameters:
+    ///   - manager: location manager
+    ///   - locations: array of location updates received
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
-        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
-        mapView.setRegion(region, animated: true)
+        let location = locations.last!.coordinate
+        if firstLocationUpdate {
+            let span = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+            let region = MKCoordinateRegion(center: location, span: span)
+            mapView.setRegion(region, animated: true)
+            firstLocationUpdate = false
+        }
+        #if !DEMO
+            state?.update(location: location)
+        #endif
     }
     
+    /// Handle location update error
+    ///
+    /// - Parameters:
+    ///   - manager: location manager
+    ///   - error: reason of error
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     }
     
     #if DEMO
+    /// Simulated user location annotation
     private let simulatedUserLocation = SimulatedUserLocation()
     #endif
     
@@ -151,6 +229,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
                     self.view.layoutIfNeeded()
                 }
             }
+            locationManager.allowsBackgroundLocationUpdates = state is NavigatingState
             setNeedsStatusBarAppearanceUpdate()
         }
     }
@@ -184,14 +263,6 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let dst = segue.destination as? NavigatingTopViewController {
-            topViewController = dst
-        } else {
-            state?.prepare(for: segue, bottomHeight: bottomHightConstraint)
-        }
-    }
-    
     // MARK: - StateDelegate
     
     /// Display annotations generated by current state
@@ -211,6 +282,9 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 200, left: 100, bottom: 250, right: 100), animated: true)
     }
     
+    /// Select annotation specified by current state
+    ///
+    /// - Parameter annotation: annotation to select
     func select(annotation: MKAnnotation) {
         mapView.selectAnnotation(annotation, animated: true)
     }
@@ -234,6 +308,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         present(alert, animated: true)
     }
     
+    /// Choose a location from search results as the origination or destination
+    ///
+    /// - Parameters:
+    ///   - location: chosen location
+    ///   - type: origination or destination
     func choose(location: Location, for type: SearchingState.SearchType) {
         state = nil
         if type == .to {
@@ -246,6 +325,9 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
     }
     
+    /// Choose a route to navigate (simulate user movement if in demo mode)
+    ///
+    /// - Parameter route: chosen route
     func choose(route: Route) {
         guard let currentLocation = mapView.userLocation.location?.coordinate else { return }
         state = NavigatingState(route: route, topViewController: topViewController, currentLocation: currentLocation)
@@ -259,8 +341,12 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     
     #if DEMO
+    /// Timer for simulation
     private var timer: Timer?
     
+    /// Simulate user location along route
+    ///
+    /// - Parameter route: chosen route
     private func moveSimulatedUserLocation(along route: Route) {
         guard let start = route.shape.first else { return }
         simulatedUserLocation.coordinate = start
@@ -297,6 +383,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     }
     #endif
     
+    /// Stop navigation
     func stopNavigation() {
         state = nil
         #if DEMO
@@ -384,6 +471,11 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         return nil
     }
     
+    /// Forward annotation selection message to current state
+    ///
+    /// - Parameters:
+    ///   - mapView: source map view
+    ///   - view: annotation view
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if let annotation = view.annotation {
             state?.didSelect(annotation: annotation)
@@ -415,17 +507,14 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             mapView.setCamera(newCamera, animated: animated)
         }
     }
-    
-    #if !DEMO
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        state?.update(location: userLocation.coordinate)
-    }
-    #endif
 }
 
 #if DEMO
+/// Simulated user location annotation inherted from real MKUserLocation
 private class SimulatedUserLocation: MKUserLocation {
+    /// Simulated user location
     private var simulatedCoordinate = CLLocationCoordinate2D(latitude: 39, longitude: -76)
+    /// Override real location to return simulated location (dynamic attribute is for KVO updates)
     override dynamic var coordinate: CLLocationCoordinate2D {
         get {
             return simulatedCoordinate

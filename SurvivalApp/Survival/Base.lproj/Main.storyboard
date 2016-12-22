@@ -461,6 +461,7 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i0T-QS-fvr">
                                         <rect key="frame" x="293" y="0.0" width="50" height="60"/>
                                         <state key="normal" image="Speaker"/>
+                                        <state key="selected" image="Mute"/>
                                         <connections>
                                             <action selector="mute" destination="wQj-hZ-OZt" eventType="touchUpInside" id="c1H-hc-SHk"/>
                                         </connections>
@@ -563,6 +564,7 @@
     </scenes>
     <resources>
         <image name="Delete" width="50" height="50"/>
+        <image name="Mute" width="50" height="50"/>
         <image name="Speaker" width="50" height="50"/>
     </resources>
 </document>
