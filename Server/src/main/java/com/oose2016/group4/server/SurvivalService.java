@@ -38,7 +38,7 @@ public class SurvivalService {
 	public AvoidLinkIds getAvoidLinkIds(Coordinate from, Coordinate to, String table) {
 		try (Connection conn = db.open()) {
 			int[] red = fetchLinkIds(conn, from, to, "alarm > 2000", table);
-			int[] yellow = fetchLinkIds(conn, from, to, "alarm < 2000 AND alarm >1000 ", table);
+			int[] yellow = fetchLinkIds(conn, from, to, "alarm <= 2000 AND alarm >1000 ", table);
 			return new AvoidLinkIds(red, yellow);
 		} catch (Sql2oException e) {
 			logger.error("Failed to fetch linkIds", e);
@@ -64,12 +64,12 @@ public class SurvivalService {
 		Grid fromGrid = new Grid(from.getLatitude(),from.getLongitude());
 		Grid toGrid = new Grid(to.getLatitude(),to.getLongitude());
 
-		String sqlGetAvoidLindIds = "SELECT linkId FROM "
+		String sqlGetAvoidLindIds = "SELECT DISTINCT linkId FROM "
 				+ table
 				+ " WHERE "
 				+ "x >= :fromX AND x <= :toX AND "
-				+ "y >= :fromY AND y <= :toY AND "
-				+ predicate;
+				+ "y <= :fromY AND y >= :toY AND "
+				+ predicate + " ORDER BY alarm DESC LIMIT 20";
 		Query queryGetAvoidLindIds = conn.createQuery(sqlGetAvoidLindIds);
 //		abc = abc.addParameter("fromX", f)
 //				.addParameter("toLat", to.getLatitude())
@@ -96,7 +96,6 @@ public class SurvivalService {
 		return linkIds;
 	}
 	
-	/**
 	/**
 	 * Retrieve all the crimes in the database within a certain time, latitude and longitude 
 	 * range.
