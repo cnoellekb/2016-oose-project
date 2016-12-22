@@ -215,7 +215,11 @@ class NavigatingState: State, NavigatingBottomViewControllerDelegate {
         navigatingTopViewController?.turnSignImageView.image = maneuver.turnTypeImage
         navigatingTopViewController?.directionLabel.text = maneuver.directionName
         navigatingTopViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: distance)
-        navigatingTopViewController?.streetsLabel.text = maneuver.streets.dropFirst().reduce(maneuver.streets.first) { "\($0) / \($1)" }
+        if let first = maneuver.streets.first {
+            navigatingTopViewController?.streetsLabel.text = maneuver.streets.dropFirst().reduce(first) { "\($0) / \($1)" }
+        } else {
+            navigatingTopViewController?.streetsLabel.text = nil
+        }
         navigatingBottomViewController?.distanceLabel.text = distanceFormatter.string(fromDistance: remainingDistance)
         navigatingBottomViewController?.timeLabel.text = dateComponentsFormatter.string(from: remainingDistance / (fullDistance * 1609.344) * fullTime)
     }
