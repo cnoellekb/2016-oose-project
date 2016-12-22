@@ -37,8 +37,8 @@ public class SurvivalService {
 	 */
 	public AvoidLinkIds getAvoidLinkIds(Coordinate from, Coordinate to, String table) {
 		try (Connection conn = db.open()) {
-			int[] red = fetchLinkIds(conn, from, to, "count > 50", table);
-			int[] yellow = fetchLinkIds(conn, from, to, "count > 10 AND count <= 50", table);
+			int[] red = fetchLinkIds(conn, from, to, "alarm > 2000", table);
+			int[] yellow = fetchLinkIds(conn, from, to, "alarm <= 2000 AND alarm >1000 ", table);
 			return new AvoidLinkIds(red, yellow);
 		} catch (Sql2oException e) {
 			logger.error("Failed to fetch linkIds", e);
@@ -60,24 +60,42 @@ public class SurvivalService {
 	 */
 	private int[] fetchLinkIds(Connection conn, Coordinate from, Coordinate to, String predicate, String table)
 			throws Sql2oException, NullPointerException {
-		String sql = "SELECT linkId, COUNT(linkId) AS count FROM " + table + " WHERE "
-				+ "latitude >= :fromLat AND latitude <= :toLat AND "
-				+ "longitude >= :fromLng AND longitude <= :toLng GROUP BY linkId HAVING " + predicate
-				+ " ORDER BY count DESC LIMIT 20";
-		Query abc = conn.createQuery(sql);
-		abc = abc.addParameter("fromLat", from.getLatitude())
-				.addParameter("toLat", to.getLatitude()).addParameter("fromLng", from.getLongitude())
-				.addParameter("toLng", to.getLongitude());
-		List<AvoidLinkIds.LinkId> results =  abc.executeAndFetch(AvoidLinkIds.LinkId.class);
-		int size = results.size();
+
+		Grid fromGrid = new Grid(from.getLatitude(),from.getLongitude());
+		Grid toGrid = new Grid(to.getLatitude(),to.getLongitude());
+
+		String sqlGetAvoidLindIds = "SELECT DISTINCT linkId FROM "
+				+ table
+				+ " WHERE "
+				+ "x >= :fromX AND x <= :toX AND "
+				+ "y <= :fromY AND y >= :toY AND "
+				+ predicate + " ORDER BY alarm DESC LIMIT 20";
+		Query queryGetAvoidLindIds = conn.createQuery(sqlGetAvoidLindIds);
+//		abc = abc.addParameter("fromX", f)
+//				.addParameter("toLat", to.getLatitude())
+////				.addParameter("fromLng", from.getLongitude())
+//				.addParameter("toLng", to.getLongitude());
+//		List<AvoidLinkIds.LinkId> results =  abc.executeAndFetch(AvoidLinkIds.LinkId.class);
+//		int size = results.size();
+//		int[] linkIds = new int[size];
+//		for (int i = 0; i < size; i++) {
+//			linkIds[i] = results.get(i).getLinkId();
+//		}
+//		return linkIds;
+		List<Integer> avoidLindIds = queryGetAvoidLindIds
+				.addParameter("fromX", fromGrid.getX())
+				.addParameter("toX", toGrid.getX())
+				.addParameter("fromY", fromGrid.getY())
+				.addParameter("toY", toGrid.getY())
+				.executeAndFetch(Integer.class);
+		int size = avoidLindIds.size();
 		int[] linkIds = new int[size];
-		for (int i = 0; i < size; i++) {
-			linkIds[i] = results.get(i).getLinkId();
+		for (int i = 0; i<size; i++ ) {
+			linkIds[i] = avoidLindIds.get(i);
 		}
 		return linkIds;
 	}
 	
-	/**
 	/**
 	 * Retrieve all the crimes in the database within a certain time, latitude and longitude 
 	 * range.
